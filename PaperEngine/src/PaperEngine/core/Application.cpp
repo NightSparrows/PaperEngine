@@ -1,6 +1,7 @@
 ﻿#include "Application.h"
 
 #include <PaperEngine/core/Logger.h>
+#include <PaperEngine/events/ApplicationEvent.h>
 
 namespace PaperEngine {
 
@@ -28,6 +29,14 @@ namespace PaperEngine {
 
 	void Application::on_event(Event& e)
 	{
+#ifdef PE_DEBUG
+		EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<WindowCloseEvent>([this](Event& e) {
+			m_running = false;
+			return true;
+			});
+#endif // PE_DEBUG
+
 	}
 
 	// Explicitly export unique_ptr specialization

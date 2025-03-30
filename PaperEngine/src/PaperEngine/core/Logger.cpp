@@ -22,8 +22,6 @@ namespace PaperEngine {
 		spdlog::register_logger(s_coreLogger);
 		s_coreLogger->set_level(spdlog::level::trace);
 		s_coreLogger->flush_on(spdlog::level::trace);
-
-		PE_CORE_INFO("test");
 	}
 
 }
