@@ -2,21 +2,31 @@
 
 #include "Base.h"
 
-#include "Logger.h"
+#include <PaperEngine/core/Core.h>
+#include <PaperEngine/core/Application.h>
+
+extern PaperEngine::Application* PaperEngine::CreateApplication(int argc, char** argv);
 
 #ifdef PE_PLATFORM_WINDOWS
 
 namespace PaperEngine {
 
 	int Main(int argc, char** argv) {
-		Logger::Init();
+		// initialization
+		PaperEngine::Core::Init();
 
+		Application* app = CreateApplication(argc, argv);
+		app->run();
+		delete app;
+
+		// clean up
+		PaperEngine::Core::CleanUp();
 		return 0;
 	}
 
 }
 #ifdef PE_DIST
-int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+PE_API int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 	return PaperEngine::Main(__argc, __argv);
 }
 #else

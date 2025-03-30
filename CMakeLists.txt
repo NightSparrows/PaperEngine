@@ -1,10 +1,14 @@
 cmake_minimum_required(VERSION 3.20)
 
+project(PaperEngine)
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(FetchContent)
 
+# options
+option(PAPER_ENGINE_BUILD_SHARED "Paper engine build shared" ON)
 
 # get glfw
 FetchContent_Declare(

@@ -1,8 +1,10 @@
-//
-// Created by NS on 2025/3/29.
-//
-
+﻿
 #include <PaperEngine/core/Window.h>
+#include <Platform/Windows/core/WindowsWindow.h>
 
-
-
+namespace PaperEngine {
+	Scope<Window> Window::Create(const WindowProps& props)
+	{
+		return CreateScope<WindowsWindow>(props);
+	}
+}

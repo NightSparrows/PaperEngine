@@ -1,6 +1,20 @@
 ﻿#pragma once
 
+#include <memory>
+
 #include "PlatformDetection.h"
+
+#ifdef PE_PLATFORM_WINDOWS
+	#ifdef PE_BUILD_SHARED
+		#ifdef PE_BUILD_ITSELF
+		#define PE_API __declspec(dllexport)
+		#else
+		#define PE_API __declspec(dllimport)
+		#endif
+	#else
+	#define PE_API 
+	#endif
+#endif
 
 #ifdef PE_DEBUG
 #if defined(PE_PLATFORM_WINDOWS)
@@ -19,6 +33,11 @@
 #define PE_DEBUGBREAK()
 
 #endif // PE_DEBUG
+
+#define PE_EXPAND_MACRO(x) x
+#define PE_STRINGIFY_MACRO(x) #x
+
+#define BIT(x) (1 << x)
 
 #define PE_BIND_EVENT_FN(fn) [this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
 
@@ -39,3 +58,4 @@ namespace PaperEngine {
 }
 
 
+#include <PaperEngine/core/Assert.h>

@@ -1,5 +1,13 @@
+﻿
 
+#include <PaperEngine/PaperEngine.h>
 
-int main(int argc, const char * argv[]) {
-    return 0;
+class SandboxApp : public PaperEngine::Application {
+public:
+	SandboxApp(const PaperEngine::ApplicationSpecification& spec = PaperEngine::ApplicationSpecification()) : Application(spec) {
+	}
+};
+
+PaperEngine::Application* PaperEngine::CreateApplication(int argc, char** argv) {
+	return new SandboxApp();
 }

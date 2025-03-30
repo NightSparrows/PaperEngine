@@ -1,6 +1,4 @@
 ﻿
-#include "pch.h"
-
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/basic_file_sink.h>
 
@@ -10,7 +8,6 @@
 namespace PaperEngine {
 
 	Ref<spdlog::logger> Logger::s_coreLogger;
-	Ref<spdlog::logger> Logger::s_clientLogger;
 
 	void Logger::Init()
 	{
@@ -22,14 +19,11 @@ namespace PaperEngine {
 		logSinks[1]->set_pattern("[%T] [%l] %n: %v");
 
 		s_coreLogger = CreateRef<spdlog::logger>("PaperEngine", begin(logSinks), end(logSinks));
-		spdlog::register_logger(s_clientLogger);
+		spdlog::register_logger(s_coreLogger);
 		s_coreLogger->set_level(spdlog::level::trace);
 		s_coreLogger->flush_on(spdlog::level::trace);
 
-
-		s_clientLogger = CreateRef<spdlog::logger>("App", begin(logSinks), end(logSinks));
-		s_clientLogger->set_level(spdlog::level::trace);
-		s_clientLogger->flush_on(spdlog::level::trace);
+		PE_CORE_INFO("test");
 	}
 
 }
