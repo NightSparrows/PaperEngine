@@ -49,3 +49,14 @@ struct fmt::formatter<VkResult> : fmt::formatter<std::string> {
 // just call it without checking it
 #define CHECK_VK_RESULT(x) x
 #endif
+
+namespace PaperEngine {
+
+    class VulkanUtils {
+    public:
+
+
+
+    };
+
+}

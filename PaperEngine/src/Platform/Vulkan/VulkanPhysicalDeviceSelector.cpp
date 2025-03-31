@@ -75,14 +75,18 @@ namespace PaperEngine {
 
 	}
 
-	uint32_t VulkanPhysicalDeviceSelector::select_device(VkQueueFlags requireQueueType, bool supportPresent)
+	uint32_t VulkanPhysicalDeviceSelector::select_device(uint32_t apiVersion, VkQueueFlags requireQueueType, bool supportPresent)
 	{
 		for (const auto& device : m_devices) {
 
 			for (uint32_t i = 0; i < device.qFamilyProps.size(); i++) {
 				const auto& qFamilyProp = device.qFamilyProps[i];
 
-				if ((qFamilyProp.queueFlags & requireQueueType) && ((bool)device.qSupportsPresent[i] == supportPresent)) {
+				if (
+					(qFamilyProp.queueFlags & requireQueueType) && 
+					((bool)device.qSupportsPresent[i] == supportPresent) &&
+					(device.properties.apiVersion >= apiVersion)
+					) {
 					m_devIndex = i;
 					int queueFamily = i;
 					return queueFamily;

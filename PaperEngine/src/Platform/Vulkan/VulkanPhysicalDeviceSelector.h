@@ -26,7 +26,16 @@ namespace PaperEngine {
 		// fetch the deivces
 		void init(const VkInstance& instance, const VkSurfaceKHR& surface);
 
-		uint32_t select_device(VkQueueFlags requireQueueType, bool supportPresent);
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="apiVersion">
+		/// mininum require vulkan api version
+		/// </param>
+		/// <param name="requireQueueType"></param>
+		/// <param name="supportPresent"></param>
+		/// <returns></returns>
+		uint32_t select_device(uint32_t apiVersion, VkQueueFlags requireQueueType, bool supportPresent);
 
 		const PhysicalDevice& get_selected() const;
 

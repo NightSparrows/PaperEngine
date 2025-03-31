@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <PaperEngine/core/Window.h>
+#include <PaperEngine/events/ApplicationEvent.h>
 
 namespace PaperEngine {
 
@@ -22,6 +23,7 @@ namespace PaperEngine {
 
 		void on_event(Event& e);
 
+		bool on_window_resize(WindowResizeEvent& e);
 
 	private:
 		bool m_running{ false };

@@ -23,20 +23,33 @@ namespace PaperEngine {
 
 			m_window->on_update();
 
+			// render
+			m_window->get_context()->beginFrame();
+
+			// render logic
+
+			m_window->get_context()->endFrame();
+
 		}
 
 	}
 
 	void Application::on_event(Event& e)
 	{
-#ifdef PE_DEBUG
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<WindowCloseEvent>([this](Event& e) {
+#ifdef PE_DEBUG
+		dispatcher.dispatch<WindowCloseEvent>([this](Event& e) {
 			m_running = false;
 			return true;
 			});
 #endif // PE_DEBUG
+		dispatcher.dispatch<WindowResizeEvent>([this](WindowResizeEvent& e) {return this->on_window_resize(e); });
 
+	}
+
+	bool Application::on_window_resize(WindowResizeEvent& e)
+	{
+		return false;
 	}
 
 	// Explicitly export unique_ptr specialization
