@@ -30,6 +30,9 @@ namespace PaperEngine {
 		vkDestroyFence(m_device, m_inFlightFence, nullptr);
 		m_inFlightFence = VK_NULL_HANDLE;
 
+		vmaDestroyAllocator(m_allocator);
+		m_allocator = VK_NULL_HANDLE;
+
 		vkDestroyCommandPool(m_device, m_cmdPool, nullptr);
 		m_cmdPool = VK_NULL_HANDLE;
 
@@ -218,6 +221,16 @@ namespace PaperEngine {
 		this->create_swapchain();
 		this->create_cmd_pool();
 
+		// initialize vma
+		VmaAllocatorCreateInfo vmaInfo = {
+			.physicalDevice = m_phys_selector.get_selected().physDevice,
+			.device = m_device,
+			.instance = m_instance,
+			.vulkanApiVersion = PE_VULKAN_API_VERSION
+		};
+
+		CHECK_VK_RESULT(vmaCreateAllocator(&vmaInfo, &m_allocator));
+
 		// get the present queue
 		vkGetDeviceQueue(m_device, m_queue_family, 0, &m_presentQueue);
 
@@ -256,10 +269,85 @@ namespace PaperEngine {
 		};
 		CHECK_VK_RESULT(vkResetCommandBuffer(m_cmdBuffers[m_current_image_index], 0));
 		CHECK_VK_RESULT(vkBeginCommandBuffer(m_cmdBuffers[m_current_image_index], &beginInfo));
+		/// temporary clear image
+		VkImageMemoryBarrier toClearBarrier = {
+			.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+			.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+			.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+			.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+			.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+			.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+			.image = m_images[m_current_image_index],
+			.subresourceRange = {
+				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+				.baseMipLevel = 0,
+				.levelCount = 1,
+				.baseArrayLayer = 0,
+				.layerCount = 1
+			}
+		};
+		vkCmdPipelineBarrier(
+			m_cmdBuffers[m_current_image_index],
+			VK_PIPELINE_STAGE_TRANSFER_BIT,
+			VK_PIPELINE_STAGE_TRANSFER_BIT,
+			0,
+			0,
+			nullptr,
+			0,
+			nullptr,
+			1,
+			&toClearBarrier);
+		VkClearColorValue clearColor = { 1.f, 0.f, 0.f, 1.f };
+		VkImageSubresourceRange imageRange = {
+			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+			.baseMipLevel = 0,
+			.levelCount = 1,
+			.baseArrayLayer = 0,
+			.layerCount = 1
+		};
+		vkCmdClearColorImage(m_cmdBuffers[m_current_image_index], m_images[m_current_image_index],
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			&clearColor,
+			1,
+			&imageRange);
+		/// end temp clear image barrier
 	}
 
 	void VulkanContext::endFrame()
 	{
+		/// temporary translate image
+		VkImageMemoryBarrier toPresentBarrier = {
+			.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+			.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+			.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+			.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+			.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+			.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+			.image = m_images[m_current_image_index],
+			.subresourceRange = {
+				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+				.baseMipLevel = 0,
+				.levelCount = 1,
+				.baseArrayLayer = 0,
+				.layerCount = 1
+			}
+		};
+		vkCmdPipelineBarrier(
+			m_cmdBuffers[m_current_image_index],
+			VK_PIPELINE_STAGE_TRANSFER_BIT,
+			VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+			0,
+			0,
+			nullptr,
+			0,
+			nullptr,
+			1,
+			&toPresentBarrier);
+		/// end temp translate image barrier
+
+
 		CHECK_VK_RESULT(vkEndCommandBuffer(m_cmdBuffers[m_current_image_index]));
 
 		VkPipelineStageFlags waitFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -320,6 +408,18 @@ namespace PaperEngine {
 				return mode;
 		}
 		return VK_PRESENT_MODE_FIFO_KHR;
+	}
+
+	VkCommandBuffer VulkanContext::GetCurrentCmdBuffer()
+	{
+		PE_CORE_ASSERT(s_instance, "No vulkan instance created.");
+		return s_instance->m_cmdBuffers[s_instance->m_current_image_index];
+	}
+
+	VkDevice VulkanContext::GetDevice()
+	{
+		PE_CORE_ASSERT(s_instance, "No vulkan instance created.");
+		return s_instance->m_device;
 	}
 
 	void VulkanContext::create_swapchain()

@@ -27,10 +27,10 @@ namespace PaperEngine {
 	};
 
     class PE_API Window {
-        public:
-            using EventCallbackFn = std::function<void(Event&)>;
+    public:
+		using EventCallbackFn = std::function<void(Event&)>;
 
-        virtual ~Window() = default;
+		virtual ~Window() = default;
 
 		virtual void on_update() = 0;
 

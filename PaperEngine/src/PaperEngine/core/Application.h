@@ -3,6 +3,8 @@
 #include <PaperEngine/core/Window.h>
 #include <PaperEngine/events/ApplicationEvent.h>
 
+#include <PaperEngine/core/LayerManager.h>
+
 namespace PaperEngine {
 
 	struct ApplicationSpecification
@@ -13,14 +15,35 @@ namespace PaperEngine {
 		uint32_t height = 900;
 	};
 
-	class PE_API Application {
+	class Application {
 	public:
-		Application(const ApplicationSpecification& spec);
-		virtual ~Application() = default;
+		PE_API Application(const ApplicationSpecification& spec);
+		PE_API virtual ~Application();
 
 
-		void run();
+		PE_API void run();
 
+		/// <summary>
+		/// Application does not hold the layer for you, 
+		/// you need to manager the layer yourself
+		/// do not delete while the application is using it
+		/// </summary>
+		/// <param name="layer"></param>
+		/// <returns></returns>
+		PE_API void push_layer(Layer* layer);
+
+		PE_API void push_overlay(Layer* layer);
+
+		/// <summary>
+		/// Get the raw pointer of window
+		/// do not delete this
+		/// </summary>
+		/// <returns></returns>
+		inline PE_API Window& get_window() { return *m_window.get(); }
+
+		inline static Application& Get() { return *s_instance; }
+
+	protected:
 		void on_event(Event& e);
 
 		bool on_window_resize(WindowResizeEvent& e);
@@ -29,6 +52,11 @@ namespace PaperEngine {
 		bool m_running{ false };
 
 		Scope<Window> m_window;
+
+		LayerManager m_layerManager;
+
+	private:
+		static Application* s_instance;
 	};
 
 	// To be defined in CLIENT

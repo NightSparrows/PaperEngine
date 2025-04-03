@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20)
+﻿cmake_minimum_required(VERSION 3.20)
 
 project(PaperEngine LANGUAGES CXX)
 
@@ -10,11 +10,10 @@ file(GLOB_RECURSE PAPER_ENGINE_SOURCES src/*.cpp src/*.h)
 # target
 if (PAPER_ENGINE_BUILD_SHARED)
     add_library(PaperEngine SHARED ${PAPER_ENGINE_SOURCES})
-    target_compile_definitions(PaperEngine PUBLIC PE_BUILD_SHARED)
-
-
+    target_compile_definitions(PaperEngine PRIVATE PE_BUILD_SHARED)
 else()
     add_library(PaperEngine STATIC ${PAPER_ENGINE_SOURCES})
+    target_compile_definitions(PaperEngine PUBLIC PE_BUILD_STATIC)
 endif()
 
 # copying dll to project
@@ -48,3 +47,6 @@ target_include_directories(PaperEngine PRIVATE ${glfw_SOURCE_DIR}/include)
 # include spdlog
 target_link_libraries(PaperEngine PUBLIC spdlog::spdlog)
 
+# include vulkanMemoryAllocator
+target_link_libraries(PaperEngine PRIVATE VulkanMemoryAllocator)
+target_include_directories(PaperEngine PRIVATE VulkanMemoryAllocator/include)

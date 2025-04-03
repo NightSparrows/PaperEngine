@@ -6,13 +6,11 @@
 
 #ifdef PE_PLATFORM_WINDOWS
 	#ifdef PE_BUILD_SHARED
-		#ifdef PE_BUILD_ITSELF
 		#define PE_API __declspec(dllexport)
-		#else
-		#define PE_API __declspec(dllimport)
-		#endif
+	#elif PE_BUILD_STATIC
+		#define PE_API 
 	#else
-	#define PE_API 
+		#define PE_API __declspec(dllimport)
 	#endif
 #endif
 

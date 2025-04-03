@@ -26,6 +26,14 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(spdlog)
 
+# get vulkan memory allocator
+FetchContent_Declare(
+	VMA
+    GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+    GIT_TAG master
+)
+FetchContent_MakeAvailable(VMA)
+
 # find vulkan
 find_package(Vulkan REQUIRED)
 
