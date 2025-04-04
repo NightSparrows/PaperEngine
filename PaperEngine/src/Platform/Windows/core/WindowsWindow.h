@@ -23,6 +23,8 @@ namespace PaperEngine {
 
         void init() override;
 
+        void cleanUp() override;
+
         void on_update() override;
 
         void set_event_callback(const EventCallbackFn& callback) override;

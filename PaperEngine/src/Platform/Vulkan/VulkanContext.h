@@ -20,7 +20,8 @@ namespace PaperEngine {
 		~VulkanContext();
 
 		void init() override;
-		void swapBuffers() override;
+
+		void cleanUp() override;
 
 		void beginFrame() override;
 		void endFrame() override;

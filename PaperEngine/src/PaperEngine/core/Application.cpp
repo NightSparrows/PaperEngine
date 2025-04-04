@@ -17,11 +17,6 @@ namespace PaperEngine {
 		s_instance = this;
 
 		m_window = Window::Create(WindowProps(spec.name, spec.width, spec.height));
-		m_window->init();
-		m_window->set_event_callback(PE_BIND_EVENT_FN(Application::on_event));
-
-		m_imguiLayer = new ImGuiLayer();
-		push_overlay(m_imguiLayer);
 	}
 
 	Application::~Application()
@@ -31,6 +26,12 @@ namespace PaperEngine {
 
 	void Application::run()
 	{
+		m_window->init();
+		m_window->set_event_callback(PE_BIND_EVENT_FN(Application::on_event));
+
+		m_imguiLayer = new ImGuiLayer();
+		push_overlay(m_imguiLayer);
+
 		m_running = true;
 
 		while (m_running) {
@@ -56,6 +57,8 @@ namespace PaperEngine {
 		}
 
 		m_layerManager.cleanUp();
+
+		m_window->cleanUp();
 	}
 
 	PE_API void Application::push_layer(Layer* layer)

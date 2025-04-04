@@ -21,48 +21,8 @@ namespace PaperEngine {
 
 	VulkanContext::~VulkanContext()
 	{
-		vkDeviceWaitIdle(m_device);
-		vkQueueWaitIdle(m_presentQueue);
-
-		VulkanRenderer::Get().cleanUp();
-
-		// destroy barriers
-		vkDestroySemaphore(m_device, m_imageAvailableSem, nullptr);
-		m_imageAvailableSem = VK_NULL_HANDLE;
-		vkDestroySemaphore(m_device, m_renderFinishedSem, nullptr);
-		m_renderFinishedSem = VK_NULL_HANDLE;
-		vkDestroyFence(m_device, m_inFlightFence, nullptr);
-		m_inFlightFence = VK_NULL_HANDLE;
-
-		vmaDestroyAllocator(m_allocator);
-		m_allocator = VK_NULL_HANDLE;
-
-		vkDestroyCommandPool(m_device, m_cmdPool, nullptr);
-		m_cmdPool = VK_NULL_HANDLE;
-
-		for (const auto& view : m_imageViews) {
-			vkDestroyImageView(m_device, view, nullptr);
-		}
-		m_imageViews.clear();
-		vkDestroySwapchainKHR(m_device, m_swapchain, nullptr);
-		/// end destruction swapchain
-
-
-		vkDestroyDevice(m_device, nullptr);
-
-		vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
-
-#ifdef PE_DEBUG
-
-		PFN_vkDestroyDebugUtilsMessengerEXT vkDestroyDebugUtilsMessengerEXT =
-			(PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_instance, "vkDestroyDebugUtilsMessengerEXT");
-		vkDestroyDebugUtilsMessengerEXT(m_instance, m_debugMessenger, nullptr);
-#endif // PE_DEBUG
-
-		if (m_instance != VK_NULL_HANDLE)
-		{
-			vkDestroyInstance(m_instance, nullptr);
-		}
+		this->cleanUp();
+		s_instance = nullptr;
 	}
 
 	static const char* Vulkan_get_debug_type(VkDebugUtilsMessageTypeFlagsEXT type) {
@@ -255,8 +215,54 @@ namespace PaperEngine {
 		VulkanRenderer::Get().init();
 	}
 
-	void VulkanContext::swapBuffers()
+	void VulkanContext::cleanUp()
 	{
+		if (m_instance == VK_NULL_HANDLE)
+			return;
+
+		vkDeviceWaitIdle(m_device);
+		vkQueueWaitIdle(m_presentQueue);
+
+		VulkanRenderer::Get().cleanUp();
+
+		// destroy barriers
+		vkDestroySemaphore(m_device, m_imageAvailableSem, nullptr);
+		m_imageAvailableSem = VK_NULL_HANDLE;
+		vkDestroySemaphore(m_device, m_renderFinishedSem, nullptr);
+		m_renderFinishedSem = VK_NULL_HANDLE;
+		vkDestroyFence(m_device, m_inFlightFence, nullptr);
+		m_inFlightFence = VK_NULL_HANDLE;
+
+		vmaDestroyAllocator(m_allocator);
+		m_allocator = VK_NULL_HANDLE;
+
+		vkDestroyCommandPool(m_device, m_cmdPool, nullptr);
+		m_cmdPool = VK_NULL_HANDLE;
+
+		for (const auto& view : m_imageViews) {
+			vkDestroyImageView(m_device, view, nullptr);
+		}
+		m_imageViews.clear();
+		vkDestroySwapchainKHR(m_device, m_swapchain, nullptr);
+		/// end destruction swapchain
+
+
+		vkDestroyDevice(m_device, nullptr);
+
+		vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
+
+#ifdef PE_DEBUG
+
+		PFN_vkDestroyDebugUtilsMessengerEXT vkDestroyDebugUtilsMessengerEXT =
+			(PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_instance, "vkDestroyDebugUtilsMessengerEXT");
+		vkDestroyDebugUtilsMessengerEXT(m_instance, m_debugMessenger, nullptr);
+#endif // PE_DEBUG
+
+		if (m_instance != VK_NULL_HANDLE)
+		{
+			vkDestroyInstance(m_instance, nullptr);
+			m_instance = VK_NULL_HANDLE;
+		}
 	}
 
 	void VulkanContext::beginFrame()

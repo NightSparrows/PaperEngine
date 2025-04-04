@@ -36,20 +36,16 @@ namespace PaperEngine {
 
 	WindowsWindow::~WindowsWindow()
 	{
-		if (m_handle) {
-			glfwDestroyWindow(m_handle);
-			s_windowCount--;
-			if (s_windowCount == 0)
-			{
-				glfwTerminate();
-			}
-		}
+		this->cleanUp();
 	}
 
 	void WindowsWindow::init()
 	{
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);	// vulkan 
 		m_handle = glfwCreateWindow(m_data.width, m_data.height, m_data.title.c_str(), nullptr, nullptr);
+
+		PE_CORE_ASSERT(m_handle, "Failed to create GLFW window!");
+
 		s_windowCount++;
 
 		m_context = GraphicsContext::Create(m_handle);
@@ -145,10 +141,23 @@ namespace PaperEngine {
 
 	}
 
+	void WindowsWindow::cleanUp()
+	{
+		if (m_handle) {
+			m_context->cleanUp();
+			glfwDestroyWindow(m_handle);
+			m_handle = nullptr;
+			s_windowCount--;
+			if (s_windowCount == 0)
+			{
+				glfwTerminate();
+			}
+		}
+	}
+
 	void WindowsWindow::on_update()
 	{
 		glfwPollEvents();
-		m_context->swapBuffers();
 	}
 
 	void WindowsWindow::set_event_callback(const EventCallbackFn& callback)
