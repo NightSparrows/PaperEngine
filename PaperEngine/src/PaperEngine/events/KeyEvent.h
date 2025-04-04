@@ -10,18 +10,21 @@ namespace PaperEngine {
 	public:
 		KeyCode get_key_code() const { return m_keyCode; }
 
+		int get_scancode() const { return m_scancode; }
+
 		EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
 	protected:
-		KeyEvent(const KeyCode keycode) : m_keyCode(keycode) {}
+		KeyEvent(const KeyCode keycode, int scancode) : m_keyCode(keycode), m_scancode(scancode) {}
 
 		KeyCode m_keyCode;
+		int m_scancode{ 0 };
 	};
 
 	class KeyPressedEvent : public KeyEvent
 	{
 	public:
-		KeyPressedEvent(const KeyCode keycode, bool isRepeat = false)
-			: KeyEvent(keycode), m_IsRepeat(isRepeat) {
+		KeyPressedEvent(const KeyCode keycode, int scancode, bool isRepeat = false)
+			: KeyEvent(keycode, scancode), m_IsRepeat(isRepeat) {
 		}
 
 		bool IsRepeat() const { return m_IsRepeat; }
@@ -41,8 +44,8 @@ namespace PaperEngine {
 	class KeyReleasedEvent : public KeyEvent
 	{
 	public:
-		KeyReleasedEvent(const KeyCode keycode)
-			: KeyEvent(keycode) {
+		KeyReleasedEvent(const KeyCode keycode, int scancode)
+			: KeyEvent(keycode, scancode) {
 		}
 
 		std::string ToString() const override
@@ -59,7 +62,7 @@ namespace PaperEngine {
 	{
 	public:
 		KeyTypedEvent(const KeyCode keycode)
-			: KeyEvent(keycode) {
+			: KeyEvent(keycode, 0) {
 		}
 
 		std::string ToString() const override

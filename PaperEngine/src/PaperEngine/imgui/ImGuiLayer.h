@@ -19,6 +19,8 @@ namespace PaperEngine {
 		void on_attach() override;
 		void on_detach() override;
 
+		void on_event(Event& e) override;
+
 		// need to be inside the command render pass
 		void begin_frame();
 		void end_frame();

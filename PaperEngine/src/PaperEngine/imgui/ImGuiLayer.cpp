@@ -9,6 +9,13 @@
 #include <PaperEngine/core/Application.h>
 #include <Platform/Vulkan/VulkanRenderer.h>
 
+#include <PaperEngine/events/KeyEvent.h>
+#include <PaperEngine/events/MouseEvent.h>
+#include <PaperEngine/events/ApplicationEvent.h>
+
+ImGuiKey ImGui_ImplGlfw_KeyToImGuiKey(int keycode, int scancode);
+int ImGui_ImplGlfw_TranslateUntranslatedKey(int key, int scancode);
+
 namespace PaperEngine {
 
     class ImGuiLayerImpl {
@@ -58,7 +65,8 @@ namespace PaperEngine {
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
 		ImGui::StyleColorsDark();
-		ImGui_ImplGlfw_InitForVulkan(static_cast<GLFWwindow*>(Application::Get().get_window().get_native_window()), true);
+        // handle event myself
+		ImGui_ImplGlfw_InitForVulkan(static_cast<GLFWwindow*>(Application::Get().get_window().get_native_window()), false);
 		ImGui_ImplVulkan_InitInfo init_info = {};
         init_info.ApiVersion = PE_VULKAN_API_VERSION;              // Pass in your value of VkApplicationInfo::apiVersion, otherwise will default to header version.
         init_info.Instance = VulkanContext::GetInstance();
@@ -90,6 +98,64 @@ namespace PaperEngine {
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
         vkDestroyDescriptorPool(VulkanContext::GetDevice(), m_impl->descriptorPool, nullptr);
+    }
+
+    void ImGuiLayer::on_event(Event& e)
+    {
+		EventDispatcher dispatcher(e);
+
+        dispatcher.dispatch<MouseButtonPressedEvent>([this](MouseButtonPressedEvent& e) {
+			ImGuiIO& io = ImGui::GetIO();
+			io.MouseDown[e.GetMouseButton()] = true;
+            return false;
+            });
+        dispatcher.dispatch<MouseButtonReleasedEvent>([this](MouseButtonReleasedEvent& e) {
+            ImGuiIO& io = ImGui::GetIO();
+            io.MouseDown[e.GetMouseButton()] = false;
+            return false;
+            });
+        dispatcher.dispatch<MouseMovedEvent>([this](MouseMovedEvent& e) {
+            ImGuiIO& io = ImGui::GetIO();
+            io.MousePos.x = e.GetX();
+            io.MousePos.y = e.GetY();
+            return false;
+            });
+		dispatcher.dispatch<MouseScrolledEvent>([this](MouseScrolledEvent& e) {
+			ImGuiIO& io = ImGui::GetIO();
+            io.AddMouseWheelEvent(e.GetXOffset(), e.GetYOffset());
+			return false;
+			});
+
+        dispatcher.dispatch<KeyPressedEvent>([this](KeyPressedEvent& e) {
+            ImGuiIO& io = ImGui::GetIO();
+            ImGuiKey imgui_key = ImGui_ImplGlfw_KeyToImGuiKey(e.get_key_code(), e.get_scancode());
+            io.AddKeyEvent(imgui_key, true);
+            io.SetKeyEventNativeData(imgui_key, e.get_key_code(), e.get_scancode()); // To support legacy indexing (<1.87 user code)
+            return false;
+            });
+
+        dispatcher.dispatch<KeyReleasedEvent>([this](KeyReleasedEvent& e) {
+            ImGuiIO& io = ImGui::GetIO();
+            ImGuiKey imgui_key = ImGui_ImplGlfw_KeyToImGuiKey(e.get_key_code(), e.get_scancode());
+            io.AddKeyEvent(imgui_key, false);
+            io.SetKeyEventNativeData(imgui_key, e.get_key_code(), e.get_scancode()); // To support legacy indexing (<1.87 user code)
+            return false;
+            });
+
+		dispatcher.dispatch<KeyTypedEvent>([this](KeyTypedEvent& e) {
+			ImGuiIO& io = ImGui::GetIO();
+			io.AddInputCharacter(e.get_key_code());
+			return false;
+			});
+
+		dispatcher.dispatch<WindowResizeEvent>([this](WindowResizeEvent& e) {
+			ImGuiIO& io = ImGui::GetIO();
+			io.DisplaySize.x = (float)e.GetWidth();
+			io.DisplaySize.y = (float)e.GetHeight();
+			io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
+			return false;
+			});
+
     }
 
     void ImGuiLayer::begin_frame()
