@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include <PaperEngine/PaperEngine.h>
+#include <PaperEngine/imgui/ImGuiInclude.h>
 
 class TestLayer : public PaperEngine::Layer {
 public:
@@ -11,6 +12,12 @@ public:
 	}
 
 	void on_event(PaperEngine::Event& e) {
+	}
+
+	void on_imgui_render() override {
+		ImGui::Begin("Test Layer");
+		ImGui::Text("Hello, World!");
+		ImGui::End();
 	}
 
 };

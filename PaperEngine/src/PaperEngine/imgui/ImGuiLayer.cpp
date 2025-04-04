@@ -1,11 +1,12 @@
 ﻿
+#include <PaperEngine/imgui/ImGuiInclude.h>
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_vulkan.h>
+
 #include <Platform/Vulkan/VulkanContext.h>
 #include <Platform/Vulkan/VulkanUtils.h>
 
 #include <PaperEngine/imgui/ImGuiLayer.h>
-#include <imgui.h>
-#include <backends/imgui_impl_glfw.h>
-#include <backends/imgui_impl_vulkan.h>
 #include <PaperEngine/core/Application.h>
 #include <Platform/Vulkan/VulkanRenderer.h>
 
@@ -131,6 +132,20 @@ namespace PaperEngine {
             ImGuiKey imgui_key = ImGui_ImplGlfw_KeyToImGuiKey(e.get_key_code(), e.get_scancode());
             io.AddKeyEvent(imgui_key, true);
             io.SetKeyEventNativeData(imgui_key, e.get_key_code(), e.get_scancode()); // To support legacy indexing (<1.87 user code)
+
+            if (e.get_key_code() == Key::LeftControl || e.get_key_code() == Key::RightControl) {
+                io.AddKeyEvent(ImGuiKey_ModCtrl, true);
+            }
+			if (e.get_key_code() == Key::LeftShift || e.get_key_code() == Key::RightShift) {
+				io.AddKeyEvent(ImGuiKey_ModShift, true);
+			}
+			if (e.get_key_code() == Key::LeftAlt || e.get_key_code() == Key::RightAlt) {
+				io.AddKeyEvent(ImGuiKey_ModAlt, true);
+			}
+			if (e.get_key_code() == Key::LeftSuper || e.get_key_code() == Key::RightSuper) {
+				io.AddKeyEvent(ImGuiKey_ModSuper, true);
+			}
+
             return false;
             });
 
@@ -139,6 +154,20 @@ namespace PaperEngine {
             ImGuiKey imgui_key = ImGui_ImplGlfw_KeyToImGuiKey(e.get_key_code(), e.get_scancode());
             io.AddKeyEvent(imgui_key, false);
             io.SetKeyEventNativeData(imgui_key, e.get_key_code(), e.get_scancode()); // To support legacy indexing (<1.87 user code)
+
+			if (e.get_key_code() == Key::LeftControl || e.get_key_code() == Key::RightControl) {
+				io.AddKeyEvent(ImGuiKey_ModCtrl, false);
+			}
+			if (e.get_key_code() == Key::LeftShift || e.get_key_code() == Key::RightShift) {
+				io.AddKeyEvent(ImGuiKey_ModShift, false);
+			}
+            if (e.get_key_code() == Key::LeftAlt || e.get_key_code() == Key::RightAlt) {
+                io.AddKeyEvent(ImGuiKey_ModAlt, false);
+            }
+			if (e.get_key_code() == Key::LeftSuper || e.get_key_code() == Key::RightSuper) {
+				io.AddKeyEvent(ImGuiKey_ModSuper, false);
+			}
+
             return false;
             });
 
