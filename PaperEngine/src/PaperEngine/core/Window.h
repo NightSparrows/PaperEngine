@@ -32,6 +32,8 @@ namespace PaperEngine {
 
 		virtual ~Window() = default;
 
+		virtual void init() = 0;
+
 		virtual void on_update() = 0;
 
 		virtual void set_event_callback(const EventCallbackFn& callback) = 0;
@@ -41,7 +43,7 @@ namespace PaperEngine {
         virtual uint32_t get_width() const = 0;
         virtual uint32_t get_height() const = 0;
 
-		virtual GraphicsContext* get_context() = 0;
+		virtual GraphicsContext& get_context() = 0;
 
 
 		static Scope<Window> Create(const WindowProps& props = WindowProps());

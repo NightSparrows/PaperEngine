@@ -50,3 +50,15 @@ target_link_libraries(PaperEngine PUBLIC spdlog::spdlog)
 # include vulkanMemoryAllocator
 target_link_libraries(PaperEngine PRIVATE VulkanMemoryAllocator)
 target_include_directories(PaperEngine PRIVATE VulkanMemoryAllocator/include)
+
+# include imgui
+target_sources(PaperEngine PRIVATE 
+    ${imgui_SOURCE_DIR}/imgui.cpp
+    ${imgui_SOURCE_DIR}/imgui_draw.cpp
+    ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+    ${imgui_SOURCE_DIR}/imgui_tables.cpp
+    ${imgui_SOURCE_DIR}/imgui_demo.cpp  # Optional, for demo window
+)
+
+target_include_directories(PaperEngine PUBLIC ${imgui_SOURCE_DIR})
+

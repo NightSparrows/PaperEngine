@@ -34,6 +34,14 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(VMA)
 
+# get imgui
+FetchContent_Declare(
+	imgui
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
+    GIT_TAG master
+)
+FetchContent_MakeAvailable(imgui)
+
 # find vulkan
 find_package(Vulkan REQUIRED)
 

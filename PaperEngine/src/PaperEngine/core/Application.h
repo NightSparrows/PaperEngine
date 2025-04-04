@@ -39,8 +39,12 @@ namespace PaperEngine {
 		/// do not delete this
 		/// </summary>
 		/// <returns></returns>
-		inline PE_API Window& get_window() { return *m_window.get(); }
+		inline PE_API Window& get_window() { return *m_window; }
 
+		/// <summary>
+		/// Get the instance application of this project
+		/// </summary>
+		/// <returns></returns>
 		inline static Application& Get() { return *s_instance; }
 
 	protected:

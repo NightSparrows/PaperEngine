@@ -32,6 +32,22 @@ namespace PaperEngine {
 			glfwSetErrorCallback(GLFWErrorCallback);
 		}
 
+	}
+
+	WindowsWindow::~WindowsWindow()
+	{
+		if (m_handle) {
+			glfwDestroyWindow(m_handle);
+			s_windowCount--;
+			if (s_windowCount == 0)
+			{
+				glfwTerminate();
+			}
+		}
+	}
+
+	void WindowsWindow::init()
+	{
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);	// vulkan 
 		m_handle = glfwCreateWindow(m_data.width, m_data.height, m_data.title.c_str(), nullptr, nullptr);
 		s_windowCount++;
@@ -126,20 +142,7 @@ namespace PaperEngine {
 			MouseMovedEvent e(static_cast<float>(xPos), static_cast<float>(yPos));
 			data->eventCallback(e);
 			});
-		// TODO: set callbacks
 
-	}
-
-	WindowsWindow::~WindowsWindow()
-	{
-		if (m_handle) {
-			glfwDestroyWindow(m_handle);
-			s_windowCount--;
-			if (s_windowCount == 0)
-			{
-				glfwTerminate();
-			}
-		}
 	}
 
 	void WindowsWindow::on_update()

@@ -17,6 +17,7 @@ namespace PaperEngine {
 		s_instance = this;
 
 		m_window = Window::Create(WindowProps(spec.name, spec.width, spec.height));
+		m_window->init();
 		m_window->set_event_callback(PE_BIND_EVENT_FN(Application::on_event));
 
 	}
@@ -38,11 +39,11 @@ namespace PaperEngine {
 			}
 
 			// render
-			m_window->get_context()->beginFrame();
+			m_window->get_context().beginFrame();
 
 			// render logic
 
-			m_window->get_context()->endFrame();
+			m_window->get_context().endFrame();
 
 		}
 

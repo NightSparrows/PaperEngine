@@ -34,6 +34,26 @@ namespace PaperEngine {
 
 		static VkDevice GetDevice();
 
+		static VkInstance GetInstance();
+
+		/// <summary>
+		/// Get the chosen GPU
+		/// </summary>
+		/// <returns></returns>
+		static VkPhysicalDevice GetPhysicalDevice();
+
+		static uint32_t GetQueueFamily();
+
+		static VkQueue GetQueue();
+
+		static uint32_t GetImageCount();
+
+		static uint32_t GetCurrentImageIndex();
+
+		static VkSurfaceFormatKHR GetSwapchainSurfaceFormat();
+
+		static std::vector<VkImageView>& GetSwapchainImageViews();
+
 	private:
 		void create_swapchain();
 
@@ -80,7 +100,7 @@ namespace PaperEngine {
 
 		uint32_t m_current_image_index{ UINT32_MAX };
 
-
+		VkSurfaceFormatKHR m_swapchainFormat{};
 	};
 
 }
