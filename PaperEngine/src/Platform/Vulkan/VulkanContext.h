@@ -54,6 +54,10 @@ namespace PaperEngine {
 
 		static std::vector<VkImageView>& GetSwapchainImageViews();
 
+		static VkCommandBuffer BeginSingleTimeCommands();
+
+		static void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
+
 	private:
 		void create_swapchain();
 

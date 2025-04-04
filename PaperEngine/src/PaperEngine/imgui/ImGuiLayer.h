@@ -1,9 +1,10 @@
-﻿
-#include <vulkan/vulkan.h>
+﻿#pragma once
 
 #include <PaperEngine/core/Layer.h>
 
 namespace PaperEngine {
+
+	class ImGuiLayerImpl;
 
 	/// <summary>
 	/// basic setup imgui for you
@@ -12,6 +13,8 @@ namespace PaperEngine {
 	/// </summary>
 	class ImGuiLayer : public Layer {
 	public:
+		ImGuiLayer();
+		~ImGuiLayer();
 
 		void on_attach() override;
 		void on_detach() override;
@@ -21,8 +24,7 @@ namespace PaperEngine {
 		void end_frame();
 
 	protected:
-		VkDescriptorPool m_descriptorPool;
-		bool m_swapchainRebuild{ false };
+		ImGuiLayerImpl* m_impl{ nullptr };
 	};
 
 }

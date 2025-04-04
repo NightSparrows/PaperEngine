@@ -5,6 +5,8 @@
 
 #include <PaperEngine/core/LayerManager.h>
 
+#include <PaperEngine/imgui/ImGuiLayer.h>
+
 namespace PaperEngine {
 
 	struct ApplicationSpecification
@@ -58,6 +60,8 @@ namespace PaperEngine {
 		Scope<Window> m_window;
 
 		LayerManager m_layerManager;
+
+		ImGuiLayer* m_imguiLayer{ nullptr };
 
 	private:
 		static Application* s_instance;

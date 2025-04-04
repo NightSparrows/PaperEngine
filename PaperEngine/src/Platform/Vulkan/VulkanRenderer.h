@@ -14,6 +14,8 @@ namespace PaperEngine {
 		void begin_frame();
 		void end_frame();
 
+		VkRenderPass get_render_pass() const { return m_renderPass; }
+
 		static VulkanRenderer& Get() {
 			static VulkanRenderer instance;
 			return instance;

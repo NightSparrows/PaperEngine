@@ -20,10 +20,13 @@ namespace PaperEngine {
 		m_window->init();
 		m_window->set_event_callback(PE_BIND_EVENT_FN(Application::on_event));
 
+		m_imguiLayer = new ImGuiLayer();
+		push_overlay(m_imguiLayer);
 	}
 
 	Application::~Application()
 	{
+		delete m_imguiLayer;
 	}
 
 	void Application::run()
@@ -42,6 +45,11 @@ namespace PaperEngine {
 			m_window->get_context().beginFrame();
 
 			// render logic
+			m_imguiLayer->begin_frame();
+			for (auto& layer : m_layerManager) {
+				layer->on_imgui_render();
+			}
+			m_imguiLayer->end_frame();
 
 			m_window->get_context().endFrame();
 

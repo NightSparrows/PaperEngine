@@ -18,6 +18,8 @@ namespace PaperEngine {
 		virtual void on_update() {}
 		virtual void on_event(Event& e) {}
 
+		virtual void on_imgui_render() {}
+
 	};
 
 }

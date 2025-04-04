@@ -7,11 +7,13 @@
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
 #include <PaperEngine/core/Application.h>
+#include <Platform/Vulkan/VulkanRenderer.h>
 
 namespace PaperEngine {
 
     class ImGuiLayerImpl {
     public:
+        VkDescriptorPool descriptorPool{ VK_NULL_HANDLE };
     };
 
     static void check_vk_result(VkResult err)
@@ -21,6 +23,16 @@ namespace PaperEngine {
         fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
         if (err < 0)
             abort();
+    }
+
+    ImGuiLayer::ImGuiLayer()
+    {
+		m_impl = new ImGuiLayerImpl();
+    }
+
+    ImGuiLayer::~ImGuiLayer()
+    {
+        delete m_impl;
     }
 
     void ImGuiLayer::on_attach()
@@ -37,7 +49,7 @@ namespace PaperEngine {
             pool_info.maxSets += pool_size.descriptorCount;
         pool_info.poolSizeCount = (uint32_t)IM_ARRAYSIZE(pool_sizes);
         pool_info.pPoolSizes = pool_sizes;
-        CHECK_VK_RESULT(vkCreateDescriptorPool(VulkanContext::GetDevice(), &pool_info, nullptr, &m_descriptorPool));
+        CHECK_VK_RESULT(vkCreateDescriptorPool(VulkanContext::GetDevice(), &pool_info, nullptr, &m_impl->descriptorPool));
 
 		/// vulkan setup
 		IMGUI_CHECKVERSION();
@@ -55,8 +67,8 @@ namespace PaperEngine {
         init_info.QueueFamily = VulkanContext::GetQueueFamily();
         init_info.Queue = VulkanContext::GetQueue();
         init_info.PipelineCache = VK_NULL_HANDLE;
-        init_info.DescriptorPool = m_descriptorPool;
-        init_info.RenderPass = VK_NULL_HANDLE;    // TODO: insert my final render pass
+        init_info.DescriptorPool = m_impl->descriptorPool;
+        init_info.RenderPass = VulkanRenderer::Get().get_render_pass();    // TODO: insert my final render pass
         init_info.Subpass = 0;
         init_info.MinImageCount = VulkanContext::GetImageCount();
         init_info.ImageCount = VulkanContext::GetImageCount();
@@ -65,26 +77,32 @@ namespace PaperEngine {
         init_info.CheckVkResultFn = check_vk_result;
         ImGui_ImplVulkan_Init(&init_info);
 
+        if (!ImGui_ImplVulkan_CreateFontsTexture()) {
+			PE_CORE_ERROR("[ImguiLayer] Failed to create font texture");
+        }
 		/// end vulkan setup
 	}
 
     void ImGuiLayer::on_detach()
     {
-        vkDestroyDescriptorPool(VulkanContext::GetDevice(), m_descriptorPool, nullptr);
-
+		vkDeviceWaitIdle(VulkanContext::GetDevice());
         ImGui_ImplVulkan_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
+        vkDestroyDescriptorPool(VulkanContext::GetDevice(), m_impl->descriptorPool, nullptr);
     }
 
     void ImGuiLayer::begin_frame()
     {
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
     }
 
     void ImGuiLayer::end_frame()
     {
+		ImGui::ShowDemoWindow();
+
         ImGui::Render();
         ImDrawData* draw_data = ImGui::GetDrawData();
 

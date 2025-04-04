@@ -392,7 +392,7 @@ namespace PaperEngine {
 
 	static VkSurfaceFormatKHR ChooseSurfaceFormatAndColorSpace(const std::vector<VkSurfaceFormatKHR>& surfaceFormats) {
 		for (const auto& format : surfaceFormats) {
-			if ((format.format == VK_FORMAT_B8G8R8A8_SRGB) && (format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)) {
+			if ((format.format == VK_FORMAT_B8G8R8A8_UNORM) && (format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)) {
 				return format;
 			}
 		}
@@ -472,6 +472,38 @@ namespace PaperEngine {
 	std::vector<VkImageView>& VulkanContext::GetSwapchainImageViews()
 	{
 		return s_instance->m_imageViews;
+	}
+
+	VkCommandBuffer VulkanContext::BeginSingleTimeCommands()
+	{
+		VkCommandBufferAllocateInfo allocInfo = {
+			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+			.commandPool = s_instance->m_cmdPool,
+			.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+			.commandBufferCount = 1
+		};
+		VkCommandBuffer commandBuffer;
+		CHECK_VK_RESULT(vkAllocateCommandBuffers(s_instance->m_device, &allocInfo, &commandBuffer));
+		VkCommandBufferBeginInfo beginInfo = {
+			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+			.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+			.pInheritanceInfo = nullptr
+		};
+		CHECK_VK_RESULT(vkBeginCommandBuffer(commandBuffer, &beginInfo));
+		return commandBuffer;
+	}
+
+	void VulkanContext::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
+	{
+		CHECK_VK_RESULT(vkEndCommandBuffer(commandBuffer));
+		VkSubmitInfo submitInfo = {
+			.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+			.commandBufferCount = 1,
+			.pCommandBuffers = &commandBuffer
+		};
+		CHECK_VK_RESULT(vkQueueSubmit(s_instance->m_presentQueue, 1, &submitInfo, VK_NULL_HANDLE));
+		CHECK_VK_RESULT(vkQueueWaitIdle(s_instance->m_presentQueue));
+		vkFreeCommandBuffers(s_instance->m_device, s_instance->m_cmdPool, 1, &commandBuffer);
 	}
 
 	void VulkanContext::create_swapchain()
