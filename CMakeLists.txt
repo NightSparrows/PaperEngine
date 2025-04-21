@@ -42,8 +42,42 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(imgui)
 
+# Fetch GLM
+FetchContent_Declare(
+    glm
+    GIT_REPOSITORY https://github.com/g-truc/glm.git
+    GIT_TAG master # Replace with the latest version if needed
+)
+
+FetchContent_MakeAvailable(glm)
+
+# Fetch entt
+FetchContent_Declare(
+	entt
+    GIT_REPOSITORY https://github.com/skypjack/entt.git
+    GIT_TAG master # Replace with the latest version if needed
+)
+FetchContent_MakeAvailable(entt)
+
 # find vulkan
 find_package(Vulkan REQUIRED)
+
+# Fetch NVRHI
+FetchContent_Declare(
+	nvrhi
+    GIT_REPOSITORY https://github.com/NVIDIA-RTX/NVRHI.git
+    GIT_TAG main # Replace with the latest version if needed
+)
+FetchContent_MakeAvailable(nvrhi)
+
+
+# Fetch vk-bootstrap
+FetchContent_Declare(
+	vk-bootstrap
+    GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap.git
+    GIT_TAG main # Replace with the latest version if needed
+)
+FetchContent_MakeAvailable(vk-bootstrap)
 
 if (NOT Vulkan_FOUND)
     message(FATAL_ERROR "Vulkan SDK not found.")
