@@ -6,6 +6,8 @@
 
 #include <PaperEngine/core/Logger.h>
 #include <PaperEngine/events/ApplicationEvent.h>
+#include <PaperEngine/debug/Instrumentor.h>
+#include <PaperEngine/utils/Clock.h>
 
 namespace PaperEngine {
 
@@ -17,48 +19,59 @@ namespace PaperEngine {
 		s_instance = this;
 
 		m_window = Window::Create(WindowProps(spec.name, spec.width, spec.height));
+		m_window->init();
+		m_window->set_event_callback(PE_BIND_EVENT_FN(Application::on_event));
+
 	}
 
 	Application::~Application()
 	{
-		delete m_imguiLayer;
+		//delete m_imguiLayer;
 	}
 
 	void Application::run()
 	{
-		m_window->init();
-		m_window->set_event_callback(PE_BIND_EVENT_FN(Application::on_event));
-
-		m_imguiLayer = new ImGuiLayer();
-		push_overlay(m_imguiLayer);
+		PE_PROFILE_BEGIN_SESSION("Runtime", "PaperEngineProfile-Runtime.json");
+		//m_imguiLayer = new ImGuiLayer();
+		//push_overlay(m_imguiLayer);
 
 		m_running = true;
-
+		Clock clock;
 		while (m_running) {
+
+			auto delta_time = clock.reset();
 
 			// update
 			m_window->on_update();
-			for (auto& layer : m_layerManager) {
-				layer->on_update();
-			}
 
 			// render
-			m_window->get_context().beginFrame();
+			{
+				PE_PROFILE_SCOPE("Render");
 
-			// render logic
-			m_imguiLayer->begin_frame();
-			for (auto& layer : m_layerManager) {
-				layer->on_imgui_render();
+				m_window->get_context().beginFrame();
+
+				{
+					PE_PROFILE_SCOPE("Layer Update");
+					for (auto& layer : m_layerManager) {
+						layer->on_update(delta_time);
+					}
+				}
+
+				// render logic
+				//m_imguiLayer->begin_frame();
+				//for (auto& layer : m_layerManager) {
+				//	layer->on_imgui_render();
+				//}
+				//m_imguiLayer->end_frame();
+
+				m_window->get_context().endFrame();
 			}
-			m_imguiLayer->end_frame();
-
-			m_window->get_context().endFrame();
-
 		}
 
 		m_layerManager.cleanUp();
 
 		m_window->cleanUp();
+		PE_PROFILE_END_SESSION();
 	}
 
 	PE_API void Application::push_layer(Layer* layer)
