@@ -6,7 +6,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 file(GLOB_RECURSE PAPER_ENGINE_SOURCES src/*.cpp src/*.h)
-
+if (MSVC)
+    add_compile_options(/MP)
+endif()
 # target
 if (PAPER_ENGINE_BUILD_SHARED)
     add_library(PaperEngine SHARED ${PAPER_ENGINE_SOURCES})
@@ -49,8 +51,20 @@ target_link_libraries(PaperEngine PUBLIC spdlog::spdlog)
 
 # include vulkanMemoryAllocator
 target_link_libraries(PaperEngine PRIVATE VulkanMemoryAllocator)
-target_include_directories(PaperEngine PRIVATE VulkanMemoryAllocator/include)
+
+# include glm
+target_link_libraries(PaperEngine PUBLIC glm::glm)
 
 # include imgui
 target_include_directories(PaperEngine PUBLIC ${imgui_SOURCE_DIR})
 
+# include entt
+target_include_directories(PaperEngine PUBLIC ${entt_SOURCE_DIR}/src)
+
+# include nvrhi
+target_link_libraries(PaperEngine PUBLIC nvrhi)
+target_link_libraries(PaperEngine PUBLIC nvrhi_vk)
+target_include_directories(PaperEngine PUBLIC ${nvrhi_SOURCE_DIR}/include)
+
+# include vk-bootstrap
+target_link_libraries(PaperEngine PUBLIC vk-bootstrap::vk-bootstrap)
