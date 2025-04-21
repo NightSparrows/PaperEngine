@@ -7,6 +7,7 @@
 #include <PaperEngine/events/KeyEvent.h>
 #include <PaperEngine/events/MouseEvent.h>
 #include <PaperEngine/events/ApplicationEvent.h>
+#include <PaperEngine/debug/Instrumentor.h>
 
 namespace PaperEngine {
 
@@ -157,6 +158,7 @@ namespace PaperEngine {
 
 	void WindowsWindow::on_update()
 	{
+		PE_PROFILE_FUNCTION();
 		glfwPollEvents();
 	}
 
