@@ -4,6 +4,7 @@
 
 #include <PaperEngine/core/Core.h>
 #include <PaperEngine/core/Application.h>
+#include <PaperEngine/debug/Instrumentor.h>
 
 extern PaperEngine::Application* PaperEngine::CreateApplication(int argc, char** argv);
 
@@ -16,7 +17,9 @@ namespace PaperEngine {
 		PaperEngine::Core::Init();
 
 		Application* app = CreateApplication(argc, argv);
+
 		app->run();
+
 		delete app;
 
 		// clean up
