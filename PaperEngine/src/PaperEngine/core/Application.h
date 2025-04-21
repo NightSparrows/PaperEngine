@@ -5,7 +5,7 @@
 
 #include <PaperEngine/core/LayerManager.h>
 
-#include <PaperEngine/imgui/ImGuiLayer.h>
+//#include <PaperEngine/imgui/ImGuiLayer.h>
 
 namespace PaperEngine {
 
@@ -37,8 +37,7 @@ namespace PaperEngine {
 		PE_API void push_overlay(Layer* layer);
 
 		/// <summary>
-		/// Get the raw pointer of window
-		/// do not delete this
+		/// Get the window class
 		/// </summary>
 		/// <returns></returns>
 		inline PE_API Window& get_window() { return *m_window; }
@@ -61,7 +60,7 @@ namespace PaperEngine {
 
 		LayerManager m_layerManager;
 
-		ImGuiLayer* m_imguiLayer{ nullptr };
+		//ImGuiLayer* m_imguiLayer{ nullptr };
 
 	private:
 		static Application* s_instance;
