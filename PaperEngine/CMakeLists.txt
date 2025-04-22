@@ -62,9 +62,9 @@ target_include_directories(PaperEngine PUBLIC ${imgui_SOURCE_DIR})
 target_include_directories(PaperEngine PUBLIC ${entt_SOURCE_DIR}/src)
 
 # include nvrhi
-target_link_libraries(PaperEngine PUBLIC nvrhi)
-target_link_libraries(PaperEngine PUBLIC nvrhi_vk)
-target_include_directories(PaperEngine PUBLIC ${nvrhi_SOURCE_DIR}/include)
+# target_link_libraries(PaperEngine PUBLIC nvrhi)
+# target_link_libraries(PaperEngine PUBLIC nvrhi_vk)
+# target_include_directories(PaperEngine PUBLIC ${nvrhi_SOURCE_DIR}/include)
 
 # include vk-bootstrap
 target_link_libraries(PaperEngine PUBLIC vk-bootstrap::vk-bootstrap)

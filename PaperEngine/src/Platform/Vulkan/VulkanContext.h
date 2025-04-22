@@ -1,15 +1,19 @@
 ﻿#pragma once
 
+#include <queue>
+
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
 #include <PaperEngine/renderer/GraphicsContext.h>
 
-#include <Platform/Vulkan/VulkanPhysicalDeviceSelector.h>
-
 #define PE_VULKAN_API_VERSION VK_API_VERSION_1_3
 
 #include <vk_mem_alloc.h>
+
+#include <VkBootstrap.h>
+
+#include <PaperEngine/core/Logger.h>
 
 namespace PaperEngine {
 
@@ -26,46 +30,32 @@ namespace PaperEngine {
 		void beginFrame() override;
 		void endFrame() override;
 
+		uint32_t get_swapchain_image_count() override;
 
-		// use by the other vulkan object
+		uint32_t get_current_swapchain_index() override;
+
+		//TextureHandle get_swapchain_texture(uint32_t image_index) override;
 
 	public:
-
-		static VkCommandBuffer GetCurrentCmdBuffer();
 
 		static VkDevice GetDevice();
 
 		static VkInstance GetInstance();
 
-		/// <summary>
-		/// Get the chosen GPU
-		/// </summary>
-		/// <returns></returns>
-		static VkPhysicalDevice GetPhysicalDevice();
-
-		static uint32_t GetQueueFamily();
-
-		static VkQueue GetQueue();
+		static VmaAllocator GetAllocator();
 
 		static uint32_t GetImageCount();
 
 		static uint32_t GetCurrentImageIndex();
 
-		static VkSurfaceFormatKHR GetSwapchainSurfaceFormat();
+		static const vkb::PhysicalDevice& GetPhysicalDevice() { return s_instance->m_phys_device; }
 
-		static std::vector<VkImageView>& GetSwapchainImageViews();
-
-		static VkCommandBuffer BeginSingleTimeCommands();
-
-		static void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
+		static const vkb::Swapchain& GetSwapchain() { return s_instance->m_swapchain; }
 
 	private:
-		void create_swapchain();
+		bool create_swapchain();
 
-		/// <summary>
-		/// Create the command pool for primary command buffer
-		/// </summary>
-		void create_cmd_pool();
+		void present();
 
 	protected:
 
@@ -75,37 +65,34 @@ namespace PaperEngine {
 	private:
 		GLFWwindow* m_windowHandle{ nullptr };
 
-		VkInstance m_instance{ VK_NULL_HANDLE };
-#ifdef PE_DEBUG
-		VkDebugUtilsMessengerEXT m_debugMessenger{ VK_NULL_HANDLE };
-#endif
+		vkb::Instance m_instance;
+		vkb::PhysicalDevice m_phys_device;
+		vkb::Device m_device;
+		VkQueue m_present_queue{ VK_NULL_HANDLE };
+		VkQueue m_graphics_queue{ VK_NULL_HANDLE };
+		uint32_t m_graphics_queue_index = 0;
+		vkb::Swapchain m_swapchain;
+		//std::vector<TextureHandle> m_swapchain_textures;
+
 		VkSurfaceKHR m_surface{ VK_NULL_HANDLE };
 
-		VulkanPhysicalDeviceSelector m_phys_selector;
-		uint32_t m_queue_family = -1;						// the queue family going to present
+		std::vector<VkSemaphore> m_image_available_sems;
+		uint32_t m_image_ava_sem_index{ 0 };
+		std::vector<VkFence> m_frames_in_flight_fences;
+		uint32_t m_frames_in_flight_index{ 0 };
+		std::vector<VkSemaphore> m_render_finish_sems;
+		uint32_t m_render_finish_sem_index{ 0 };
 
-		VkDevice m_device{ VK_NULL_HANDLE };
-		VkSwapchainKHR m_swapchain{ VK_NULL_HANDLE };
-
-		// the swapchain images
-		std::vector<VkImage> m_images;
-		std::vector<VkImageView> m_imageViews;
-
-		// primary command buffer for each swapchain image
-		VkCommandPool m_cmdPool{ VK_NULL_HANDLE };
-		std::vector<VkCommandBuffer> m_cmdBuffers;
+		/// <summary>
+		/// The buffer need to submit in this frame
+		/// </summary>
+		std::vector<VkCommandBuffer> m_submit_buffers;
 
 		// vulkan memory allocator
 		VmaAllocator m_allocator{ VK_NULL_HANDLE };
 
-		VkQueue m_presentQueue{ VK_NULL_HANDLE };			// the queue for presentating
-		VkSemaphore m_imageAvailableSem{ VK_NULL_HANDLE };	// signaled when an image is acquired
-		VkSemaphore m_renderFinishedSem{ VK_NULL_HANDLE };	// signaled when rendering is complete
-		VkFence m_inFlightFence{ VK_NULL_HANDLE };			// CPU-GPU synchronization
-
 		uint32_t m_current_image_index{ UINT32_MAX };
 
-		VkSurfaceFormatKHR m_swapchainFormat{};
 	};
 
 }

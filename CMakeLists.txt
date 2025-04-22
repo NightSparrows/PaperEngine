@@ -63,12 +63,12 @@ FetchContent_MakeAvailable(entt)
 find_package(Vulkan REQUIRED)
 
 # Fetch NVRHI
-FetchContent_Declare(
-	nvrhi
-    GIT_REPOSITORY https://github.com/NVIDIA-RTX/NVRHI.git
-    GIT_TAG main # Replace with the latest version if needed
-)
-FetchContent_MakeAvailable(nvrhi)
+# FetchContent_Declare(
+	# nvrhi
+    # GIT_REPOSITORY https://github.com/NVIDIA-RTX/NVRHI.git
+    # GIT_TAG main # Replace with the latest version if needed
+# )
+# FetchContent_MakeAvailable(nvrhi)
 
 
 # Fetch vk-bootstrap

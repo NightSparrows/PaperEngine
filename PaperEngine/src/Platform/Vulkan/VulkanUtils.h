@@ -1,7 +1,10 @@
 ﻿#pragma once
 
 
+#include <vulkan/vulkan.h>
+
 #include <PaperEngine/core/Logger.h>
+
 template <>
 struct fmt::formatter<VkResult> : fmt::formatter<std::string> {
     auto format(VkResult result, fmt::format_context& ctx) const {
@@ -54,9 +57,7 @@ namespace PaperEngine {
 
     class VulkanUtils {
     public:
-
-
-
+        //static nvrhi::Format ConvertToNVFormat(VkFormat format);
     };
 
 }
