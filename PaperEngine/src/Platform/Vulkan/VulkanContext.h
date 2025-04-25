@@ -15,6 +15,9 @@
 
 #include <PaperEngine/core/Logger.h>
 
+#include "VulkanDescriptorSetManager.h"
+#include "VulkanCommandBufferManager.h"
+
 namespace PaperEngine {
 
 	class VulkanContext : public GraphicsContext {
@@ -30,11 +33,15 @@ namespace PaperEngine {
 		void beginFrame() override;
 		void endFrame() override;
 
+		void executeCommandBuffer(CommandBufferHandle cmd) override;
+
+		void executeCommandBuffers(uint32_t count, CommandBufferHandle* cmd) override;
+
 		uint32_t get_swapchain_image_count() override;
 
 		uint32_t get_current_swapchain_index() override;
 
-		//TextureHandle get_swapchain_texture(uint32_t image_index) override;
+		TextureHandle get_swapchain_texture(uint32_t swapchainIndex) override;
 
 	public:
 
@@ -52,6 +59,22 @@ namespace PaperEngine {
 
 		static const vkb::Swapchain& GetSwapchain() { return s_instance->m_swapchain; }
 
+		static VkCommandPool GetCommandPool() { return s_instance->m_command_pool; }
+
+		static VulkanDescriptorSetManagerHandle GetDescriptorSetManager() { return s_instance->m_setManager; }
+
+		/// <summary>
+		/// get the depth format the selected gpu supported
+		/// </summary>
+		/// <returns></returns>
+		static VkFormat GetDepthFormat() { return s_instance->m_depthFormat; }
+
+		static uint32_t GetGraphicsQueueIndex() { return s_instance->m_graphics_queue_index; }
+
+		static VkQueue GetGraphicsQueue() { return s_instance->m_graphics_queue; }
+
+		static VulkanCommandBufferManagerHandle GetCommandBufferManager() { return s_instance->m_cmdManager; }
+
 	private:
 		bool create_swapchain();
 
@@ -67,12 +90,13 @@ namespace PaperEngine {
 
 		vkb::Instance m_instance;
 		vkb::PhysicalDevice m_phys_device;
+		VkFormat m_depthFormat{ VK_FORMAT_UNDEFINED };
 		vkb::Device m_device;
 		VkQueue m_present_queue{ VK_NULL_HANDLE };
 		VkQueue m_graphics_queue{ VK_NULL_HANDLE };
 		uint32_t m_graphics_queue_index = 0;
 		vkb::Swapchain m_swapchain;
-		//std::vector<TextureHandle> m_swapchain_textures;
+		std::vector<TextureHandle> m_swapchain_textures;
 
 		VkSurfaceKHR m_surface{ VK_NULL_HANDLE };
 
@@ -82,6 +106,8 @@ namespace PaperEngine {
 		uint32_t m_frames_in_flight_index{ 0 };
 		std::vector<VkSemaphore> m_render_finish_sems;
 		uint32_t m_render_finish_sem_index{ 0 };
+
+		VkCommandPool m_command_pool{ VK_NULL_HANDLE };
 
 		/// <summary>
 		/// The buffer need to submit in this frame
@@ -93,6 +119,11 @@ namespace PaperEngine {
 
 		uint32_t m_current_image_index{ UINT32_MAX };
 
+		// TODO: staging buffer uploader
+
+		VulkanDescriptorSetManagerHandle m_setManager;
+
+		VulkanCommandBufferManagerHandle m_cmdManager;
 	};
 
 }

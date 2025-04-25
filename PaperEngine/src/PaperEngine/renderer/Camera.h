@@ -17,7 +17,7 @@ namespace PaperEngine {
 			: m_position(position), m_rotation(rotation), m_scale(scale) {
 		}
 
-		void update() {
+		void update() const {
 			if (m_isDirty) {
 				glm::mat4 transform = glm::translate(glm::mat4(1.f), m_position) *
 					glm::toMat4(m_rotation) *
@@ -38,25 +38,25 @@ namespace PaperEngine {
 		const glm::quat& get_rotation() const { return m_rotation; }
 		const glm::vec3& get_scale() const { return m_scale; }
 
-		const glm::mat4& get_view_matrix() const { return m_viewMatrix; }
-		const glm::mat4& get_projection_matrix() const { return m_projectionMatrix; }
-		const glm::mat4& get_view_projection_matrix() const { return m_viewProjectionMatrix; }
+		const glm::mat4& get_view_matrix() const { update();  return m_viewMatrix; }
+		const glm::mat4& get_projection_matrix() const { update(); return m_projectionMatrix; }
+		const glm::mat4& get_view_projection_matrix() const { update(); return m_viewProjectionMatrix; }
 
 	private:
-		bool m_isDirty{ true };
+		mutable bool m_isDirty{ true };
 
 		float m_fov{ 70.f };
 		float m_aspectRatio{ 16.f / 9.f };
 		float m_zNear{ 0.1f };
 		float m_zFar{ 1000.f };
 
-		glm::vec3 m_position;
-		glm::quat m_rotation;
+		glm::vec3 m_position{ 0, 0, 0 };
+		glm::quat m_rotation = glm::identity<glm::quat>();
 		glm::vec3 m_scale{ 1.f, 1.f, 1.f };
 
-		glm::mat4 m_viewMatrix{ 1.f };
-		glm::mat4 m_projectionMatrix{ 1.f };
-		glm::mat4 m_viewProjectionMatrix{ 1.f };
+		mutable glm::mat4 m_viewMatrix{ 1.f };
+		mutable glm::mat4 m_projectionMatrix{ 1.f };
+		mutable glm::mat4 m_viewProjectionMatrix{ 1.f };
 
 		// TODO: target image 2d (where the scene to render)
 		//Ref<RenderTarget> m_renderTarget;

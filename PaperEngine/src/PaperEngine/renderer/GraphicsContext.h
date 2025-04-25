@@ -1,6 +1,9 @@
 ﻿#pragma once
 
 #include <PaperEngine/core/Base.h>
+#include <PaperEngine/renderer/Texture.h>
+
+#include <PaperEngine/renderer/CommandBuffer.h>
 
 namespace PaperEngine {
 	class GraphicsContext
@@ -29,6 +32,12 @@ namespace PaperEngine {
 		/// </summary>
 		/// <returns></returns>
 		virtual uint32_t get_current_swapchain_index() = 0;
+
+		virtual TextureHandle get_swapchain_texture(uint32_t swapchainIndex) = 0;
+
+		virtual void executeCommandBuffer(CommandBufferHandle cmd) = 0;
+
+		virtual void executeCommandBuffers(uint32_t count, CommandBufferHandle* cmd) = 0;
 
 		/// <summary>
 		/// Get the texture object that swapchain has

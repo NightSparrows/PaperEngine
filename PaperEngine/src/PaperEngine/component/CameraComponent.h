@@ -2,21 +2,18 @@
 
 #include <PaperEngine/renderer/Camera.h>
 
-#include <PaperEngine/renderer/Texture.h>
+#include <PaperEngine/renderer/RenderTexture.h>
 
 namespace PaperEngine {
 
 	struct CameraComponent {
+		Camera camera;
 
-		CameraHandle camera;
+		bool isAcive{ true };				// whether this camera is active
 
-		bool isAcive;				// whether this camera is active
-
-		// it can be multiple primary camera in the scene
-		// but only one camera can be activated at a time
-		bool isPrimary;				// whether this is a primary camera there is only one primary camera activated in the scene
-
-		TextureHandle targetImage;
+		uint32_t cameraOrder{ 0 };		// small number render first
+		// what texture render to
+		RenderTextureHandle target;
 	};
 
 }

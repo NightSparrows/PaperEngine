@@ -18,6 +18,11 @@ else()
     target_compile_definitions(PaperEngine PUBLIC PE_BUILD_STATIC)
 endif()
 
+# enable profiling or not
+if (PAPER_ENGINE_PROFILING)
+	target_compile_definitions(PaperEngine PUBLIC PE_PROFILE)
+endif()
+
 # copying dll to project
 if (PAPER_ENGINE_BUILD_SHARED)
     add_custom_command(TARGET PaperEngine POST_BUILD

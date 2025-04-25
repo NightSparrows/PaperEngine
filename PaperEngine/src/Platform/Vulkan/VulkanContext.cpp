@@ -8,11 +8,8 @@
 
 #include <vulkan/vulkan.hpp>
 
-namespace vk {
-	namespace detail {
-		DispatchLoaderDynamic defaultDispatchLoaderDynamic;
-	}
-}
+#include "VulkanSceneRenderer.h"
+#include "VulkanMeshRenderer.h"
 
 namespace PaperEngine {
 
@@ -157,6 +154,24 @@ namespace PaperEngine {
 			m_phys_device = phys_ret.value();
 		}
 
+#pragma region Depth Buffer Format Selection
+		auto getDepthFormat = [this]() {
+			std::array<VkFormat, 3> depthFormatCandidates = { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT };
+			for (uint32_t i = 0; i < depthFormatCandidates.size(); i++) {
+				VkFormatProperties props;
+				vkGetPhysicalDeviceFormatProperties(m_phys_device.physical_device, depthFormatCandidates[i], &props);
+
+				if ((props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) == VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+					return depthFormatCandidates[i];
+				}
+			}
+			return VK_FORMAT_UNDEFINED;
+			};
+		m_depthFormat = getDepthFormat();
+		PE_CORE_ASSERT(m_depthFormat != VK_FORMAT_UNDEFINED, "No proper depth format");
+#pragma endregion
+
+
 		{
 			vkb::DeviceBuilder builder{ m_phys_device };
 			auto dev_ret = builder.build();
@@ -198,6 +213,7 @@ namespace PaperEngine {
 
 		}
 
+#pragma region Initialize VMA
 		// initialize vma
 		VmaAllocatorCreateInfo vmaInfo = {
 			.physicalDevice = m_phys_device,
@@ -207,7 +223,24 @@ namespace PaperEngine {
 		};
 
 		CHECK_VK_RESULT(vmaCreateAllocator(&vmaInfo, &m_allocator));
+#pragma endregion
 
+#pragma region Create command pool
+		VkCommandPoolCreateInfo pool_info = {
+			.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+			.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+			.queueFamilyIndex = m_graphics_queue_index,
+		};
+		CHECK_VK_RESULT(vkCreateCommandPool(m_device, &pool_info, nullptr, &m_command_pool));
+#pragma endregion
+
+		m_setManager = CreateRef<VulkanDescriptorSetManager>();
+
+		m_cmdManager = CreateRef<VulkanCommandBufferManager>();
+
+		// initialize scene renderer static
+		VulkanSceneRenderer::Init();
+		VulkanMeshRenderer::Init();
 	}
 
 	void VulkanContext::cleanUp()
@@ -216,6 +249,15 @@ namespace PaperEngine {
 			return;
 
 		vkDeviceWaitIdle(m_device);
+
+		VulkanMeshRenderer::CleanUp();
+		VulkanSceneRenderer::CleanUp();
+
+		m_cmdManager.reset();
+		m_setManager.reset();
+
+		vkDestroyCommandPool(m_device, m_command_pool, nullptr);
+		m_command_pool = VK_NULL_HANDLE;
 
 		vmaDestroyAllocator(m_allocator);
 		m_allocator = VK_NULL_HANDLE;
@@ -230,6 +272,7 @@ namespace PaperEngine {
 		m_frames_in_flight_fences.clear();
 
 		//m_swapchain_textures.clear();
+		m_swapchain_textures.clear();
 		vkb::destroy_swapchain(m_swapchain);
 		m_swapchain = {};
 
@@ -244,7 +287,7 @@ namespace PaperEngine {
 
 	void VulkanContext::beginFrame()
 	{
-		CHECK_VK_RESULT(vkWaitForFences(m_device, 1, &m_frames_in_flight_fences[m_frames_in_flight_index], VK_TRUE, UINT64_MAX));
+		// TODO: reset this frame command pool
 		CHECK_VK_RESULT(vkResetFences(m_device, 1, &m_frames_in_flight_fences[m_frames_in_flight_index]));
 
 		CHECK_VK_RESULT(vkAcquireNextImageKHR(m_device, m_swapchain, UINT64_MAX, m_image_available_sems[m_image_ava_sem_index], VK_NULL_HANDLE, &m_current_image_index));
@@ -286,6 +329,17 @@ namespace PaperEngine {
 		CHECK_VK_RESULT(vkQueuePresentKHR(m_present_queue, &present_info));
 		m_render_finish_sem_index = (m_render_finish_sem_index + 1) % (uint32_t)m_render_finish_sems.size();
 
+		CHECK_VK_RESULT(vkWaitForFences(m_device, 1, &m_frames_in_flight_fences[m_frames_in_flight_index], VK_TRUE, UINT64_MAX));
+	}
+
+	void VulkanContext::executeCommandBuffer(CommandBufferHandle cmd)
+	{
+		this->m_cmdManager->executeCommandBuffer(cmd);
+	}
+
+	void VulkanContext::executeCommandBuffers(uint32_t count, CommandBufferHandle* cmds)
+	{
+		this->m_cmdManager->executeCommandBuffers(count, cmds);
 	}
 
 	uint32_t VulkanContext::get_swapchain_image_count()
@@ -297,6 +351,12 @@ namespace PaperEngine {
 	uint32_t VulkanContext::get_current_swapchain_index()
 	{
 		return m_current_image_index;
+	}
+
+	TextureHandle VulkanContext::get_swapchain_texture(uint32_t swapchainIndex)
+	{
+		PE_CORE_ASSERT(swapchainIndex < m_swapchain_textures.size(), "Invalid swapchain index");
+		return m_swapchain_textures[swapchainIndex];
 	}
 
 	static VkSurfaceFormatKHR ChooseSurfaceFormatAndColorSpace(const std::vector<VkSurfaceFormatKHR>& surfaceFormats) {
@@ -359,10 +419,11 @@ namespace PaperEngine {
 
 	bool VulkanContext::create_swapchain()
 	{
+		m_swapchain_textures.clear();
 		vkb::SwapchainBuilder builder(m_device);
 
 		VkSurfaceFormatKHR swapchain_format = {
-			m_swapchain.image_format,
+			VK_FORMAT_R8G8B8A8_SRGB,
 			VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
 		};
 
@@ -382,6 +443,16 @@ namespace PaperEngine {
 
 		{
 			// TODO: create my own swapchain textures
+			m_swapchain_textures.resize(images.size());
+			TextureSpecification swapchainTextureSpec;
+			swapchainTextureSpec.width = m_swapchain.extent.width;
+			swapchainTextureSpec.height = m_swapchain.extent.height;
+			swapchainTextureSpec.format = TextureFormat::Present;
+			swapchainTextureSpec.isRenderTarget = true;
+			swapchainTextureSpec.type = Texture2D;
+			for (uint32_t i = 0; i < images.size(); i++) {
+				m_swapchain_textures[i] = CreateRef<VulkanTexture>(images[i], swapchainTextureSpec);
+			}
 		}
 
 		return true;

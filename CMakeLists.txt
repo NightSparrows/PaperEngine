@@ -9,6 +9,7 @@ include(FetchContent)
 
 # options
 option(PAPER_ENGINE_BUILD_SHARED "Paper engine build shared" ON)
+option(PAPER_ENGINE_PROFILING "Paper Engine profiling" ON)
 
 # get glfw
 FetchContent_Declare(

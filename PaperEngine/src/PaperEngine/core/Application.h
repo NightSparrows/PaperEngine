@@ -13,8 +13,8 @@ namespace PaperEngine {
 	{
 		std::string name = "Application";
 		std::string workingDirectory;
-		uint32_t width = 1600;
-		uint32_t height = 900;
+		uint32_t width = 2560;
+		uint32_t height = 1440;
 	};
 
 	class Application {
@@ -63,7 +63,7 @@ namespace PaperEngine {
 		//ImGuiLayer* m_imguiLayer{ nullptr };
 
 	private:
-		static Application* s_instance;
+		PE_API static Application* s_instance;
 	};
 
 	// To be defined in CLIENT

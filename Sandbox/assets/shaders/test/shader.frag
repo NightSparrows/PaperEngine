@@ -1,7 +1,8 @@
-//glsl version 4.5
-#version 450
+//glsl version 4.6
+#version 460
 
-layout (set = 1, binding = 0) uniform sampler2D textureSampler;
+// material set is 0
+layout (set = 1, binding = 1) uniform sampler2D textureSampler;
 
 layout (location = 0) in vec2 vs_texCoord;
 
