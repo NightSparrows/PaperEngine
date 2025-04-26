@@ -13,6 +13,10 @@ namespace PaperEngine {
 		{
 		}
 
+		float to_seconds() {
+			return m_time.count() * 1e-9f;
+		}
+
 	private:
 		std::chrono::nanoseconds m_time;
 	};
