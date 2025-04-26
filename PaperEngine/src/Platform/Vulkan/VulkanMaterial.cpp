@@ -24,12 +24,13 @@ namespace PaperEngine {
 						.isUniformBuffer = true
 					};
 					frameInfo.bindings[binding].buffer = CreateRef<VulkanBuffer>(uniformBufferSpec);
-					m_buffers[binding].resize(materialBindingInfo.size);
+					auto& bufferDataBuffer = m_buffers[binding];
+					bufferDataBuffer.resize(materialBindingInfo.size);
 				}
 			}
 		}
 
-		// create sampler
+		// create sampler TODO: move it to texture object
 		VkSamplerCreateInfo samplerCreateInfo = {
 			.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
 			.pNext = nullptr,
@@ -70,7 +71,12 @@ namespace PaperEngine {
 		markDirty();
 	}
 
-	Ref<VulkanDescriptorSet> VulkanMaterial::getCurrentDescriptorSet()
+	GraphicsPipelineHandle VulkanMaterial::get_graphics_pipeline() const
+	{
+		return m_graphicsPipeline;
+	}
+
+	DescriptorSetHandle VulkanMaterial::getCurrentDescriptorSet()
 	{
 		auto& frameInfo = m_materialDataFrame[VulkanContext::GetCurrentImageIndex()];
 

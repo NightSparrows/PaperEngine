@@ -18,6 +18,15 @@ namespace PaperEngine {
 		bool isPrimary = true;
 	};
 
+	struct Viewport {
+		float x;
+		float y;
+		float width;
+		float    height;
+		float    minDepth;
+		float    maxDepth;
+	};
+
 	class CommandBuffer {
 	public:
 		virtual ~CommandBuffer() = default;
@@ -29,6 +38,10 @@ namespace PaperEngine {
 		/// </summary>
 		virtual void open() = 0;
 		virtual void close() = 0;
+
+		virtual void setViewports(uint32_t viewportCount, const Viewport* viewports, uint32_t firstViewport = 0) = 0;
+
+		virtual void setViewport(const Viewport& viewport, uint32_t viewportIndex = 0) = 0;
 
 		/// <summary>
 		/// Don't care about buffer staging

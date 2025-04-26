@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <unordered_map>
+
 #include "VulkanDescriptorSetLayout.h"
 #include <PaperEngine/renderer/DescriptorSet.h>
 
@@ -20,6 +22,11 @@ namespace PaperEngine {
 		VulkanDescriptorSetLayoutHandle m_layout;
 		VkDescriptorPool m_pool;
 		VkDescriptorSet m_set;
+
+		std::unordered_map<uint32_t, std::vector<BufferHandle>> m_buffers;
+		std::unordered_map<uint32_t, std::vector<TextureHandle>> m_textures;
+
+
 	};
 
 }

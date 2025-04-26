@@ -4,6 +4,7 @@
 
 #include "Texture.h"
 #include "GraphicsPipeline.h"
+#include "DescriptorSet.h"
 
 namespace PaperEngine {
 
@@ -30,6 +31,12 @@ namespace PaperEngine {
 		/// </param>
 		/// <param name="texture"></param>
 		virtual void updateTexture(uint32_t binding, TextureHandle texture) = 0;
+
+		virtual GraphicsPipelineHandle get_graphics_pipeline() const = 0;
+
+		virtual DescriptorSetHandle getCurrentDescriptorSet() = 0;
+
+		PE_API static Ref<Material> Create(const MaterialSpec& spec);
 
 	protected:
 		Material() = default;

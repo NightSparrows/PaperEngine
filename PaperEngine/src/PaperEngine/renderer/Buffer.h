@@ -47,6 +47,8 @@ namespace PaperEngine {
 	public:
 		virtual ~Buffer() = default;
 
+		virtual size_t get_size() const = 0;
+
 		static Ref<Buffer> Create(const BufferSpecification& spec);
 
 	protected:

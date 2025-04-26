@@ -4,6 +4,8 @@
 
 #include <glm/glm.hpp>
 
+#include <PaperEngine/renderer/Mesh.h>
+
 namespace PaperEngine {
 
 	/// <summary>
@@ -11,14 +13,15 @@ namespace PaperEngine {
 	/// </summary>
 	class MeshData {
 	public:
-		typedef enum MeshType {
-			Static,
-			Animated
-		}MeshType;
 
 		struct SubMeshData {
 			uint32_t offset;			// offset of index
 			uint32_t count;				// index count
+
+			SubMeshData(uint32_t off, uint32_t cou) {
+				offset = off;
+				count = cou;
+			}
 		};
 
 		struct BasicVertexData {
@@ -33,12 +36,13 @@ namespace PaperEngine {
 			glm::vec4 weights;
 		};
 		
-		MeshType type{ Static };
+		MeshType type{ MeshType::Static };
 		std::vector<BasicVertexData> basicVertexData;
 		std::vector<BoneVertexData> boneVertexData;
 
-		std::vector<uint32_t> indexData;
 		std::vector<SubMeshData> subMeshData;
+
+		std::vector<uint32_t> indexData;
 		
 	};
 

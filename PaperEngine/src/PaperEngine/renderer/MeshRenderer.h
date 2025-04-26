@@ -1,15 +1,15 @@
 ﻿#pragma once
 
 #include "Renderer.h"
+#include "Material.h"
+#include "Mesh.h"
 
 namespace PaperEngine {
 
 	class MeshRenderer : public Renderer {
 	public:
 
-		void prepareScene(const Scene& scene) override;
-
-		void render() override;
+		PE_API static Ref<MeshRenderer> Create();
 
 	};
 

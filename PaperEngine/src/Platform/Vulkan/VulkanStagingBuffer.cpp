@@ -64,6 +64,11 @@ namespace PaperEngine {
 				.size = insertSize
 			};
 
+			void* stageBufPtr = nullptr;
+			CHECK_VK_RESULT(vmaMapMemory(VulkanContext::GetAllocator(), chunk.allocation, &stageBufPtr));
+			memcpy_s(stageBufPtr, insertSize, (const char*)data + offset, size);
+			vmaUnmapMemory(VulkanContext::GetAllocator(), chunk.allocation);
+
 			vkCmdCopyBuffer(cmd, chunk.buffer, dstBuffer, 1, &copy);
 
 			size -= insertSize;

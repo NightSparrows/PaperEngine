@@ -1,5 +1,5 @@
 
-#version 450
+#version 460
 
 layout (set = 0, binding = 0) uniform globalBuffer {
 	mat4 projectionMatrix;
@@ -7,17 +7,17 @@ layout (set = 0, binding = 0) uniform globalBuffer {
 } globalData;
 
 layout (set = 2, binding = 0) uniform instanceInfo {
-	int meshType;
 	mat4 transformationMatrix;
+	int meshType;
 }in_instanceInfo;
 
 struct BasicVertexData {
-	vec3 position;
-	vec3 normal;
-	vec2 uv;
+	float x, y, z;
+	float nx, ny, nz;
+	float u, v;
 };
 
-layout (set = 2, binding = 1) readonly buffer basicVertexBuffer {
+layout (std430, set = 2, binding = 1) readonly buffer basicVertexBuffer {
 	BasicVertexData vertexData[];
 }in_basicVertexBuffer;
 
@@ -26,7 +26,7 @@ struct BoneVertexData {
 	vec4 weights;
 };
 
-layout (set = 2, binding = 2) readonly buffer boneVertexBuffer {
+layout (std430, set = 2, binding = 2) readonly buffer boneVertexBuffer {
 	BoneVertexData vertexBoneData[];
 }in_boneVertexBuffer;
 
@@ -34,7 +34,7 @@ struct BoneTransformData {
 	mat4 transform;
 };
 
-layout (set = 2, binding = 3) readonly buffer boneTransformBuffer {
+layout (std430, set = 2, binding = 3) readonly buffer boneTransformBuffer {
 	BoneTransformData boneTransform[];
 }in_boneTransformBuffer;
 
@@ -43,9 +43,11 @@ layout (location = 0) out vec2 vs_texCoord;
 
 void main() {
 	
-	vec3 in_position = in_basicVertexBuffer.vertexData[gl_VertexIndex].position;
-	vec3 in_normal = in_basicVertexBuffer.vertexData[gl_VertexIndex].normal;
-	vec2 in_texCoord = in_basicVertexBuffer.vertexData[gl_VertexIndex].uv;
+	BasicVertexData vtx = in_basicVertexBuffer.vertexData[gl_VertexIndex];
+
+	vec3 in_position = vec3(vtx.x, vtx.y, vtx.z);
+	vec3 in_normal = vec3(vtx.nx, vtx.ny, vtx.nz);
+	vec2 in_texCoord = vec2(vtx.u, vtx.v);
 
 	gl_Position = 
 		globalData.projectionMatrix * 

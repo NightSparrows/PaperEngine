@@ -32,16 +32,22 @@ namespace PaperEngine {
 			.pBufferInfo = &bufferInfo
 		};
 		vkUpdateDescriptorSets(VulkanContext::GetDevice(), 1, &write, 0, nullptr);
+		m_buffers[binding] = { buffer };
 	}
 
 	void VulkanDescriptorSet::bindTextures(uint32_t binding, uint32_t textureCount, TextureHandle* textures)
 	{
 		std::vector<VkDescriptorImageInfo> imageInfos(textureCount);
+
+		auto& textureList = m_textures[binding];
+		textureList.reserve(textureCount);
 		for (uint32_t i = 0; i < textureCount; i++) {
 			auto& imageInfo = imageInfos[i];
 			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 			imageInfo.imageView = std::static_pointer_cast<VulkanTexture>(textures[i])->get_image_view();
 			imageInfo.sampler = VK_NULL_HANDLE; // TODO: texture handle need a sampler handle
+
+			textureList.push_back(textures[i]);
 		}
 		VkWriteDescriptorSet write = {
 			.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
@@ -53,7 +59,6 @@ namespace PaperEngine {
 		};
 		vkUpdateDescriptorSets(VulkanContext::GetDevice(), 1, &write, 0, nullptr);
 
-		// TODO:
 	}
 
 }

@@ -14,7 +14,7 @@ namespace PaperEngine {
 
 		VkBuffer get_handle() const { return m_buffer; }
 
-		VkDeviceSize get_size() const { return m_size; }
+		size_t get_size() const override { return m_size; }
 
 	protected:
 		VkBuffer m_buffer;

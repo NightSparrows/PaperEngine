@@ -40,6 +40,25 @@ namespace PaperEngine {
 		vkEndCommandBuffer(m_handle);
 	}
 
+	void VulkanCommandBuffer::setViewports(uint32_t viewportCount, const Viewport* viewports, uint32_t firstViewport)
+	{
+		std::vector<VkViewport> vkViewports(viewportCount);
+		for (uint32_t i = 0; i < viewportCount; i++) {
+			vkViewports[i].x = viewports[i].x;
+			vkViewports[i].y = viewports[i].y;
+			vkViewports[i].width = viewports[i].width;
+			vkViewports[i].height = viewports[i].height;
+			vkViewports[i].maxDepth = viewports[i].maxDepth;
+			vkViewports[i].minDepth = viewports[i].minDepth;
+		}
+		vkCmdSetViewport(m_handle, firstViewport, viewportCount, vkViewports.data());
+	}
+
+	void VulkanCommandBuffer::setViewport(const Viewport& viewport, uint32_t viewportIndex)
+	{
+		setViewports(1, &viewport, viewportIndex);
+	}
+
 	void VulkanCommandBuffer::setTextureState(TextureHandle texture, TextureState state)
 	{
 		Ref<VulkanTexture> vkTexture = std::static_pointer_cast<VulkanTexture>(texture);
@@ -122,7 +141,7 @@ namespace PaperEngine {
 
 	void VulkanCommandBuffer::bindDescriptorSet(uint32_t setSlot, DescriptorSetHandle set, BindPoint bindPoint)
 	{
-		this->bindDescriptorSets(0, 1, &set, bindPoint);
+		this->bindDescriptorSets(setSlot, 1, &set, bindPoint);
 	}
 
 	void VulkanCommandBuffer::bindDescriptorSets(uint32_t firstSet, uint32_t setCount, DescriptorSetHandle* sets, BindPoint bindPoint)

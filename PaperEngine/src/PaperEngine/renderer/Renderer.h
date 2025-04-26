@@ -4,6 +4,7 @@
 #include <PaperEngine/scene/Scene.h>
 
 #include <PaperEngine/renderer/CommandBuffer.h>
+#include <PaperEngine/renderer/DescriptorSet.h>
 
 namespace PaperEngine {
 
@@ -12,7 +13,7 @@ namespace PaperEngine {
 
 		virtual void prepareScene(const Scene& scene) = 0;
 
-		virtual void render(CommandBufferHandle cmd) = 0;
+		virtual void render(CommandBufferHandle cmd, DescriptorSetHandle globalSet) = 0;
 
 	};
 

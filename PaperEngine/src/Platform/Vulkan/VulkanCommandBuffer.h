@@ -22,6 +22,10 @@ namespace PaperEngine {
 		void open() override;
 		void close() override;
 
+		void setViewports(uint32_t viewportCount, const Viewport* viewports, uint32_t firstViewport) override;
+
+		void setViewport(const Viewport& viewport, uint32_t viewportIndex = 0) override;
+
 		void setTextureState(TextureHandle texture, TextureState state) override;
 
 		void writeBuffer(BufferHandle buffer, const void* data, size_t size, size_t offset = 0) override;

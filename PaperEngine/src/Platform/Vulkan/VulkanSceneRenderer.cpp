@@ -92,14 +92,13 @@ namespace PaperEngine {
 					.height = height,
 					.renderPass = s_lightningPass
 				};
-				lightingFramebufferSpec.attachments = {
-					frameInfo.colorAttachment,
-					frameInfo.depthAttachment
-				};
-				lightingFramebufferSpec.clearValues = {
-					VkClearValue{.color = {1.f, 0.f, 0.f, 1.f}},
-					VkClearValue{.depthStencil = 1.f}
-				};
+
+				auto& colorAttachment = lightingFramebufferSpec.attachments.emplace_back();
+				colorAttachment.texture = frameInfo.colorAttachment;
+				colorAttachment.clearColor = { 1.f, 0.f, 0.f, 1.f };
+				auto& depthAttachment = lightingFramebufferSpec.attachments.emplace_back();
+				depthAttachment.texture = frameInfo.depthAttachment;
+				depthAttachment.clearDepth = 1.f;
 
 				frameInfo.lightingFramebuffer = CreateRef<VulkanFramebuffer>(lightingFramebufferSpec);
 
@@ -156,13 +155,17 @@ namespace PaperEngine {
 		VulkanContext::GetCommandBufferManager()->executeCommandBuffer(cmd);
 
 		cmd->open();
+
+		// TODO: pre depth rendering
+		// TODO: shadowmap rendering
+
 		cmd->beginFramebuffer(currentFrameInfo.lightingFramebuffer);
 
 		// you must bind the global set after graphics pipeline is bind
 		//cmd->bindDescriptorSet(0, currentFrameInfo.globalSet);
 
 		for (auto renderer : m_renderers) {
-			renderer->render(cmd);
+			renderer->render(cmd, currentFrameInfo.globalSet);
 		}
 
 		cmd->endFramebuffer();

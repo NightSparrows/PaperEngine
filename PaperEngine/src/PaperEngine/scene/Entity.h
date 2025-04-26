@@ -8,8 +8,10 @@ namespace PaperEngine {
 
 	class Entity {
 	public:
-
+		Entity() = default;
 		Entity(entt::entity handle, Scene* scene);
+		Entity(const Entity&) = default;
+		Entity& operator=(const Entity& other) = default;
 
 		template<typename T, typename... Args>
 		T& add_component(Args&&... args) {

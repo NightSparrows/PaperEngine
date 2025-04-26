@@ -30,7 +30,9 @@ namespace PaperEngine {
 
 		void updateTexture(uint32_t binding, TextureHandle texture) override;
 
-		Ref<VulkanDescriptorSet> getCurrentDescriptorSet();
+		GraphicsPipelineHandle get_graphics_pipeline() const override;
+
+		DescriptorSetHandle getCurrentDescriptorSet() override;
 
 	protected:
 		void markDirty();

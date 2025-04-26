@@ -10,7 +10,7 @@ namespace PaperEngine {
 	struct FramebufferAttachment {
 
 		typedef enum AttachmentType {
-			Color,					// color attachment
+			Color,					// color attachment (RGBA8)
 			DepthStencil,			// depth attachment
 			Present					// present after this framebuffer
 		};

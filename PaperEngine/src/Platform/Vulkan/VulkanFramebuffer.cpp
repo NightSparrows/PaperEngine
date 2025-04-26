@@ -6,17 +6,27 @@
 namespace PaperEngine {
 
 	VulkanFramebuffer::VulkanFramebuffer(const FramebufferSpec& spec) :
-		m_renderPass(spec.renderPass), m_width (spec.width), m_height(spec.height)
+		m_renderPass(spec.renderPass), m_width(spec.width), m_height(spec.height)
 	{
 		std::vector<VkImageView> attachments(spec.attachments.size());
 		m_attachments.reserve(spec.attachments.size());
 		for (uint32_t i = 0; i < spec.attachments.size(); i++) {
+			const auto& attData = spec.attachments[i];
+
 			auto& attInfo = m_attachments.emplace_back();
 
-			auto vkTexture = std::static_pointer_cast<VulkanTexture>(spec.attachments[i]);
+			auto vkTexture = std::static_pointer_cast<VulkanTexture>(attData.texture);
 			attachments[i] = vkTexture->get_image_view();
-			
-			attInfo.clearValue = spec.clearValues[i];
+
+			if (vkTexture->get_format() == VulkanContext::GetDepthFormat()) {
+				attInfo.clearValue.depthStencil = { .depth = attData.clearDepth, .stencil = attData.clearStencil };
+			}
+			else {
+				attInfo.clearValue.color.float32[0] = attData.clearColor.r;
+				attInfo.clearValue.color.float32[1] = attData.clearColor.g;
+				attInfo.clearValue.color.float32[2] = attData.clearColor.b;
+				attInfo.clearValue.color.float32[3] = attData.clearColor.a;
+			}
 			attInfo.texture = vkTexture;
 		}
 		VkFramebufferCreateInfo createInfo = {

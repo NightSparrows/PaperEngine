@@ -1,8 +1,10 @@
 ﻿#include "VulkanMesh.h"
 
+#include <PaperEngine/renderer/MeshData.h>
 
 #include "VulkanContext.h"
 #include "VulkanCommandBuffer.h"
+
 
 namespace PaperEngine {
 
@@ -19,7 +21,7 @@ namespace PaperEngine {
 		bufferSpec.setSize(static_cast<uint32_t>(meshData.basicVertexData.size()) * sizeof(MeshData::BasicVertexData));
 		m_basicVertexBuffer = CreateRef<VulkanBuffer>(bufferSpec);
 
-		if (m_type == MeshData::Animated) {
+		if (m_type == MeshType::Animated) {
 			bufferSpec.setSize(static_cast<uint32_t>(meshData.boneVertexData.size()) * sizeof(MeshData::BoneVertexData));
 			m_boneVertexBuffer = CreateRef<VulkanBuffer>(bufferSpec);
 		}
@@ -32,11 +34,19 @@ namespace PaperEngine {
 		VulkanCommandBufferHandle cmd = CreateRef<VulkanCommandBuffer>();
 		cmd->open();
 		cmd->writeBuffer(m_basicVertexBuffer, meshData.basicVertexData.data(), m_basicVertexBuffer->get_size());
-		if (m_type == MeshData::Animated) {
+		if (m_type == MeshType::Animated) {
 			cmd->writeBuffer(m_boneVertexBuffer, meshData.boneVertexData.data(), m_boneVertexBuffer->get_size());
 		}
 		cmd->writeBuffer(m_indexBuffer, meshData.indexData.data(), m_indexBuffer->get_size());
 		cmd->close();
 		VulkanContext::GetCommandBufferManager()->executeCommandBuffer(std::static_pointer_cast<CommandBuffer>(cmd));
+
+		for (const auto& subMesh : meshData.subMeshData) {
+			m_subMeshes.emplace_back(subMesh.offset, subMesh.count);
+		}
+	}
+	MeshType VulkanMesh::get_type() const
+	{
+		return m_type;
 	}
 }

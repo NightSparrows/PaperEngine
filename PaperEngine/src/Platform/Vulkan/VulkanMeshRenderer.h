@@ -2,12 +2,22 @@
 
 
 #include "VulkanDescriptorSetLayout.h"
-
+#include <PaperEngine/renderer/MeshRenderer.h>
+#include <PaperEngine/renderer/Material.h>
+#include <PaperEngine/renderer/Mesh.h>
 
 namespace PaperEngine {
 
-	class VulkanMeshRenderer {
+	class VulkanMeshRenderer : public MeshRenderer {
 	public:
+		struct InstanceInfoUniformStruct {
+			glm::mat4 transform;
+			uint32_t meshType;
+		};
+
+		void prepareScene(const Scene& scene) override;
+
+		void render(CommandBufferHandle cmd, DescriptorSetHandle globalSet) override;
 
 
 
@@ -18,6 +28,17 @@ namespace PaperEngine {
 
 		static VulkanDescriptorSetLayoutHandle GetMeshInstanceDescriptorSetLayout();
 
+	protected:
+
+		struct RenderCommand {
+			GraphicsPipelineHandle graphicsPipeline;
+			MaterialHandle material;
+			DescriptorSetHandle instanceSet;
+			MeshHandle mesh;
+			uint32_t submeshIndex;
+		};
+
+		std::vector<RenderCommand> m_renderCommands;
 	};
 
 }

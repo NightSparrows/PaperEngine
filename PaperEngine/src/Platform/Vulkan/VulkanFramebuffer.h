@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <glm/glm.hpp>
+
 #include <vulkan/vulkan.h>
 
 #include <PaperEngine/core/Base.h>
@@ -7,17 +9,23 @@
 
 namespace PaperEngine {
 
+	struct FramebufferAttachment {
+		TextureHandle texture;
+		glm::vec4 clearColor{};				// if clearing 
+		float clearDepth{ 0 };
+		uint32_t clearStencil{ 0 };
+	};
+
 	struct FramebufferSpec {
 		uint32_t width, height;
-		std::vector<TextureHandle> attachments;
+		std::vector<FramebufferAttachment> attachments;
 		VkRenderPass renderPass;
-		std::vector<VkClearValue> clearValues;		// if the render pass determine that is clear in initial state, otherwise ignore it
 	};
 
 	class VulkanFramebuffer {
 	public:
 		struct AttachmentInfo {
-			VkClearValue clearValue;
+			VkClearValue clearValue{};
 			VulkanTextureHandle texture;
 		};
 

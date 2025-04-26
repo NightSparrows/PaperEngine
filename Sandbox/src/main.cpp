@@ -11,6 +11,9 @@
 #include <PaperEngine/renderer/CommandBuffer.h>
 #include <PaperEngine/renderer/SceneRenderer.h>
 #include <PaperEngine/component/CameraComponent.h>
+#include <PaperEngine/renderer/MeshRenderer.h>
+#include <PaperEngine/events/KeyEvent.h>
+#include <PaperEngine/component/MeshComponent.h>
 
 class TestLayer : public PaperEngine::Layer {
 public:
@@ -18,10 +21,11 @@ public:
 
 	void on_attach() override {
 		sceneRenderer = PaperEngine::SceneRenderer::Create({.width = 2560, .height = 1440});
+		sceneRenderer->addRenderer(PaperEngine::MeshRenderer::Create());
 
 		scene = PaperEngine::CreateRef<PaperEngine::Scene>();
 
-		auto camEntity = scene->create_entity();
+		camEntity = scene->create_entity();
 		auto& cameraCom = camEntity.add_component<PaperEngine::CameraComponent>();
 		cameraCom.target = PaperEngine::RenderTexture::CreateSwapchain();
 
@@ -34,8 +38,9 @@ public:
 		PaperEngine::GraphicsPipelineSpecification graphicsPipelineSpec;
 		graphicsPipelineSpec.setVertexShader(testVertexShader);
 		graphicsPipelineSpec.setFragmentShader(testFragmentShader);
+		graphicsPipelineSpec.setCullMode(PaperEngine::GraphicsPipelineSpecification::CullMode::None);
 		graphicsPipelineSpec.setCacheFilePath("../../Sandbox/assets/shaders/test/cache.bin");
-		graphicsPipelineSpec.addMaterialUniformBuffer(
+		/*graphicsPipelineSpec.addMaterialUniformBuffer(
 			0,
 			PaperEngine::ShaderStage::Fragment,
 			20
@@ -43,22 +48,27 @@ public:
 		graphicsPipelineSpec.addMaterialTexture(
 			1,
 			PaperEngine::ShaderStage::Fragment
-		);
+		);*/
 
 		auto graphicsPipeline = PaperEngine::GraphicsPipeline::Create(graphicsPipelineSpec);
 
 		PaperEngine::MeshData meshData;
-		meshData.type = PaperEngine::MeshData::Static;
-		meshData.basicVertexData.emplace_back(PaperEngine::MeshData::BasicVertexData{ {-0.5f, -0.5f, 0}, {0, 0, 0 }, {0, 0} });
-		meshData.basicVertexData.emplace_back(PaperEngine::MeshData::BasicVertexData{ {-0.5f, 0.5f, 0}, {0, 0, 0 }, {0, 1.0f} });
-		meshData.basicVertexData.emplace_back(PaperEngine::MeshData::BasicVertexData{ {0.5f, 0.5f, 0}, {0, 0, 0 }, {1.0f, 1.0f} });
+		meshData.type = PaperEngine::MeshType::Static;
+		meshData.basicVertexData.emplace_back(PaperEngine::MeshData::BasicVertexData{ {-50.f, -50.f, 0}, {0, 0, 0 }, {0, 0} });
+		meshData.basicVertexData.emplace_back(PaperEngine::MeshData::BasicVertexData{ {-50.f, 50.f, 0}, {0, 0, 0 }, {0, 1.0f} });
+		meshData.basicVertexData.emplace_back(PaperEngine::MeshData::BasicVertexData{ {50.f, 50.f, 0}, {0, 0, 0 }, {1.0f, 1.0f} });
 		meshData.indexData.emplace_back(0);
 		meshData.indexData.emplace_back(1);
 		meshData.indexData.emplace_back(2);
+		meshData.subMeshData.emplace_back(0, 3);
 
 		PaperEngine::MeshHandle mesh = PaperEngine::Mesh::Create();
 		mesh->load_mesh_data(meshData);
-
+		
+		auto meshEntity = scene->create_entity();
+		auto& meshCom = meshEntity.add_component<PaperEngine::MeshComponent>();
+		meshCom.mesh = mesh;
+		meshCom.materials.push_back(PaperEngine::Material::Create(PaperEngine::MaterialSpec{ .graphicsPipeline = graphicsPipeline }));
 	}
 
 	void on_detach() override {
@@ -82,6 +92,26 @@ public:
 	}
 
 	void on_event(PaperEngine::Event& e) {
+		PaperEngine::EventDispatcher dispatcher(e);
+		dispatcher.dispatch<PaperEngine::KeyPressedEvent>([this](PaperEngine::KeyPressedEvent& e) {
+			auto& camCom = camEntity.get_component<PaperEngine::CameraComponent>();
+			glm::vec3 moveVector(0);
+			if (e.get_key_code() == PaperEngine::Key::W) {
+				moveVector.z -= 1.f;
+			}
+			if (e.get_key_code() == PaperEngine::Key::S) {
+				moveVector.z += 1.f;
+			}
+			if (e.get_key_code() == PaperEngine::Key::A) {
+				moveVector.x -= 1.f;
+			}
+			if (e.get_key_code() == PaperEngine::Key::D) {
+				moveVector.x += 1.f;
+			}
+			camCom.camera.set_position(camCom.camera.get_position() + moveVector);
+			std::cout << "Position: " << camCom.camera.get_position().x << ", " << camCom.camera.get_position().y << ", " << camCom.camera.get_position().z << "\n";
+			return false;
+			});
 	}
 
 	void on_imgui_render() override {
@@ -93,6 +123,7 @@ private:
 	
 	PaperEngine::Ref<PaperEngine::Scene> scene;
 	PaperEngine::Ref<PaperEngine::SceneRenderer> sceneRenderer;
+	PaperEngine::Entity camEntity;
 
 };
 

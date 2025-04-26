@@ -82,6 +82,12 @@ namespace PaperEngine {
 		}CullMode;
 
 		CullMode cullMode{ CullMode::Back };
+
+		GraphicsPipelineSpecification& setCullMode(CullMode mode) {
+			cullMode = mode;
+			return *this;
+		}
+
 		// depth testing, depth writing
 		bool depthTest{ true };
 		bool depthWrite{ true };
