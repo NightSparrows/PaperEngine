@@ -30,27 +30,14 @@ namespace PaperEngine {
 			if (chunk.isInUse)
 				continue;
 
-			chunk.isInUse = true;
 			//PE_CORE_TRACE("staging chunk use. {}", (void*)chunk.buffer);
 
 			VkDeviceSize insertSize = size > m_chunkSize ? m_chunkSize : size;
 
-			VkBufferCopy copy = {
-				.srcOffset = 0,
-				.dstOffset = offset,
-				.size = insertSize
-			};
-
-			void* stageBufPtr = nullptr;
-			CHECK_VK_RESULT(vmaMapMemory(VulkanContext::GetAllocator(), chunk.allocation, &stageBufPtr));
-			memcpy_s(stageBufPtr, insertSize, (const char*)data + offset, size);
-			vmaUnmapMemory(VulkanContext::GetAllocator(), chunk.allocation);
-
-			vkCmdCopyBuffer(cmd, chunk.buffer, dstBuffer, 1, &copy);
+			doCopyBuffer(cmd, i, data, dstBuffer, insertSize, offset);
 
 			size -= insertSize;
 			offset += insertSize;
-			useChunk.push_back(i);
 		}
 
 		while (size > 0) {
@@ -58,40 +45,49 @@ namespace PaperEngine {
 
 			VkDeviceSize insertSize = size > m_chunkSize ? m_chunkSize : size;
 
-			VkBufferCopy copy = {
-				.srcOffset = 0,
-				.dstOffset = offset,
-				.size = insertSize
-			};
-
-			void* stageBufPtr = nullptr;
-			CHECK_VK_RESULT(vmaMapMemory(VulkanContext::GetAllocator(), chunk.allocation, &stageBufPtr));
-			memcpy_s(stageBufPtr, insertSize, (const char*)data + offset, size);
-			vmaUnmapMemory(VulkanContext::GetAllocator(), chunk.allocation);
-
-			vkCmdCopyBuffer(cmd, chunk.buffer, dstBuffer, 1, &copy);
+			doCopyBuffer(cmd, (uint32_t)m_chunks.size() - 1, data, dstBuffer, insertSize, offset);
 
 			size -= insertSize;
 			offset += insertSize;
-			chunk.isInUse = true;
-			//PE_CORE_TRACE("staging chunk use. {}", (void*)chunk.buffer);
-			useChunk.push_back((uint32_t)m_chunks.size() - 1);
 		}
 	}
 
-	void VulkanStagingBuffer::stageTexture(VkCommandBuffer cmd, const void* data, VkImage dstImage, VkOffset2D offset, VkExtent2D size)
+	void VulkanStagingBuffer::doCopyBuffer(VkCommandBuffer cmd, uint32_t chunkIndex, const void* data, VkBuffer dstBuffer, VkDeviceSize size, VkDeviceSize offset)
+	{
+		auto& chunk = m_chunks[chunkIndex];
+
+
+		VkBufferCopy copy = {
+			.srcOffset = 0,
+			.dstOffset = offset,
+			.size = size
+		};
+
+		void* stageBufPtr = nullptr;
+		CHECK_VK_RESULT(vmaMapMemory(VulkanContext::GetAllocator(), chunk.allocation, &stageBufPtr));
+		memcpy_s(stageBufPtr, size, (const char*)data + offset, size);
+		vmaUnmapMemory(VulkanContext::GetAllocator(), chunk.allocation);
+
+		vkCmdCopyBuffer(cmd, chunk.buffer, dstBuffer, 1, &copy);
+
+		chunk.isInUse = true;
+		//PE_CORE_TRACE("staging chunk use. {}", (void*)chunk.buffer);
+		m_useMap[cmd].push_back(chunkIndex);
+	}
+
+	void VulkanStagingBuffer::stageTexture(VkCommandBuffer cmd, const void* data, VulkanTextureHandle texture, VkOffset2D offset, VkExtent2D size)
 	{
 		std::vector<uint32_t>& useChunk = m_useMap[cmd];
 
+		// TODO: get format to determine pixel data
 		uint32_t pixelSize = 4;
 
 		uint32_t totalSize = size.width * size.height * pixelSize;
 
 		// load by row major
 		uint32_t chunkHeight = (uint32_t)m_chunkSize / size.width;
-		uint32_t chunkSize = chunkHeight * size.width;
 
-		uint32_t bufferOffset = 0;
+		uint32_t dataUploadOffset = 0;
 
 		for (uint32_t i = 0; i < m_chunks.size(); i++) {
 			if (totalSize == 0)
@@ -104,11 +100,13 @@ namespace PaperEngine {
 			chunk.isInUse = true;
 			//PE_CORE_TRACE("staging chunk use. {}", (void*)chunk.buffer);
 
-			uint32_t insertSize = totalSize > chunkSize ? chunkSize : totalSize;
-			uint32_t insertHeight = insertSize / size.width;
+			uint32_t insertSize = totalSize > static_cast<uint32_t>(m_chunkSize) ? static_cast<uint32_t>(m_chunkSize) : totalSize;
+			uint32_t insertHeight = insertSize / size.width / pixelSize;
+
+			uint32_t insertOffsetHeight = dataUploadOffset / size.width / pixelSize;
 
 			VkBufferImageCopy copy = {
-				.bufferOffset = bufferOffset,
+				.bufferOffset = 0,
 				.bufferRowLength = 0,
 				.bufferImageHeight = 0,
 				.imageSubresource = {
@@ -118,8 +116,8 @@ namespace PaperEngine {
 					.layerCount = 1
 				},
 				.imageOffset = {
-					.x = 0,
-					.y = (int32_t)(bufferOffset / size.width),
+					.x = offset.x,
+					.y = offset.y + static_cast<int32_t>(insertOffsetHeight),
 					.z = 0
 				},
 				.imageExtent = {
@@ -132,12 +130,12 @@ namespace PaperEngine {
 
 			void* stageBufPtr = nullptr;
 			CHECK_VK_RESULT(vmaMapMemory(VulkanContext::GetAllocator(), chunk.allocation, &stageBufPtr));
-			memcpy_s(stageBufPtr, insertSize, (const char*)data + bufferOffset, insertSize);
+			memcpy_s(stageBufPtr, insertSize, (const char*)data + dataUploadOffset, insertSize);
 			vmaUnmapMemory(VulkanContext::GetAllocator(), chunk.allocation);
 
-			vkCmdCopyBufferToImage(cmd, chunk.buffer, dstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copy);
+			vkCmdCopyBufferToImage(cmd, chunk.buffer, texture->get_image(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copy);
 			totalSize -= insertSize;
-			bufferOffset += insertSize;
+			dataUploadOffset += insertSize;
 			useChunk.push_back(i);
 		}
 
@@ -146,11 +144,13 @@ namespace PaperEngine {
 
 			chunk.isInUse = true;
 			//PE_CORE_TRACE("staging chunk use. {}", (void*)chunk.buffer);
-			uint32_t insertSize = totalSize > chunkSize ? chunkSize : totalSize;
-			uint32_t insertHeight = insertSize / size.width;
+			uint32_t insertSize = totalSize > static_cast<uint32_t>(m_chunkSize) ? static_cast<uint32_t>(m_chunkSize) : totalSize;
+			uint32_t insertHeight = insertSize / size.width / pixelSize;
+
+			uint32_t insertOffsetHeight = dataUploadOffset / size.width / pixelSize;
 
 			VkBufferImageCopy copy = {
-				.bufferOffset = bufferOffset,
+				.bufferOffset = 0,
 				.bufferRowLength = 0,
 				.bufferImageHeight = 0,
 				.imageSubresource = {
@@ -160,8 +160,8 @@ namespace PaperEngine {
 					.layerCount = 1
 				},
 				.imageOffset = {
-					.x = 0,
-					.y = (int32_t)(bufferOffset / size.width),
+					.x = offset.x,
+					.y = offset.y + static_cast<int32_t>(insertOffsetHeight),
 					.z = 0
 				},
 				.imageExtent = {
@@ -174,12 +174,12 @@ namespace PaperEngine {
 
 			void* stageBufPtr = nullptr;
 			CHECK_VK_RESULT(vmaMapMemory(VulkanContext::GetAllocator(), chunk.allocation, &stageBufPtr));
-			memcpy_s(stageBufPtr, insertSize, (const char*)data + bufferOffset, insertSize);
+			memcpy_s(stageBufPtr, insertSize, (const char*)data + dataUploadOffset, insertSize);
 			vmaUnmapMemory(VulkanContext::GetAllocator(), chunk.allocation);
 
-			vkCmdCopyBufferToImage(cmd, chunk.buffer, dstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copy);
+			vkCmdCopyBufferToImage(cmd, chunk.buffer, texture->get_image(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copy);
 			totalSize -= insertSize;
-			bufferOffset += insertSize;
+			dataUploadOffset += insertSize;
 			useChunk.push_back((uint32_t)m_chunks.size() - 1);
 		}
 	}

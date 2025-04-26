@@ -128,7 +128,7 @@ namespace PaperEngine {
 					.dstSet = frameInfo.set->get_handle(),
 					.dstBinding = index,
 					.descriptorCount = 1,
-					.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+					.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 					.pImageInfo = &imageInfo[imageInfoIndex]
 					});
 				imageInfoIndex++;

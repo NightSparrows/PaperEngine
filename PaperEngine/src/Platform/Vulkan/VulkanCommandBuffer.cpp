@@ -107,6 +107,20 @@ namespace PaperEngine {
 			barrier.subresourceRange.baseArrayLayer = 0;
 			barrier.subresourceRange.layerCount = 1;
 			break;
+		case TextureState::ShaderReadOnly:
+			srcStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;		// wait this stage to be finish (must after this stage) (where to wait for previous works to finish)
+			dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;		// wait after this stage (last stage) (block the next work from starting) (which stage will read this image)
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			barrier.oldLayout = vkTexture->m_currentLayout;		// TODO: track in texture handle
+			barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			vkTexture->m_currentLayout = barrier.newLayout;
+			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			barrier.subresourceRange.baseMipLevel = 0;
+			barrier.subresourceRange.levelCount = 1;							// TODO: for mipmapping it need to know from texture
+			barrier.subresourceRange.baseArrayLayer = 0;
+			barrier.subresourceRange.layerCount = 1;
+			break;
 		case TextureState::Present:
 			srcStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;		// wait this stage to be finish (must after this stage) (where to wait for previous works to finish)
 			dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;		// wait after this stage (last stage) (block the next work from starting)
@@ -137,6 +151,25 @@ namespace PaperEngine {
 		PE_CORE_ASSERT(m_stagingBuffer, "No staging buffer!");
 		m_stagingBuffer->stageBuffer(m_handle, data, std::static_pointer_cast<VulkanBuffer>(buffer)->get_handle(), (VkDeviceSize)size, offset);
 		m_buffers.push_back(buffer);
+	}
+
+	void VulkanCommandBuffer::writeTexture(TextureHandle texture, const void* data, const ImageOffset& offset, const ImageExtent& extent)
+	{
+		PE_CORE_ASSERT(m_handle != VK_NULL_HANDLE, "Command buffer is not open, cannot write buffer.");
+		m_stagingBuffer = VulkanContext::GetCommandBufferManager()->getStagingBuffer();
+
+		PE_CORE_ASSERT(m_stagingBuffer, "No staging buffer!");
+		VkOffset2D vkOffset = {
+			.x = offset.x,
+			.y = offset.y
+		};
+
+		VkExtent2D vkExtent = {
+			.width = extent.width,
+			.height = extent.height
+		};
+		m_stagingBuffer->stageTexture(m_handle, data, std::static_pointer_cast<VulkanTexture>(texture), vkOffset, vkExtent);
+		m_textures.push_back(texture);
 	}
 
 	void VulkanCommandBuffer::bindDescriptorSet(uint32_t setSlot, DescriptorSetHandle set, BindPoint bindPoint)

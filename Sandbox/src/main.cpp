@@ -40,15 +40,15 @@ public:
 		graphicsPipelineSpec.setFragmentShader(testFragmentShader);
 		graphicsPipelineSpec.setCullMode(PaperEngine::GraphicsPipelineSpecification::CullMode::None);
 		graphicsPipelineSpec.setCacheFilePath("../../Sandbox/assets/shaders/test/cache.bin");
-		/*graphicsPipelineSpec.addMaterialUniformBuffer(
-			0,
-			PaperEngine::ShaderStage::Fragment,
-			20
-		);
+		//graphicsPipelineSpec.addMaterialUniformBuffer(
+		//	0,
+		//	PaperEngine::ShaderStage::Fragment,
+		//	20
+		//);
 		graphicsPipelineSpec.addMaterialTexture(
-			1,
+			0,
 			PaperEngine::ShaderStage::Fragment
-		);*/
+		);
 
 		auto graphicsPipeline = PaperEngine::GraphicsPipeline::Create(graphicsPipelineSpec);
 
@@ -57,10 +57,14 @@ public:
 		meshData.basicVertexData.emplace_back(PaperEngine::MeshData::BasicVertexData{ {-50.f, -50.f, 0}, {0, 0, 0 }, {0, 0} });
 		meshData.basicVertexData.emplace_back(PaperEngine::MeshData::BasicVertexData{ {-50.f, 50.f, 0}, {0, 0, 0 }, {0, 1.0f} });
 		meshData.basicVertexData.emplace_back(PaperEngine::MeshData::BasicVertexData{ {50.f, 50.f, 0}, {0, 0, 0 }, {1.0f, 1.0f} });
+		meshData.basicVertexData.emplace_back(PaperEngine::MeshData::BasicVertexData{ {50.f, -50.f, 0}, {0, 0, 0 }, {1.0f, 0.0f} });
 		meshData.indexData.emplace_back(0);
 		meshData.indexData.emplace_back(1);
 		meshData.indexData.emplace_back(2);
-		meshData.subMeshData.emplace_back(0, 3);
+		meshData.indexData.emplace_back(0);
+		meshData.indexData.emplace_back(3);
+		meshData.indexData.emplace_back(2);
+		meshData.subMeshData.emplace_back(0, 6);
 
 		PaperEngine::MeshHandle mesh = PaperEngine::Mesh::Create();
 		mesh->load_mesh_data(meshData);
@@ -69,6 +73,11 @@ public:
 		auto& meshCom = meshEntity.add_component<PaperEngine::MeshComponent>();
 		meshCom.mesh = mesh;
 		meshCom.materials.push_back(PaperEngine::Material::Create(PaperEngine::MaterialSpec{ .graphicsPipeline = graphicsPipeline }));
+
+		PaperEngine::TextureHandle texture = PaperEngine::Texture::Load2DFromFile("../../Sandbox/assets/model/stallTexture.png");
+
+		meshCom.materials[0]->updateTexture(0, texture);
+
 	}
 
 	void on_detach() override {

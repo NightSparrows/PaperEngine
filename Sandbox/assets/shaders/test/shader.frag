@@ -2,7 +2,7 @@
 #version 460
 
 // material set is 0
-layout (set = 1, binding = 1) uniform sampler2D textureSampler;
+layout (set = 1, binding = 0) uniform sampler2D textureSampler;
 
 layout (location = 0) in vec2 vs_texCoord;
 
@@ -15,5 +15,5 @@ void main()
 	outFragColor = vec4(0, 1, 0, 1);
 
 	//return red
-	// outFragColor = texture(textureSampler, vs_texCoord);
+	outFragColor = texture(textureSampler, vs_texCoord);
 }

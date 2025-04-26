@@ -53,7 +53,7 @@ namespace PaperEngine {
 	private:
 		entt::entity m_handle{ entt::null };
 
-		Scene* m_scene;
+		Scene* m_scene{ nullptr };
 	};
 
 }

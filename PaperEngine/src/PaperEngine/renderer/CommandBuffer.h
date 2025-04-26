@@ -5,6 +5,7 @@
 #include <PaperEngine/renderer/Buffer.h>
 #include <PaperEngine/renderer/GraphicsPipeline.h>
 #include <PaperEngine/renderer/DescriptorSet.h>
+#include <PaperEngine/renderer/Texture.h>
 
 namespace PaperEngine {
 
@@ -51,6 +52,8 @@ namespace PaperEngine {
 		/// <param name="size"></param>
 		/// <param name="offset"></param>
 		virtual void writeBuffer(BufferHandle buffer, const void* data, size_t size, size_t offset = 0) = 0;
+
+		virtual void writeTexture(TextureHandle texture, const void* data, const ImageOffset& offset, const ImageExtent& extent) = 0;
 
 		/// <summary>
 		/// Future support subresource

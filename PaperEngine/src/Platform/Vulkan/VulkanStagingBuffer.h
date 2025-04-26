@@ -6,6 +6,7 @@
 #include <vk_mem_alloc.h>
 
 #include <PaperEngine/core/Base.h>
+#include <Platform/Vulkan/VulkanTexture.h>
 
 namespace PaperEngine {
 
@@ -27,7 +28,7 @@ namespace PaperEngine {
 		/// <param name="offset"></param>
 		void stageBuffer(VkCommandBuffer cmd, const void* data, VkBuffer dstBuffer, VkDeviceSize size, VkDeviceSize offset = 0);
 
-		void stageTexture(VkCommandBuffer cmd, const void* data, VkImage dstImage, VkOffset2D offset, VkExtent2D size);
+		void stageTexture(VkCommandBuffer cmd, const void* data, VulkanTextureHandle texture, VkOffset2D offset, VkExtent2D size);
 
 		void release(VkCommandBuffer cmd);
 
@@ -37,6 +38,10 @@ namespace PaperEngine {
 			VmaAllocation allocation{ nullptr };
 			bool isInUse{ false };
 		};
+
+		void doCopyBuffer(VkCommandBuffer cmd, uint32_t chunkIndex, const void* data, VkBuffer dstBuffer, VkDeviceSize size, VkDeviceSize offset);
+
+	protected:
 
 		BufferChunk& create_chunk();
 
