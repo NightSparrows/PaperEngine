@@ -12,6 +12,7 @@ namespace PaperEngine {
 		Timestep reset() {
 			auto current_time = std::chrono::high_resolution_clock::now();
 			auto delta_time = current_time - m_startTime;
+			m_startTime = current_time;
 			return Timestep(delta_time);
 		}
 
