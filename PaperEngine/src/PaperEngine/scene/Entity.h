@@ -35,6 +35,11 @@ namespace PaperEngine {
 		}
 
 		template<typename T>
+		T* try_get_component() {
+			return m_scene->m_registry.try_get<T>(m_handle);
+		}
+
+		template<typename T>
 		bool has_component() {
 			return m_scene->m_registry.try_get<T>(m_handle);
 		}
@@ -45,6 +50,8 @@ namespace PaperEngine {
 			PE_CORE_ASSERT(has_component<T>(), "Entity does not have component!");
 			m_scene->m_registry.remove<T>(m_handle);
 		}
+
+		operator bool() const { return m_handle != entt::null; }
 
 		operator entt::entity() const {
 			return m_handle;

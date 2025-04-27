@@ -12,7 +12,7 @@ namespace PaperEngine {
 		for (const auto& [setLayout, poolMap] : m_pools) {
 			for (const auto& [pool, poolInfo] : poolMap) {
 				vkDestroyDescriptorPool(VulkanContext::GetDevice(), pool, nullptr);
-				PE_CORE_TRACE("descriptor pool destroyed. {}", (void*)pool);
+				PE_CORE_TRACE("[DescriptorSetManager] descriptor pool destroyed. {}", (void*)pool);
 			}
 		}
 	}
@@ -34,6 +34,8 @@ namespace PaperEngine {
 					continue;
 
 				isUsed = true;
+				poolInfo.free--;
+				PE_CORE_TRACE("[DescriptorSetManager] Descriptor set use. {}, pool: {}, free: {}", (void*)set, (void*)pool, poolInfo.free);
 				return CreateRef<VulkanDescriptorSet>(setLayout, pool, set);
 			}
 		}
@@ -58,9 +60,9 @@ namespace PaperEngine {
 		};
 		VkDescriptorPool pool;
 		CHECK_VK_RESULT(vkCreateDescriptorPool(VulkanContext::GetDevice(), &poolCreateInfo, nullptr, &pool));
-		PE_CORE_TRACE("descriptor pool created. {}", (void*)pool);
+		PE_CORE_TRACE("[DescriptorSetManager] descriptor pool created. {}", (void*)pool);
 		auto& poolInfo = m_pools[setLayout][pool];
-		poolInfo.free = m_maxSets - 1;
+		poolInfo.free = m_maxSets;
 
 		VkDescriptorSetLayout layout = setLayout->get_handle();
 		VkDescriptorSetAllocateInfo allocInfo = {
@@ -76,6 +78,8 @@ namespace PaperEngine {
 		}
 		CHECK_VK_RESULT(vkAllocateDescriptorSets(VulkanContext::GetDevice(), &allocInfo, &set));
 		poolInfo.sets[set] = true;
+		poolInfo.free--;
+		PE_CORE_TRACE("[DescriptorSetManager] Descriptor set use. {}, pool: {}, free: {}", (void*)set, (void*)pool, poolInfo.free);
 		return CreateRef<VulkanDescriptorSet>(setLayout, pool, set);
 	}
 
@@ -94,13 +98,15 @@ namespace PaperEngine {
 		auto setIt = poolInfo.sets.find(set);
 		if (setIt == poolInfo.sets.end())
 			return;
-		setIt->second = false;
-		poolInfo.free--;
-		if (poolInfo.free != 0)
+		setIt->second = false;		// set to not in use
+		poolInfo.free++;
+		PE_CORE_TRACE("[DescriptorSetManager] Descriptor set free. {}, pool: {}, free: {}", (void*)set, (void*)pool, poolInfo.free);
+		if (poolInfo.free < m_maxSets)
 			return;
 
-		// remove descriptorPool
+		// remove descriptorPool if the set this pool is not in use
 		vkDestroyDescriptorPool(VulkanContext::GetDevice(), pool, nullptr);
+		PE_CORE_TRACE("[DescriptorSetManager] descriptor pool destroyed. {}", (void*)pool);
 		poolMap.erase(pool);
 		if (!poolMap.empty())
 			return;

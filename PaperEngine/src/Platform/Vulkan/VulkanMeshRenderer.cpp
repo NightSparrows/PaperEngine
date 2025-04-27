@@ -114,6 +114,11 @@ namespace PaperEngine {
 		}
 	}
 
+	DescriptorSetHandle VulkanMeshRenderer::allocateInstanceSet()
+	{
+		return VulkanContext::GetDescriptorSetManager()->allocate(s_meshInstanceDescriptorSetLayout);
+	}
+
 	void VulkanMeshRenderer::Init()
 	{
 

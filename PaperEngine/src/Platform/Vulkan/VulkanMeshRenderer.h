@@ -19,6 +19,8 @@ namespace PaperEngine {
 
 		void render(CommandBufferHandle cmd, DescriptorSetHandle globalSet) override;
 
+		DescriptorSetHandle allocateInstanceSet() override;
+
 
 
 	public:

@@ -95,7 +95,7 @@ namespace PaperEngine {
 
 				auto& colorAttachment = lightingFramebufferSpec.attachments.emplace_back();
 				colorAttachment.texture = frameInfo.colorAttachment;
-				colorAttachment.clearColor = { 1.f, 0.f, 0.f, 1.f };
+				colorAttachment.clearColor = { 0.f, 0.f, 0.f, 1.f };
 				auto& depthAttachment = lightingFramebufferSpec.attachments.emplace_back();
 				depthAttachment.texture = frameInfo.depthAttachment;
 				depthAttachment.clearDepth = 1.f;
@@ -104,7 +104,6 @@ namespace PaperEngine {
 
 #pragma region Global Descriptor Set Creation
 				{
-
 					BufferSpecification globalUniformBufferSpec;
 					globalUniformBufferSpec
 						.setSize(sizeof(GlobalUniformBufferStruct))

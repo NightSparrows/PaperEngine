@@ -14,6 +14,7 @@
 #include <PaperEngine/renderer/MeshRenderer.h>
 #include <PaperEngine/events/KeyEvent.h>
 #include <PaperEngine/component/MeshComponent.h>
+#include <PaperEngine/core/Keyboard.h>
 
 class TestLayer : public PaperEngine::Layer {
 public:
@@ -87,6 +88,31 @@ public:
 
 	void on_update(PaperEngine::Timestep delta_time) override {
 
+		// camera movement
+		{
+			glm::vec3 moveVector(0);
+			if (PaperEngine::Keyboard::IsKeyDown(PaperEngine::Key::W)) {
+				moveVector.z -= 1.f;
+
+			}
+			if (PaperEngine::Keyboard::IsKeyDown(PaperEngine::Key::S)) {
+				moveVector.z += 1.f;
+			}
+			if (PaperEngine::Keyboard::IsKeyDown(PaperEngine::Key::A)) {
+				moveVector.x -= 1.f;
+			}
+			if (PaperEngine::Keyboard::IsKeyDown(PaperEngine::Key::D)) {
+				moveVector.x += 1.f;
+			}
+
+			if (glm::length(moveVector) != 0) {
+				moveVector = glm::normalize(moveVector) * delta_time.to_seconds() * 100.f;
+
+				auto& camCom = camEntity.get_component<PaperEngine::CameraComponent>();
+				camCom.camera.set_position(camCom.camera.get_position() + moveVector);
+			}
+		}
+
 		sceneRenderer->renderScene(*scene);
 
 		PaperEngine::CommandBufferHandle cmd = PaperEngine::CommandBuffer::Create({ .isPrimary = true });
@@ -94,6 +120,10 @@ public:
 		PaperEngine::TextureHandle swapchainTexture =
 			PaperEngine::Application::Get().get_window().get_context().get_swapchain_texture(PaperEngine::Application::Get().get_window().get_context().get_current_swapchain_index());
 		cmd->open();
+
+
+		// 2d renderer for gui?
+
 		cmd->setTextureState(swapchainTexture, PaperEngine::TextureState::Present);
 		cmd->close();
 		
@@ -101,26 +131,6 @@ public:
 	}
 
 	void on_event(PaperEngine::Event& e) {
-		PaperEngine::EventDispatcher dispatcher(e);
-		dispatcher.dispatch<PaperEngine::KeyPressedEvent>([this](PaperEngine::KeyPressedEvent& e) {
-			auto& camCom = camEntity.get_component<PaperEngine::CameraComponent>();
-			glm::vec3 moveVector(0);
-			if (e.get_key_code() == PaperEngine::Key::W) {
-				moveVector.z -= 1.f;
-			}
-			if (e.get_key_code() == PaperEngine::Key::S) {
-				moveVector.z += 1.f;
-			}
-			if (e.get_key_code() == PaperEngine::Key::A) {
-				moveVector.x -= 1.f;
-			}
-			if (e.get_key_code() == PaperEngine::Key::D) {
-				moveVector.x += 1.f;
-			}
-			camCom.camera.set_position(camCom.camera.get_position() + moveVector);
-			std::cout << "Position: " << camCom.camera.get_position().x << ", " << camCom.camera.get_position().y << ", " << camCom.camera.get_position().z << "\n";
-			return false;
-			});
 	}
 
 	void on_imgui_render() override {

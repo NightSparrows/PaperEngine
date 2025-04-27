@@ -39,6 +39,7 @@ namespace PaperEngine {
 		MeshType type{ MeshType::Static };
 		std::vector<BasicVertexData> basicVertexData;
 		std::vector<BoneVertexData> boneVertexData;
+		uint32_t boneCount;								// if the mesh having bone
 
 		std::vector<SubMeshData> subMeshData;
 
