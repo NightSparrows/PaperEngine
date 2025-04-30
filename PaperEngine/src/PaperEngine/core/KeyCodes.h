@@ -3,7 +3,7 @@
 #include <cstdint>
 
 namespace PaperEngine {
-	using KeyCode = uint16_t;
+	using KeyCode = uint32_t;
 
 	namespace Key
 	{

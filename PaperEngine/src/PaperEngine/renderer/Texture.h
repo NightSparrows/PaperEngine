@@ -46,7 +46,8 @@ namespace PaperEngine {
 		TransferDst,
 		TransferSrc,
 		ShaderReadOnly,
-		Present				// only use in swapchain buffer
+		Present,				// only use in swapchain buffer
+		ColorAttachment
 	}TextureState;
 
 	class Texture {

@@ -47,7 +47,7 @@ namespace PaperEngine {
 
         struct WindowData {
             std::string title;
-            uint32_t width, height;
+            uint32_t width = 0, height = 0;
 			EventCallbackFn eventCallback;
         };
 

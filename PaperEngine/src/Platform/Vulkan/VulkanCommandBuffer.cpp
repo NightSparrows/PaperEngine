@@ -135,6 +135,20 @@ namespace PaperEngine {
 			barrier.subresourceRange.baseArrayLayer = 0;
 			barrier.subresourceRange.layerCount = 1;
 			break;
+		case TextureState::ColorAttachment:
+			srcStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;		// wait this stage to be finish (must after this stage) (where to wait for previous works to finish)
+			dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;		// wait after this stage (last stage) (block the next work from starting)
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+			barrier.oldLayout = vkTexture->m_currentLayout;
+			barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			vkTexture->m_currentLayout = barrier.newLayout;	// update the layout
+			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			barrier.subresourceRange.baseMipLevel = 0;
+			barrier.subresourceRange.levelCount = 1;
+			barrier.subresourceRange.baseArrayLayer = 0;
+			barrier.subresourceRange.layerCount = 1;
+			break;
 		default:
 			PE_CORE_ASSERT(false, "Unknown texture state");
 			return;

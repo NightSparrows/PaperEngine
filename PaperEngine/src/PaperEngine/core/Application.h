@@ -5,7 +5,7 @@
 
 #include <PaperEngine/core/LayerManager.h>
 
-//#include <PaperEngine/imgui/ImGuiLayer.h>
+#include <PaperEngine/imgui/ImGuiLayer.h>
 
 namespace PaperEngine {
 
@@ -62,7 +62,7 @@ namespace PaperEngine {
 
 		LayerManager m_layerManager;
 
-		//ImGuiLayer* m_imguiLayer{ nullptr };
+		Ref<ImGuiLayer> m_imguiLayer;
 
 	private:
 		PE_API static Application* s_instance;

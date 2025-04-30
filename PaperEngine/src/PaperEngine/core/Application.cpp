@@ -35,18 +35,19 @@ namespace PaperEngine {
 		//m_imguiLayer = new ImGuiLayer();
 		//push_overlay(m_imguiLayer);
 
+		m_imguiLayer = ImGuiLayer::Create();
+		m_imguiLayer->on_attach();
+
 		m_running = true;
 		Clock clock;
 		while (m_running) {
 
 			auto delta_time = clock.reset();
 
-			// update
-			m_window->on_update();
-
-			// render
 			{
 				PE_PROFILE_SCOPE("Render");
+
+				// update
 
 				if (m_window->get_context().beginFrame()) {
 					{
@@ -58,17 +59,34 @@ namespace PaperEngine {
 				}
 
 				// render logic
-				//m_imguiLayer->begin_frame();
-				//for (auto& layer : m_layerManager) {
-				//	layer->on_imgui_render();
-				//}
-				//m_imguiLayer->end_frame();
+				m_imguiLayer->on_update(delta_time);
+				m_imguiLayer->begin_frame();
+				for (auto& layer : m_layerManager) {
+					layer->on_imgui_render();
+				}
+				m_window->on_update();
+				m_imguiLayer->end_frame();
+
+				PaperEngine::CommandBufferHandle cmd = PaperEngine::CommandBuffer::Create({ .isPrimary = true });
+
+				PaperEngine::TextureHandle swapchainTexture =
+					PaperEngine::Application::Get().get_window().get_context().get_swapchain_texture(PaperEngine::Application::Get().get_window().get_context().get_current_swapchain_index());
+				cmd->open();
+				// prepare swapchain to ready to 
+				cmd->setTextureState(swapchainTexture, PaperEngine::TextureState::Present);
+				cmd->close();
+
+				PaperEngine::Application::Get().get_window().get_context().executeCommandBuffer(cmd);
 
 				m_window->get_context().endFrame();
 			}
+
+
 		}
 
 		m_layerManager.cleanUp();
+
+		m_imguiLayer->on_detach();
 
 		m_window->cleanUp();
 		PE_PROFILE_END_SESSION();
@@ -97,6 +115,8 @@ namespace PaperEngine {
 #endif // PE_DEBUG
 		dispatcher.dispatch<WindowResizeEvent>([this](WindowResizeEvent& e) {return this->on_window_resize(e); });
 
+		// always process imgui layer first
+		m_imguiLayer->on_event(e);
 		for (auto it = m_layerManager.rbegin(); it != m_layerManager.rend(); ++it) {
 			if (e.Handled)
 				break;

@@ -12,19 +12,22 @@ namespace PaperEngine {
 
 		int get_scancode() const { return m_scancode; }
 
+		int get_mods() const { return m_mods; }
+
 		EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
 	protected:
-		KeyEvent(const KeyCode keycode, int scancode) : m_keyCode(keycode), m_scancode(scancode) {}
+		KeyEvent(const KeyCode keycode, int scancode, int mods) : m_keyCode(keycode), m_scancode(scancode), m_mods(mods) {}
 
 		KeyCode m_keyCode;
 		int m_scancode{ 0 };
+		int m_mods{ 0 };
 	};
 
 	class KeyPressedEvent : public KeyEvent
 	{
 	public:
-		KeyPressedEvent(const KeyCode keycode, int scancode, bool isRepeat = false)
-			: KeyEvent(keycode, scancode), m_IsRepeat(isRepeat) {
+		KeyPressedEvent(const KeyCode keycode, int scancode, int mods, bool isRepeat = false)
+			: KeyEvent(keycode, scancode, mods), m_IsRepeat(isRepeat) {
 		}
 
 		bool IsRepeat() const { return m_IsRepeat; }
@@ -44,8 +47,8 @@ namespace PaperEngine {
 	class KeyReleasedEvent : public KeyEvent
 	{
 	public:
-		KeyReleasedEvent(const KeyCode keycode, int scancode)
-			: KeyEvent(keycode, scancode) {
+		KeyReleasedEvent(const KeyCode keycode, int scancode, int mods)
+			: KeyEvent(keycode, scancode, mods) {
 		}
 
 		std::string ToString() const override
@@ -62,7 +65,7 @@ namespace PaperEngine {
 	{
 	public:
 		KeyTypedEvent(const KeyCode keycode)
-			: KeyEvent(keycode, 0) {
+			: KeyEvent(keycode, 0, 0) {
 		}
 
 		std::string ToString() const override

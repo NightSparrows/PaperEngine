@@ -89,19 +89,19 @@ namespace PaperEngine {
 			{
 			case GLFW_PRESS:
 			{
-				KeyPressedEvent e(key, scancode, 0);
+				KeyPressedEvent e(key, scancode, mods, false);
 				data->eventCallback(e);
 				break;
 			}
 			case GLFW_RELEASE:
 			{
-				KeyReleasedEvent e(key, scancode);
+				KeyReleasedEvent e(key, scancode, mods);
 				data->eventCallback(e);
 				break;
 			}
 			case GLFW_REPEAT:
 			{
-				KeyPressedEvent e(key, scancode, true);
+				KeyPressedEvent e(key, scancode, mods, true);
 				data->eventCallback(e);
 				break;
 			}

@@ -115,20 +115,8 @@ public:
 
 		sceneRenderer->renderScene(*scene);
 
-		PaperEngine::CommandBufferHandle cmd = PaperEngine::CommandBuffer::Create({ .isPrimary = true });
-
-		PaperEngine::TextureHandle swapchainTexture =
-			PaperEngine::Application::Get().get_window().get_context().get_swapchain_texture(PaperEngine::Application::Get().get_window().get_context().get_current_swapchain_index());
-		cmd->open();
-
-
 		// 2d renderer for gui?
 
-		// prepare swapchain to ready to 
-		cmd->setTextureState(swapchainTexture, PaperEngine::TextureState::Present);
-		cmd->close();
-		
-		PaperEngine::Application::Get().get_window().get_context().executeCommandBuffer(cmd);
 	}
 
 	void on_event(PaperEngine::Event& e) {
@@ -145,6 +133,7 @@ public:
 		//ImGui::Begin("Test Layer");
 		//ImGui::Text("Hello, World!");
 		//ImGui::End();
+		ImGui::ShowDemoWindow();
 	}
 private:
 	

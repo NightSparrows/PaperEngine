@@ -75,6 +75,8 @@ namespace PaperEngine {
 
 		static VulkanCommandBufferManagerHandle GetCommandBufferManager() { return s_instance->m_cmdManager; }
 
+		static VulkanTextureHandle GetSwapchainTexture(uint32_t index) { return std::static_pointer_cast<VulkanTexture>(s_instance->m_swapchain_textures[index]); }
+
 	private:
 		bool create_swapchain();
 
