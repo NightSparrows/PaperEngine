@@ -178,6 +178,8 @@ namespace PaperEngine {
 				io.AddKeyEvent(ImGuiKey_ModAlt, (e.get_mods() & GLFW_MOD_ALT) != 0);
 				io.AddKeyEvent(ImGuiKey_ModSuper, (e.get_mods() & GLFW_MOD_SUPER) != 0);
 			}
+			if (io.WantCaptureKeyboard)
+				return true;	// handle
 			return false;
 			});
 		dispatcher.dispatch<KeyReleasedEvent>([](KeyReleasedEvent& e) {
@@ -187,39 +189,44 @@ namespace PaperEngine {
 			io.AddKeyEvent(imgui_key, false);
 			io.SetKeyEventNativeData(imgui_key, e.get_key_code(), e.get_scancode()); // To support legacy indexing (<1.87 user code)
 
+			if (io.WantCaptureKeyboard)
+				return true;	// handle
+			return false;
+			});
+		dispatcher.dispatch<KeyTypedEvent>([](KeyTypedEvent& e) {
+			ImGuiIO& io = ImGui::GetIO();
+			io.AddInputCharacter(e.get_key_code());
+			if (io.WantCaptureKeyboard)
+				return true;	// handle
 			return false;
 			});
 		dispatcher.dispatch<MouseButtonPressedEvent>([](MouseButtonPressedEvent& e) {
 
 			ImGuiIO& io = ImGui::GetIO();
 			io.AddMouseButtonEvent(e.GetMouseButton(), true);
-			if (e.GetMouseButton() == Mouse::ButtonLeft && 
-				!ImGui::IsAnyItemHovered() && 
-				!ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
-			{
-				// Left mouse click happened on a blank area (not on any ImGui window or item)
-				return false;
-			}
-			return true;
-			});
-		dispatcher.dispatch<KeyTypedEvent>([](KeyTypedEvent& e) {
-			ImGuiIO& io = ImGui::GetIO();
-			io.AddInputCharacter(e.get_key_code());
+			if (io.WantCaptureMouse)
+				return true;
 			return false;
 			});
 		dispatcher.dispatch<MouseButtonReleasedEvent>([](MouseButtonReleasedEvent& e) {
 			ImGuiIO& io = ImGui::GetIO();
 			io.AddMouseButtonEvent(e.GetMouseButton(), false);
+			if (io.WantCaptureMouse)
+				return true;
 			return false;
 			});
 		dispatcher.dispatch<MouseMovedEvent>([](MouseMovedEvent& e) {
 			ImGuiIO& io = ImGui::GetIO();
 			io.AddMousePosEvent(e.GetX(), e.GetY());
+			if (io.WantCaptureMouse)
+				return true;
 			return false;
 			});
 		dispatcher.dispatch<MouseScrolledEvent>([](MouseScrolledEvent& e) {
 			ImGuiIO& io = ImGui::GetIO();
 			io.AddMouseWheelEvent(e.GetXOffset(), e.GetYOffset());
+			if (io.WantCaptureMouse)
+				return true;
 			return false;
 			});
 	}
