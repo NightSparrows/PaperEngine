@@ -24,7 +24,8 @@ namespace PaperEngine {
 						.isUniformBuffer = true
 					};
 					frameInfo.bindings[binding].buffer = CreateRef<VulkanBuffer>(uniformBufferSpec);
-					auto& bufferDataBuffer = m_buffers[binding];
+					m_bindingData[binding].type = Uniformbuffer;
+					auto& bufferDataBuffer = m_bindingData[binding].buffer;
 					bufferDataBuffer.resize(materialBindingInfo.size);
 				}
 			}
@@ -61,14 +62,16 @@ namespace PaperEngine {
 
 	void VulkanMaterial::updateData(uint32_t binding, const void* data, size_t size, size_t offset)
 	{
-		memcpy_s(m_buffers[binding].data() + offset, m_buffers[binding].size() - offset, data, size);
-		markDirty();
+		m_bindingData[binding].type = Uniformbuffer;
+		memcpy_s(m_bindingData[binding].buffer.data() + offset, m_bindingData[binding].buffer.size() - offset, data, size);
+		markDirty(binding);
 	}
 
-	void VulkanMaterial::updateTexture(uint32_t slot, TextureHandle texture)
+	void VulkanMaterial::updateTexture(uint32_t binding, TextureHandle texture)
 	{
-		m_textures[slot] = std::static_pointer_cast<VulkanTexture>(texture);
-		markDirty();
+		m_bindingData[binding].type = Texture;
+		m_bindingData[binding].texture = std::static_pointer_cast<VulkanTexture>(texture);
+		markDirty(binding);
 	}
 
 	GraphicsPipelineHandle VulkanMaterial::get_graphics_pipeline() const
@@ -80,19 +83,35 @@ namespace PaperEngine {
 	{
 		auto& frameInfo = m_materialDataFrame[VulkanContext::GetCurrentImageIndex()];
 
-		if (!frameInfo.isUpdated) {
-			std::vector<VkWriteDescriptorSet> writes;
-			std::vector<VkDescriptorBufferInfo> bufferInfo;
-			bufferInfo.resize(m_buffers.size());
-			uint32_t bufferInfoIndex = 0;
-			// upload uniform buffer
-			VulkanCommandBufferHandle cmd = CreateRef<VulkanCommandBuffer>();
-			cmd->open();
-			for (const auto& [binding, bufferData] : m_buffers) {
-				cmd->writeBuffer(frameInfo.bindings[binding].buffer, m_buffers[binding].data(), m_buffers[binding].size());
+		if (frameInfo.dirtySymbol.empty()) {
+			return frameInfo.set;
+		}
+		std::vector<VkWriteDescriptorSet> writes;
+		std::vector<VkDescriptorBufferInfo> bufferInfos;
+		std::vector<VkDescriptorImageInfo> imageInfos;
+		VulkanCommandBufferHandle cmd = CreateRef<VulkanCommandBuffer>();
+		uint32_t bufferInfoIndex = 0;
+		uint32_t imageInfoIndex = 0;
+		for (const auto& [binding, isDirty] : frameInfo.dirtySymbol) {
+			if (m_bindingData[binding].type == Uniformbuffer) {
+				bufferInfoIndex++;
+			}
+			else if (m_bindingData[binding].type == Texture) {
+				imageInfoIndex++;
+			}
+		}
+		bufferInfos.resize(bufferInfoIndex);
+		imageInfos.resize(imageInfoIndex);
 
-				// update uniform buffer to descriptor set
-				bufferInfo[bufferInfoIndex] = {
+		bufferInfoIndex = 0;
+		imageInfoIndex = 0;
+		cmd->open();
+		for (auto& [binding, isDirty] : frameInfo.dirtySymbol) {
+			auto& bindingData = m_bindingData[binding];
+			if (m_bindingData[binding].type == Uniformbuffer) {
+				cmd->writeBuffer(frameInfo.bindings[binding].buffer, bindingData.buffer.data(), bindingData.buffer.size());
+
+				bufferInfos[bufferInfoIndex] = {
 					.buffer = frameInfo.bindings[binding].buffer->get_handle(),
 					.offset = 0,
 					.range = frameInfo.bindings[binding].buffer->get_size()
@@ -103,50 +122,40 @@ namespace PaperEngine {
 					.dstBinding = binding,
 					.descriptorCount = 1,
 					.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-					.pBufferInfo = &bufferInfo[bufferInfoIndex]
+					.pBufferInfo = &bufferInfos[bufferInfoIndex]
 					});
 				bufferInfoIndex++;
 			}
-			cmd->close();
-			VulkanContext::GetCommandBufferManager()->executeCommandBuffer(cmd);
+			else if (bindingData.type == Texture) {
 
-
-
-			// textures
-			std::vector<VkDescriptorImageInfo> imageInfo;
-			imageInfo.resize(m_textures.size());
-			uint32_t imageInfoIndex = 0;
-
-			for (const auto& [index, texture] : m_textures) {
-				imageInfo[imageInfoIndex] = {
+				imageInfos[imageInfoIndex] = {
 					.sampler = m_sampler,
-					.imageView = texture->get_image_view(),
+					.imageView = bindingData.texture->get_image_view(),
 					.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
 				};
 				writes.emplace_back(VkWriteDescriptorSet{
 					.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
 					.dstSet = frameInfo.set->get_handle(),
-					.dstBinding = index,
+					.dstBinding = binding,
 					.descriptorCount = 1,
 					.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-					.pImageInfo = &imageInfo[imageInfoIndex]
+					.pImageInfo = &imageInfos[imageInfoIndex]
 					});
-				imageInfoIndex++;
 			}
-
-			
-			vkUpdateDescriptorSets(VulkanContext::GetDevice(), static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
-
-			frameInfo.isUpdated = true;
 		}
+		frameInfo.dirtySymbol.clear();
+		cmd->close();
+		VulkanContext::GetCommandBufferManager()->executeCommandBuffer(cmd);
+
+		vkUpdateDescriptorSets(VulkanContext::GetDevice(), static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
 
 		return frameInfo.set;
 	}
 
-	void VulkanMaterial::markDirty()
+	void VulkanMaterial::markDirty(uint32_t binding)
 	{
 		for (auto& frameInfo : m_materialDataFrame) {
-			frameInfo.isUpdated = false;
+			frameInfo.dirtySymbol[binding] = true;
 		}
 	}
 

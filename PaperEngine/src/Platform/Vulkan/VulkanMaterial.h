@@ -13,14 +13,26 @@ namespace PaperEngine {
 
 	class VulkanMaterial : public Material {
 	public:
+		enum BindingType {
+			Uniformbuffer,
+			Texture
+		};
+
+		struct MaterialCPUData {
+			BindingType type;
+			std::vector<char> buffer;
+			VulkanTextureHandle texture;
+		};
+
 		struct MaterialBinding {
 			Ref<VulkanBuffer> buffer;
 			Ref<VulkanTexture> texture;
 		};
 		struct MaterialDataFrame {
-			bool isUpdated{ false };			// whether this frame is update or not
 			std::unordered_map<uint32_t, MaterialBinding> bindings;
 			Ref<VulkanDescriptorSet> set;
+			// only that dirty
+			std::unordered_map<uint32_t, bool> dirtySymbol;
 		};
 
 		VulkanMaterial(const MaterialSpec& spec);
@@ -35,15 +47,15 @@ namespace PaperEngine {
 		DescriptorSetHandle getCurrentDescriptorSet() override;
 
 	protected:
-		void markDirty();
+		void markDirty(uint32_t binding);
 
 	protected:
 		Ref<VulkanGraphicsPipeline> m_graphicsPipeline;
 
 		// the uniform buffer data hold in cpu side
-		std::unordered_map<uint32_t, std::vector<char>> m_buffers;
-		std::unordered_map<uint32_t, VulkanTextureHandle> m_textures;
+		std::unordered_map<uint32_t, MaterialCPUData> m_bindingData;
 
+		// TODO: move to texture?
 		VkSampler m_sampler;
 
 		// the layout this material currently using
