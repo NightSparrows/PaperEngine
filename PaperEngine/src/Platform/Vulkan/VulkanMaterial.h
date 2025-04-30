@@ -49,6 +49,8 @@ namespace PaperEngine {
 	protected:
 		void markDirty(uint32_t binding);
 
+		void createUniformBuffer(MaterialDataFrame& frameInfo, uint32_t binding, uint32_t size);
+
 	protected:
 		Ref<VulkanGraphicsPipeline> m_graphicsPipeline;
 

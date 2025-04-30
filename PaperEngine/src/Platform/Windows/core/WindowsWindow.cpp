@@ -1,6 +1,9 @@
 ﻿//
 // Created by NS on 2025/3/29.
 //
+
+#include <PaperEngine/core/PlatformDetection.h>
+
 #include <PaperEngine/core/Logger.h>
 
 #include "WindowsWindow.h"
@@ -8,6 +11,11 @@
 #include <PaperEngine/events/MouseEvent.h>
 #include <PaperEngine/events/ApplicationEvent.h>
 #include <PaperEngine/debug/Instrumentor.h>
+
+#ifdef PE_PLATFORM_WINDOWS
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+#endif // PE_PLATFORM_WINDOWS
 
 namespace PaperEngine {
 
@@ -46,6 +54,10 @@ namespace PaperEngine {
 		m_handle = glfwCreateWindow(m_data.width, m_data.height, m_data.title.c_str(), nullptr, nullptr);
 
 		PE_CORE_ASSERT(m_handle, "Failed to create GLFW window!");
+
+#ifdef PE_PLATFORM_WINDOWS
+		SetWindowLongPtr(glfwGetWin32Window(m_handle), GWL_STYLE, GetWindowLongPtrA(glfwGetWin32Window(m_handle), GWL_STYLE) & ~(WS_MAXIMIZEBOX | WS_MINIMIZEBOX));
+#endif // PE_PLATFORM_WINDOWS
 
 		s_windowCount++;
 

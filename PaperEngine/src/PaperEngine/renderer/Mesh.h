@@ -42,6 +42,8 @@ namespace PaperEngine {
 
 		virtual MeshType get_type() const = 0;
 
+		virtual uint32_t get_bone_count() const = 0;
+
 		PE_API static Ref<Mesh> Create();
 
 	protected:

@@ -48,12 +48,12 @@ namespace PaperEngine {
 			{
 				PE_PROFILE_SCOPE("Render");
 
-				m_window->get_context().beginFrame();
-
-				{
-					PE_PROFILE_SCOPE("Layer Update");
-					for (auto& layer : m_layerManager) {
-						layer->on_update(delta_time);
+				if (m_window->get_context().beginFrame()) {
+					{
+						PE_PROFILE_SCOPE("Layer Update");
+						for (auto& layer : m_layerManager) {
+							layer->on_update(delta_time);
+						}
 					}
 				}
 
@@ -109,6 +109,11 @@ namespace PaperEngine {
 		return false;
 	}
 
+	void Application::Shutdown() {
+		if (!s_instance)
+			return;
+		s_instance->m_running = false;
+	}
 	// Explicitly export unique_ptr specialization
 	template class PE_API std::unique_ptr<Window>;
 }

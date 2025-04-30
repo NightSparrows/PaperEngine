@@ -17,6 +17,8 @@ namespace PaperEngine {
 
 	VulkanSceneRenderer::VulkanSceneRenderer(const SceneRendererSpec& spec)
 	{
+		m_width = spec.width;
+		m_height = spec.height;
 		createFramebuffers(spec.width, spec.height);
 	}
 
@@ -26,6 +28,8 @@ namespace PaperEngine {
 
 	void VulkanSceneRenderer::resize(uint32_t width, uint32_t height)
 	{
+		m_width = width;
+		m_height = height;
 		createFramebuffers(width, height);
 	}
 
@@ -164,7 +168,7 @@ namespace PaperEngine {
 		//cmd->bindDescriptorSet(0, currentFrameInfo.globalSet);
 
 		for (auto renderer : m_renderers) {
-			renderer->render(cmd, currentFrameInfo.globalSet);
+			renderer->render(cmd, currentFrameInfo.globalSet, m_width, m_height);
 		}
 
 		cmd->endFramebuffer();

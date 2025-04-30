@@ -124,6 +124,7 @@ public:
 
 		// 2d renderer for gui?
 
+		// prepare swapchain to ready to 
 		cmd->setTextureState(swapchainTexture, PaperEngine::TextureState::Present);
 		cmd->close();
 		
@@ -131,6 +132,13 @@ public:
 	}
 
 	void on_event(PaperEngine::Event& e) {
+		PaperEngine::EventDispatcher dispatcher(e);
+		dispatcher.dispatch<PaperEngine::KeyPressedEvent>([](PaperEngine::KeyPressedEvent& e) {
+			if (e.get_key_code() == PaperEngine::Key::Escape) {
+				PaperEngine::Application::Shutdown();
+			}
+			return false;
+			});
 	}
 
 	void on_imgui_render() override {
@@ -161,5 +169,7 @@ private:
 };
 
 PaperEngine::Application* PaperEngine::CreateApplication(int argc, char** argv) {
-	return new SandboxApp();
+	PaperEngine::ApplicationSpecification spec;
+	spec.name = "Sandbox";
+	return new SandboxApp(spec);
 }

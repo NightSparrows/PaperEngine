@@ -74,7 +74,7 @@ namespace PaperEngine {
 			});
 	}
 
-	void VulkanMeshRenderer::render(CommandBufferHandle cmd, DescriptorSetHandle globalSet)
+	void VulkanMeshRenderer::render(CommandBufferHandle cmd, DescriptorSetHandle globalSet, uint32_t width, uint32_t height)
 	{
 		GraphicsPipelineHandle currentGraphicsPipeline = nullptr;
 		MaterialHandle currentMaterial = nullptr;
@@ -86,13 +86,13 @@ namespace PaperEngine {
 				// TODO: activate scissor
 				VkRect2D scissor = {
 					.extent = {
-						.width = 2560,
-						.height = 1440
+						.width = width,
+						.height = height
 					}
 				};
 				VkViewport viewport = {
-					.width = 2560,
-					.height = 1440,
+					.width = static_cast<float>(width),
+					.height = static_cast<float>(height),
 					.maxDepth = 1.f
 				};
 				vkCmdSetScissor(std::static_pointer_cast<VulkanCommandBuffer>(cmd)->get_handle(), 0, 1, &scissor);

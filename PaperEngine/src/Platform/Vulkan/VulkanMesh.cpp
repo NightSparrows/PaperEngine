@@ -14,6 +14,7 @@ namespace PaperEngine {
 
 	void VulkanMesh::load_mesh_data(const MeshData& meshData)
 	{
+		m_boneCount = meshData.boneCount;
 		m_type = meshData.type;
 
 		BufferSpecification bufferSpec;

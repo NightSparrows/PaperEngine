@@ -9,6 +9,7 @@ namespace PaperEngine {
 
 	struct RenderTextureImpl {
 		std::vector<TextureHandle> textures;
+		bool isSwapchain{ false };
 	};
 
 	RenderTexture::~RenderTexture()
@@ -18,6 +19,9 @@ namespace PaperEngine {
 
 	TextureHandle RenderTexture::get_texture()
 	{
+		if (m_impl->isSwapchain) {
+			return Application::Get().get_window().get_context().get_swapchain_texture(Application::Get().get_window().get_context().get_current_swapchain_index());
+		}
 		return m_impl->textures[Application::Get().get_window().get_context().get_current_swapchain_index()];
 	}
 
@@ -45,11 +49,7 @@ namespace PaperEngine {
 	RenderTexture::RenderTexture() :
 		m_impl(new RenderTextureImpl())
 	{
-		uint32_t imageCount = Application::Get().get_window().get_context().get_swapchain_image_count();
-		for (uint32_t i = 0; i < imageCount; i++) {
-			m_impl->textures.push_back(Application::Get().get_window().get_context().get_swapchain_texture(i));
-		}
-
+		m_impl->isSwapchain = true;
 	}
 
 }

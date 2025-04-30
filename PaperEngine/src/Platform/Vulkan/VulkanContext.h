@@ -30,7 +30,7 @@ namespace PaperEngine {
 
 		void cleanUp() override;
 
-		void beginFrame() override;
+		bool beginFrame() override;
 		void endFrame() override;
 
 		void executeCommandBuffer(CommandBufferHandle cmd) override;
@@ -96,6 +96,7 @@ namespace PaperEngine {
 		VkQueue m_graphics_queue{ VK_NULL_HANDLE };
 		uint32_t m_graphics_queue_index = 0;
 		vkb::Swapchain m_swapchain;
+		bool m_resizeRequested{ false };
 		std::vector<TextureHandle> m_swapchain_textures;
 
 		VkSurfaceKHR m_surface{ VK_NULL_HANDLE };

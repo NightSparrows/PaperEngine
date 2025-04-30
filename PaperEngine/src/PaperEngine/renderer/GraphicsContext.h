@@ -18,7 +18,7 @@ namespace PaperEngine {
 
 		virtual void cleanUp() = 0;
 
-		virtual void beginFrame() = 0;
+		virtual bool beginFrame() = 0;
 
 		/// <summary>
 		/// How many buffer swapchain have

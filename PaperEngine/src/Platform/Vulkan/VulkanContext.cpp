@@ -285,12 +285,33 @@ namespace PaperEngine {
 
 	}
 
-	void VulkanContext::beginFrame()
+	bool VulkanContext::beginFrame()
 	{
+		if (m_resizeRequested) {
+			PE_CORE_INFO("Swapchain resize:");
+			if (!this->create_swapchain()) {
+				PE_CORE_ASSERT(false, "Failed to recreate swapchain.");
+				return false;
+			}
+			m_resizeRequested = false;
+		}
 		// TODO: reset this frame command pool
 		CHECK_VK_RESULT(vkResetFences(m_device, 1, &m_frames_in_flight_fences[m_frames_in_flight_index]));
 
-		CHECK_VK_RESULT(vkAcquireNextImageKHR(m_device, m_swapchain, UINT64_MAX, m_image_available_sems[m_image_ava_sem_index], VK_NULL_HANDLE, &m_current_image_index));
+		VkResult result = vkAcquireNextImageKHR(m_device, m_swapchain, UINT64_MAX, m_image_available_sems[m_image_ava_sem_index], VK_NULL_HANDLE, &m_current_image_index);
+
+		switch (result)
+		{
+		case VK_SUCCESS:
+			break;
+		case VK_ERROR_OUT_OF_DATE_KHR:
+			m_resizeRequested = true;
+			return false;
+		default:
+			PE_CORE_ERROR("Unsupport error during acquiring next image.");
+			return false;
+		}
+		return true;
 	}
 
 	void VulkanContext::endFrame()
@@ -326,7 +347,10 @@ namespace PaperEngine {
 			.pImageIndices = &m_current_image_index
 		};
 
-		CHECK_VK_RESULT(vkQueuePresentKHR(m_present_queue, &present_info));
+		VkResult result = vkQueuePresentKHR(m_present_queue, &present_info);
+		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+			m_resizeRequested = true;
+		}
 		m_render_finish_sem_index = (m_render_finish_sem_index + 1) % (uint32_t)m_render_finish_sems.size();
 
 		CHECK_VK_RESULT(vkWaitForFences(m_device, 1, &m_frames_in_flight_fences[m_frames_in_flight_index], VK_TRUE, UINT64_MAX));

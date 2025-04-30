@@ -20,6 +20,8 @@ namespace PaperEngine {
 
 		MeshType get_type() const override;
 
+		uint32_t get_bone_count() const override { return m_boneCount; }
+
 	protected:
 		MeshType m_type{ MeshType::Static };
 
@@ -27,6 +29,8 @@ namespace PaperEngine {
 		// that store the vertex bone information 
 		// per vertex
 		Ref<VulkanBuffer> m_boneVertexBuffer;
+		uint32_t m_boneCount{ 0 };
+
 		Ref<VulkanBuffer> m_indexBuffer;
 
 		std::vector<SubMesh> m_subMeshes;

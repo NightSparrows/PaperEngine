@@ -48,6 +48,8 @@ namespace PaperEngine {
 		/// <returns></returns>
 		inline static Application& Get() { return *s_instance; }
 
+		PE_API static void Shutdown();
+
 	protected:
 		void on_event(Event& e);
 

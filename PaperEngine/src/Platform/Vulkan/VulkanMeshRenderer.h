@@ -17,7 +17,7 @@ namespace PaperEngine {
 
 		void prepareScene(const Scene& scene) override;
 
-		void render(CommandBufferHandle cmd, DescriptorSetHandle globalSet) override;
+		void render(CommandBufferHandle cmd, DescriptorSetHandle globalSet, uint32_t width, uint32_t height) override;
 
 		DescriptorSetHandle allocateInstanceSet() override;
 

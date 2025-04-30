@@ -64,6 +64,7 @@ namespace PaperEngine {
 		std::vector<SceneRenderFrame> m_frames;
 		std::vector<RendererHandle> m_renderers;
 
+		uint32_t m_width, m_height;
 
 	};
 

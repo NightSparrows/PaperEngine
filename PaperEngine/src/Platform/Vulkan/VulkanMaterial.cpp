@@ -92,6 +92,8 @@ namespace PaperEngine {
 		VulkanCommandBufferHandle cmd = CreateRef<VulkanCommandBuffer>();
 		uint32_t bufferInfoIndex = 0;
 		uint32_t imageInfoIndex = 0;
+
+		// first calculate the info count that need to be update
 		for (const auto& [binding, isDirty] : frameInfo.dirtySymbol) {
 			if (m_bindingData[binding].type == Uniformbuffer) {
 				bufferInfoIndex++;
@@ -109,6 +111,15 @@ namespace PaperEngine {
 		for (auto& [binding, isDirty] : frameInfo.dirtySymbol) {
 			auto& bindingData = m_bindingData[binding];
 			if (m_bindingData[binding].type == Uniformbuffer) {
+
+				// if no buffer is create
+				if (!frameInfo.bindings[binding].buffer) {
+					createUniformBuffer(frameInfo, binding, static_cast<uint32_t>(bindingData.buffer.size()));
+				}
+				if (frameInfo.bindings[binding].buffer->get_size() != bindingData.buffer.size()) {
+					createUniformBuffer(frameInfo, binding, static_cast<uint32_t>(bindingData.buffer.size()));
+				}
+
 				cmd->writeBuffer(frameInfo.bindings[binding].buffer, bindingData.buffer.data(), bindingData.buffer.size());
 
 				bufferInfos[bufferInfoIndex] = {
@@ -157,6 +168,15 @@ namespace PaperEngine {
 		for (auto& frameInfo : m_materialDataFrame) {
 			frameInfo.dirtySymbol[binding] = true;
 		}
+	}
+
+	void VulkanMaterial::createUniformBuffer(MaterialDataFrame& frameInfo, uint32_t binding, uint32_t size)
+	{
+		BufferSpecification uniformBufferSpec;
+		uniformBufferSpec
+			.setSize(size)
+			.setIsUniformBuffer(true);
+		frameInfo.bindings[binding].buffer = CreateRef<VulkanBuffer>(uniformBufferSpec);
 	}
 
 }

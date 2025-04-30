@@ -41,12 +41,12 @@ namespace PaperEngine {
 		void update() const;
 
 	protected:
-		glm::vec3 m_position;
+		glm::vec3 m_position{ 0, 0, 0 };
 		glm::quat m_rotation = glm::identity<glm::quat>();
 		glm::vec3 m_scale{ 1.f, 1.f, 1.f };
 
 		mutable bool m_isDirty{ true };
-		mutable glm::mat4 m_matrix;
+		mutable glm::mat4 m_matrix = glm::identity<glm::mat4>();
 
 	};
 
