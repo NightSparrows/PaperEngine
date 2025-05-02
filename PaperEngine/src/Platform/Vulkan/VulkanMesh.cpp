@@ -46,6 +46,41 @@ namespace PaperEngine {
 			m_subMeshes.emplace_back(subMesh.offset, subMesh.count);
 		}
 	}
+	Ref<Mesh> VulkanMesh::clone()
+	{
+		Ref<VulkanMesh> newMesh = CreateRef<VulkanMesh>();
+		newMesh->m_type = m_type;
+		newMesh->m_boneCount = m_boneCount;
+		newMesh->m_subMeshes = m_subMeshes;
+
+		BufferSpecification bufferSpec;
+		bufferSpec.setIsStorageBuffer(true);
+		bufferSpec.setSize(static_cast<uint32_t>(m_basicVertexBuffer->get_size()));
+		newMesh->m_basicVertexBuffer = CreateRef<VulkanBuffer>(bufferSpec);
+
+		if (m_type == MeshType::Animated) {
+			bufferSpec.setSize(static_cast<uint32_t>(m_boneVertexBuffer->get_size()));
+			newMesh->m_boneVertexBuffer = CreateRef<VulkanBuffer>(bufferSpec);
+		}
+
+		bufferSpec.isIndexBuffer = true;
+		bufferSpec.isStorageBuffer = false;
+		bufferSpec.setSize(static_cast<uint32_t>(m_indexBuffer->get_size()));
+		newMesh->m_indexBuffer = CreateRef<VulkanBuffer>(bufferSpec);
+
+
+		VulkanCommandBufferHandle cmd = CreateRef<VulkanCommandBuffer>();
+		cmd->open();
+
+		cmd->copyBuffer(m_basicVertexBuffer, newMesh->m_basicVertexBuffer, m_basicVertexBuffer->get_size(), 0, 0);
+		if (m_type == MeshType::Animated) {
+			cmd->copyBuffer(m_boneVertexBuffer, newMesh->m_boneVertexBuffer, m_boneVertexBuffer->get_size(), 0, 0);
+		}
+		cmd->copyBuffer(m_indexBuffer, newMesh->m_indexBuffer, m_indexBuffer->get_size(), 0, 0);
+
+		cmd->close();
+		VulkanContext::GetCommandBufferManager()->executeCommandBuffer(cmd);
+	}
 	MeshType VulkanMesh::get_type() const
 	{
 		return m_type;

@@ -32,6 +32,12 @@ namespace PaperEngine {
 
 		virtual void load_mesh_data(const MeshData& meshData) = 0;
 
+		/// <summary>
+		/// Clone the mesh (different buffers)
+		/// </summary>
+		/// <returns></returns>
+		virtual Ref<Mesh> clone() = 0;
+
 		virtual BufferHandle get_index_buffer() = 0;
 
 		virtual BufferHandle get_basic_vertex_buffer() = 0;

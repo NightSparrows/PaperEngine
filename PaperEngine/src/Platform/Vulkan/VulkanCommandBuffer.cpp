@@ -167,6 +167,16 @@ namespace PaperEngine {
 		m_buffers.push_back(buffer);
 	}
 
+	void VulkanCommandBuffer::copyBuffer(BufferHandle srcBuffer, BufferHandle dstBuffer, size_t size, size_t srcOffset, size_t dstOffset)
+	{
+		VkBufferCopy copy = {
+			.srcOffset = srcOffset,
+			.dstOffset = dstOffset,
+			.size = size,
+		};
+		vkCmdCopyBuffer(m_handle, std::static_pointer_cast<VulkanBuffer>(srcBuffer)->get_handle(), std::static_pointer_cast<VulkanBuffer>(dstBuffer)->get_handle(), 1, &copy);
+	}
+
 	void VulkanCommandBuffer::writeTexture(TextureHandle texture, const void* data, const ImageOffset& offset, const ImageExtent& extent)
 	{
 		PE_CORE_ASSERT(m_handle != VK_NULL_HANDLE, "Command buffer is not open, cannot write buffer.");

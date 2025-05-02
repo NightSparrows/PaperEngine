@@ -53,6 +53,16 @@ namespace PaperEngine {
 		/// <param name="offset"></param>
 		virtual void writeBuffer(BufferHandle buffer, const void* data, size_t size, size_t offset = 0) = 0;
 
+		/// <summary>
+		/// Copy the buffer data from a buffer to another
+		/// </summary>
+		/// <param name="srcBuffer"></param>
+		/// <param name="dstBuffer"></param>
+		/// <param name="size"></param>
+		/// <param name="srcOffset"></param>
+		/// <param name="dstOffset"></param>
+		virtual void copyBuffer(BufferHandle srcBuffer, BufferHandle dstBuffer, size_t size, size_t srcOffset, size_t dstOffset) = 0;
+
 		virtual void writeTexture(TextureHandle texture, const void* data, const ImageOffset& offset, const ImageExtent& extent) = 0;
 
 		/// <summary>

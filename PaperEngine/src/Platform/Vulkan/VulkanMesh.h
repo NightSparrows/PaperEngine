@@ -10,6 +10,8 @@ namespace PaperEngine {
 
 		void load_mesh_data(const MeshData& meshData) override;
 
+		Ref<Mesh> clone() override;
+
 		BufferHandle get_index_buffer() override { return m_indexBuffer; }
 
 		BufferHandle get_basic_vertex_buffer() override { return m_basicVertexBuffer; }
