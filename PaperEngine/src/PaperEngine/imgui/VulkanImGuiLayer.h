@@ -7,6 +7,8 @@
 
 #include <Platform/Vulkan/VulkanContext.h>
 
+#include <PaperEngine/renderer/Texture.h>
+
 namespace PaperEngine {
 
 	class VulkanImGuiLayer : public ImGuiLayer {
@@ -22,8 +24,14 @@ namespace PaperEngine {
 		void on_update(Timestep delta_time) override;
 		void on_event(Event& e) override;
 
+		// add a texture to present in imgui
+		// call it just one
+		static ImTextureID AddTextureImpl(VkSampler sampler, VkImageView imageView);
+
 	protected:
 		void create_framebuffers();
+
+		static void CheckVkError(VkResult err);
 
 	protected:
 		VkDescriptorPool m_descPool{ VK_NULL_HANDLE };
@@ -31,6 +39,9 @@ namespace PaperEngine {
 		VkRenderPass m_renderPass{ VK_NULL_HANDLE };
 
 		std::vector<VkFramebuffer> m_framebuffers;
+		// used to check whether the view is invalid
+		// not holding it
+		std::vector<VkImageView> m_swapchainViews;		
 		uint32_t m_width, m_height;
 	};
 

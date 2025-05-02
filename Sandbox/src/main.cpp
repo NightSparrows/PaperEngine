@@ -15,6 +15,7 @@
 #include <PaperEngine/events/KeyEvent.h>
 #include <PaperEngine/component/MeshComponent.h>
 #include <PaperEngine/core/Keyboard.h>
+#include <PaperEngine/component/TransformComponent.h>
 
 class TestLayer : public PaperEngine::Layer {
 public:
@@ -70,7 +71,7 @@ public:
 		PaperEngine::MeshHandle mesh = PaperEngine::Mesh::Create();
 		mesh->load_mesh_data(meshData);
 		
-		auto meshEntity = scene->create_entity();
+		meshEntity = scene->create_entity();
 		auto& meshCom = meshEntity.add_component<PaperEngine::MeshComponent>();
 		meshCom.mesh = mesh;
 		meshCom.materials.push_back(PaperEngine::Material::Create(PaperEngine::MaterialSpec{ .graphicsPipeline = graphicsPipeline }));
@@ -130,9 +131,16 @@ public:
 	}
 
 	void on_imgui_render() override {
-		//ImGui::Begin("Test Layer");
-		//ImGui::Text("Hello, World!");
-		//ImGui::End();
+		ImGui::Begin("Test Layer");
+		ImGui::Text("Hello, World!");
+		static float poxX = 0;
+		ImGui::SliderFloat("Pos X", &poxX, -100.f, 100.f);
+		ImGui::End();
+
+		auto& transformCom = meshEntity.get_component<PaperEngine::TransformComponent>();
+		glm::vec3 pos = transformCom.transform.get_position();
+		pos.x = poxX;
+		transformCom.transform.set_position(pos);
 		ImGui::ShowDemoWindow();
 	}
 private:
@@ -140,6 +148,7 @@ private:
 	PaperEngine::Ref<PaperEngine::Scene> scene;
 	PaperEngine::Ref<PaperEngine::SceneRenderer> sceneRenderer;
 	PaperEngine::Entity camEntity;
+	PaperEngine::Entity meshEntity;
 
 };
 

@@ -288,7 +288,7 @@ namespace PaperEngine {
 	bool VulkanContext::beginFrame()
 	{
 		if (m_resizeRequested) {
-			PE_CORE_INFO("Swapchain resize:");
+			PE_CORE_TRACE("Swapchain need to be recreate.");
 			if (!this->create_swapchain()) {
 				PE_CORE_ASSERT(false, "Failed to recreate swapchain.");
 				return false;
@@ -447,7 +447,7 @@ namespace PaperEngine {
 		vkb::SwapchainBuilder builder(m_device);
 
 		VkSurfaceFormatKHR swapchain_format = {
-			VK_FORMAT_R8G8B8A8_SRGB,
+			VK_FORMAT_R8G8B8A8_UNORM,
 			VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
 		};
 

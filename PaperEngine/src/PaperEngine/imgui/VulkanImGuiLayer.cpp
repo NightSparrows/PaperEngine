@@ -24,7 +24,11 @@ namespace PaperEngine {
 		ImGui::Render();
 		ImDrawData* draw_data = ImGui::GetDrawData();
 
-		if (m_width != VulkanContext::GetSwapchain().extent.width || m_height != VulkanContext::GetSwapchain().extent.height) {
+		if (m_swapchainViews[VulkanContext::GetCurrentImageIndex()] != 
+			VulkanContext::GetSwapchainTexture(
+				VulkanContext::GetCurrentImageIndex())->get_image_view()
+			) 
+		{
 			create_framebuffers();
 		}
 
@@ -41,6 +45,7 @@ namespace PaperEngine {
 			.clearValueCount = 0
 		};
 		vkCmdBeginRenderPass(cmd->get_handle(), &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
 
 		ImGui_ImplVulkan_RenderDrawData(draw_data, cmd->get_handle());
 		vkCmdEndRenderPass(cmd->get_handle());
@@ -131,7 +136,7 @@ namespace PaperEngine {
 		initInfo.ImageCount = VulkanContext::GetImageCount();
 		initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 		initInfo.Allocator = nullptr;
-		initInfo.CheckVkResultFn = nullptr; // TODO
+		initInfo.CheckVkResultFn = &VulkanImGuiLayer::CheckVkError; // TODO
 		ImGui_ImplVulkan_Init(&initInfo);
 #pragma endregion
 
@@ -189,6 +194,10 @@ namespace PaperEngine {
 			io.AddKeyEvent(imgui_key, false);
 			io.SetKeyEventNativeData(imgui_key, e.get_key_code(), e.get_scancode()); // To support legacy indexing (<1.87 user code)
 
+			io.AddKeyEvent(ImGuiKey_ModCtrl, (e.get_mods() & GLFW_MOD_CONTROL) != 0);
+			io.AddKeyEvent(ImGuiKey_ModShift, (e.get_mods() & GLFW_MOD_SHIFT) != 0);
+			io.AddKeyEvent(ImGuiKey_ModAlt, (e.get_mods() & GLFW_MOD_ALT) != 0);
+			io.AddKeyEvent(ImGuiKey_ModSuper, (e.get_mods() & GLFW_MOD_SUPER) != 0);
 			if (io.WantCaptureKeyboard)
 				return true;	// handle
 			return false;
@@ -231,6 +240,12 @@ namespace PaperEngine {
 			});
 	}
 
+	ImTextureID VulkanImGuiLayer::AddTextureImpl(VkSampler sampler, VkImageView imageView)
+	{
+		// Experimental
+		return reinterpret_cast<ImTextureID>(ImGui_ImplVulkan_AddTexture(sampler, imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL));
+	}
+
 	void VulkanImGuiLayer::create_framebuffers()
 	{
 		for (auto framebuffer : m_framebuffers) {
@@ -238,6 +253,7 @@ namespace PaperEngine {
 		}
 
 		m_framebuffers.resize(VulkanContext::GetImageCount());
+		m_swapchainViews.resize(VulkanContext::GetImageCount());
 		VkFramebufferCreateInfo createInfo = {
 			.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
 			.renderPass = m_renderPass,
@@ -250,12 +266,20 @@ namespace PaperEngine {
 		m_height = VulkanContext::GetSwapchain().extent.height;
 		for (uint32_t i = 0; i < VulkanContext::GetImageCount(); i++) {
 			VkImageView view = VulkanContext::GetSwapchainTexture(i)->get_image_view();
+			m_swapchainViews[i] = view;
 			createInfo.pAttachments = &view;
 			CHECK_VK_RESULT(vkCreateFramebuffer(VulkanContext::GetDevice(), &createInfo, nullptr, &m_framebuffers[i]));
 		}
 		ImGuiIO& io = ImGui::GetIO();
 		io.DisplaySize.x = static_cast<float>(m_width);
 		io.DisplaySize.y = static_cast<float>(m_height);
+	}
+
+	void VulkanImGuiLayer::CheckVkError(VkResult err)
+	{
+		if (err != VK_SUCCESS) {
+			PE_CORE_ERROR("[IMGUI] Vulkan error: {}", err);
+		}
 	}
 
 }

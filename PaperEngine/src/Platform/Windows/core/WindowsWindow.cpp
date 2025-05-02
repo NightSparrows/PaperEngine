@@ -50,6 +50,7 @@ namespace PaperEngine {
 
 	void WindowsWindow::init()
 	{
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);	// vulkan 
 		m_handle = glfwCreateWindow(m_data.width, m_data.height, m_data.title.c_str(), nullptr, nullptr);
 

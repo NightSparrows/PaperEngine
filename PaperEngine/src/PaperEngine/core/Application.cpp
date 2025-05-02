@@ -56,29 +56,29 @@ namespace PaperEngine {
 							layer->on_update(delta_time);
 						}
 					}
+					// render logic
+					m_imguiLayer->on_update(delta_time);
+					m_imguiLayer->begin_frame();
+					for (auto& layer : m_layerManager) {
+						layer->on_imgui_render();
+					}
+					m_window->on_update();
+					m_imguiLayer->end_frame();
+
+					PaperEngine::CommandBufferHandle cmd = PaperEngine::CommandBuffer::Create({ .isPrimary = true });
+
+					PaperEngine::TextureHandle swapchainTexture =
+						PaperEngine::Application::Get().get_window().get_context().get_swapchain_texture(PaperEngine::Application::Get().get_window().get_context().get_current_swapchain_index());
+					cmd->open();
+					// prepare swapchain to ready to 
+					cmd->setTextureState(swapchainTexture, PaperEngine::TextureState::Present);
+					cmd->close();
+
+					PaperEngine::Application::Get().get_window().get_context().executeCommandBuffer(cmd);
+
+					m_window->get_context().endFrame();
 				}
 
-				// render logic
-				m_imguiLayer->on_update(delta_time);
-				m_imguiLayer->begin_frame();
-				for (auto& layer : m_layerManager) {
-					layer->on_imgui_render();
-				}
-				m_window->on_update();
-				m_imguiLayer->end_frame();
-
-				PaperEngine::CommandBufferHandle cmd = PaperEngine::CommandBuffer::Create({ .isPrimary = true });
-
-				PaperEngine::TextureHandle swapchainTexture =
-					PaperEngine::Application::Get().get_window().get_context().get_swapchain_texture(PaperEngine::Application::Get().get_window().get_context().get_current_swapchain_index());
-				cmd->open();
-				// prepare swapchain to ready to 
-				cmd->setTextureState(swapchainTexture, PaperEngine::TextureState::Present);
-				cmd->close();
-
-				PaperEngine::Application::Get().get_window().get_context().executeCommandBuffer(cmd);
-
-				m_window->get_context().endFrame();
 			}
 
 
