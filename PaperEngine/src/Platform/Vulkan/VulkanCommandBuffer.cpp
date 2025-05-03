@@ -42,6 +42,7 @@ namespace PaperEngine {
 
 	void VulkanCommandBuffer::setViewports(uint32_t viewportCount, const Viewport* viewports, uint32_t firstViewport)
 	{
+		PE_CORE_ASSERT(m_handle != VK_NULL_HANDLE, "Command buffer is not open, cannot set viewports.");
 		std::vector<VkViewport> vkViewports(viewportCount);
 		for (uint32_t i = 0; i < viewportCount; i++) {
 			vkViewports[i].x = viewports[i].x;
@@ -61,6 +62,7 @@ namespace PaperEngine {
 
 	void VulkanCommandBuffer::setTextureState(TextureHandle texture, TextureState state)
 	{
+		PE_CORE_ASSERT(m_handle != VK_NULL_HANDLE, "Command buffer is not open, cannot change texture state.");
 		Ref<VulkanTexture> vkTexture = std::static_pointer_cast<VulkanTexture>(texture);
 
 		VkPipelineStageFlags srcStageMask;
@@ -169,6 +171,7 @@ namespace PaperEngine {
 
 	void VulkanCommandBuffer::copyBuffer(BufferHandle srcBuffer, BufferHandle dstBuffer, size_t size, size_t srcOffset, size_t dstOffset)
 	{
+		PE_CORE_ASSERT(m_handle != VK_NULL_HANDLE, "Command buffer is not open, cannot bind descriptor set.");
 		VkBufferCopy copy = {
 			.srcOffset = srcOffset,
 			.dstOffset = dstOffset,

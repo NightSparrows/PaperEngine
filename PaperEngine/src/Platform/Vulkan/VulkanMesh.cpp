@@ -80,6 +80,8 @@ namespace PaperEngine {
 
 		cmd->close();
 		VulkanContext::GetCommandBufferManager()->executeCommandBuffer(cmd);
+
+		return newMesh;
 	}
 	MeshType VulkanMesh::get_type() const
 	{
