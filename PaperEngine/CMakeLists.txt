@@ -73,3 +73,6 @@ target_include_directories(PaperEngine PUBLIC ${entt_SOURCE_DIR}/src)
 
 # include vk-bootstrap
 target_link_libraries(PaperEngine PUBLIC vk-bootstrap::vk-bootstrap)
+
+# include assimp
+target_link_libraries(PaperEngine PRIVATE assimp::assimp)

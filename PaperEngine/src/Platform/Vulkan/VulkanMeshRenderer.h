@@ -12,7 +12,7 @@ namespace PaperEngine {
 	public:
 		struct InstanceInfoUniformStruct {
 			glm::mat4 transform;
-			uint32_t meshType;
+			uint32_t meshType;				// using MeshType
 		};
 
 		void prepareScene(const Scene& scene) override;

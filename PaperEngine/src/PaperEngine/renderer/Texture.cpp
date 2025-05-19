@@ -17,7 +17,7 @@
 
 
 namespace PaperEngine {
-    PE_API Ref<Texture> Texture::Load2DFromFile(const std::string& filePath, bool genMipmap)
+    PE_API Ref<Texture> Texture::Load2DFromFile(const std::string& filePath, TextureLoadSpec loadSpec)
     {
         int texWidth, texHeight, texChannels;
         stbi_uc* imageData = stbi_load(filePath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
@@ -31,7 +31,7 @@ namespace PaperEngine {
         spec.width = static_cast<uint32_t>(texWidth);
         spec.height = static_cast<uint32_t>(texHeight);
         spec.format = TextureFormat::RGBA8;
-        if (genMipmap) {
+        if (loadSpec.genMipmap) {
             spec.canBeTransferSrc = true;
             // TODO: mip mapping subresource
         }

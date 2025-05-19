@@ -14,8 +14,8 @@ namespace PaperEngine {
 	}MeshType;
 
 	/// <summary>
-	/// Contain only vertex and index data
-	/// no descriptor set
+	/// Contain only vertex and index data in GPU side
+	/// no descriptor set, no material dependencies
 	/// </summary>
 	class Mesh {
 	public:

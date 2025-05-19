@@ -50,11 +50,15 @@ namespace PaperEngine {
 		ColorAttachment
 	}TextureState;
 
+	struct TextureLoadSpec {
+		bool genMipmap{ true };
+	};
+
 	class Texture {
 	public:
 		virtual ~Texture() = default;
 
-		PE_API static Ref<Texture> Load2DFromFile(const std::string& filePath, bool genMipmap = true);
+		PE_API static Ref<Texture> Load2DFromFile(const std::string& filePath, TextureLoadSpec loadSpec = TextureLoadSpec());
 
 		/// <summary>
 		/// Load the texture from raw data

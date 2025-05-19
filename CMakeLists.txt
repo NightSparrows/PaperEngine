@@ -80,6 +80,14 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(vk-bootstrap)
 
+# Fetch assimp
+FetchContent_Declare(
+	assimp
+    GIT_REPOSITORY https://github.com/assimp/assimp.git
+    GIT_TAG master # Replace with the latest version if needed
+)
+FetchContent_MakeAvailable(assimp)
+
 if (NOT Vulkan_FOUND)
     message(FATAL_ERROR "Vulkan SDK not found.")
 endif()
