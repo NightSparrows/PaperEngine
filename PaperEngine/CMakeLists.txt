@@ -25,11 +25,15 @@ endif()
 
 # copying dll to project
 if (PAPER_ENGINE_BUILD_SHARED)
-    add_custom_command(TARGET PaperEngine POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE_DIR:PaperEngine>/PaperEngine.dll  # Source: DLL location
-        $<TARGET_FILE_DIR:Sandbox>  # Destination: Executable folder
-    )
+	add_custom_command(TARGET PaperEngine POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different
+			$<IF:$<CONFIG:Debug>,
+				$<TARGET_FILE_DIR:PaperEngine>/PaperEngined.dll,
+				$<TARGET_FILE_DIR:PaperEngine>/PaperEngine.dll
+			>
+			$<TARGET_FILE_DIR:Sandbox>
+	)
+
 endif()
 # define for engine building
 target_compile_definitions(PaperEngine PRIVATE PE_BUILD_ITSELF)
