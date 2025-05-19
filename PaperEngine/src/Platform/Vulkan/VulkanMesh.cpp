@@ -43,7 +43,7 @@ namespace PaperEngine {
 		VulkanContext::GetCommandBufferManager()->executeCommandBuffer(std::static_pointer_cast<CommandBuffer>(cmd));
 
 		for (const auto& subMesh : meshData.subMeshData) {
-			m_subMeshes.emplace_back(subMesh.offset, subMesh.count);
+			m_subMeshes.emplace_back(subMesh.offset, subMesh.count, subMesh.materialIndex);
 		}
 	}
 	Ref<Mesh> VulkanMesh::clone()

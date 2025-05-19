@@ -19,9 +19,10 @@ namespace PaperEngine {
 			const auto& transform = transformCom.transform;
 			auto& renderCmd = m_renderCommands.emplace_back();
 			for (uint32_t i = 0; i < meshCom.mesh->get_sub_meshes().size(); i++) {
-				const auto& material = meshCom.materials[i];
-				renderCmd.graphicsPipeline = material->get_graphics_pipeline();
+				PE_CORE_ASSERT(meshCom.mesh->get_sub_meshes()[i].materialIndex < meshCom.materials.size(), "material index out of range");
+				const auto& material = meshCom.materials[meshCom.mesh->get_sub_meshes()[i].materialIndex];
 				renderCmd.material = material;
+				renderCmd.graphicsPipeline = material->get_graphics_pipeline();
 				renderCmd.mesh = meshCom.mesh;
 				renderCmd.submeshIndex = i;
 

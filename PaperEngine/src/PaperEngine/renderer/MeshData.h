@@ -17,10 +17,12 @@ namespace PaperEngine {
 		struct SubMeshData {
 			uint32_t offset;			// offset of index
 			uint32_t count;				// index count
+			uint32_t materialIndex;		// material index
 
-			SubMeshData(uint32_t off, uint32_t cou) {
+			SubMeshData(uint32_t off, uint32_t cou, uint32_t materialIdx) {
 				offset = off;
 				count = cou;
+				materialIndex = materialIdx;
 			}
 		};
 

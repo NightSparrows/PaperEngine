@@ -22,20 +22,26 @@ namespace PaperEngine {
 		struct SubMesh {
 			uint32_t offset;			// offset of index
 			uint32_t count;				// index count
+			uint32_t materialIndex;		// material index
 
-			SubMesh(uint32_t off, uint32_t cou) {
+			SubMesh(uint32_t off, uint32_t cou, uint32_t materialIdx) {
 				offset = off;
 				count = cou;
+				materialIndex = materialIdx;
 			}
 		};
 		virtual ~Mesh() = default;
+		Mesh(const Mesh&) = delete;
+		Mesh operator=(const Mesh&) = delete;
 
 		virtual void load_mesh_data(const MeshData& meshData) = 0;
 
 		/// <summary>
 		/// Clone the mesh (different buffers)
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>
+		/// new mesh
+		/// </returns>
 		virtual Ref<Mesh> clone() = 0;
 
 		virtual BufferHandle get_index_buffer() = 0;

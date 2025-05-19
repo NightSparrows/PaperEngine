@@ -6,7 +6,7 @@ namespace PaperEngine {
 
 	struct BufferSpecification
 	{
-		uint32_t size = 0;
+		size_t size = 0;
 		bool isVertexBuffer = false;
 		bool isStorageBuffer = false;
 		bool isIndexBuffer = false;
@@ -36,7 +36,7 @@ namespace PaperEngine {
 			return *this;
 		}
 
-		BufferSpecification& setSize(uint32_t size) {
+		BufferSpecification& setSize(size_t size) {
 			this->size = size;
 			return *this;
 		}

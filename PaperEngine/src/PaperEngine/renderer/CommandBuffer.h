@@ -92,7 +92,7 @@ namespace PaperEngine {
 		virtual void drawIndexed(uint32_t indexCount, uint32_t firstIndex = 0, uint32_t instanceCount = 1, uint32_t vertexOffset = 0, uint32_t firstInstance = 0) = 0;
 
 	public:
-		PE_API static Ref<CommandBuffer> Create(const CommandBufferSpec& spec);
+		PE_API static Ref<CommandBuffer> Create(const CommandBufferSpec& spec = CommandBufferSpec());
 
 	protected:
 		CommandBuffer() = default;

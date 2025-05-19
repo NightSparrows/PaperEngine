@@ -16,6 +16,7 @@
 #include <PaperEngine/component/MeshComponent.h>
 #include <PaperEngine/core/Keyboard.h>
 #include <PaperEngine/component/TransformComponent.h>
+#include <PaperEngine/mmd/MMDModel.h>
 
 class TestLayer : public PaperEngine::Layer {
 public:
@@ -66,7 +67,7 @@ public:
 		meshData.indexData.emplace_back(0);
 		meshData.indexData.emplace_back(3);
 		meshData.indexData.emplace_back(2);
-		meshData.subMeshData.emplace_back(0, 6);
+		meshData.subMeshData.emplace_back(0, 6, 0);
 
 		PaperEngine::MeshHandle mesh = PaperEngine::Mesh::Create();
 		mesh->load_mesh_data(meshData);
@@ -80,6 +81,9 @@ public:
 
 		meshCom.materials[0]->updateTexture(0, texture);
 
+		// test loading mmd
+		//PaperEngine::MMDModelHandle mmdModel = PaperEngine::MMDModel::Create();
+		//mmdModel->load("../../Sandbox/assets/model/kisaki/kisaki.pmx");
 	}
 
 	void on_detach() override {

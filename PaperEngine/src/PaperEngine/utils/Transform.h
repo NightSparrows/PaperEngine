@@ -10,6 +10,9 @@ namespace PaperEngine {
 	class Transform {
 	public:
 
+		Transform() = default;
+		Transform(const Transform&) = default;
+		Transform& operator=(const Transform&) = default;
 
 		/// <summary>
 		/// 

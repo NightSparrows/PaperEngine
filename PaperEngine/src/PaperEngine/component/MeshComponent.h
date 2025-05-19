@@ -22,11 +22,26 @@ namespace PaperEngine {
 		// mesh can be load in other thread, but the scene component edit must to in render thread
 		void setMesh(MeshHandle mesh) {
 			this->mesh = mesh;
-			if (instanceSets.size() != Application::Get().get_window().get_context().get_swapchain_image_count()) {
-				instanceSets.resize(Application::Get().get_window().get_context().get_swapchain_image_count());
+			const uint32_t swapchainCount = Application::Get().get_window().get_context().get_swapchain_image_count();
+			if (instanceSets.size() != swapchainCount) {
+				instanceSets.resize(swapchainCount);
 			}
 			// reset the descriptor set
 			instanceSets[Application::Get().get_window().get_context().get_current_swapchain_index()] = nullptr;
+
+#pragma region Create (initialize) bone transformation buffer for each swapchain in flight
+			if (mesh->get_type() == Animated) {
+				BufferSpecification boneTransformBufferSpec;
+				boneTransformBufferSpec
+					.setSize(mesh->get_bone_count() * sizeof(glm::mat4))
+					.setIsStorageBuffer(true);
+				this->boneTransformBuffer.resize(swapchainCount);
+				for (uint32_t i = 0; i < swapchainCount; i++) {
+					this->boneTransformBuffer[i] = Buffer::Create(boneTransformBufferSpec);
+				}
+			}
+#pragma endregion
+
 		}
 
 		// vector<Material> for materials it must be one by one to submeshes
