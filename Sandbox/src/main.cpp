@@ -16,7 +16,6 @@
 #include <PaperEngine/component/MeshComponent.h>
 #include <PaperEngine/core/Keyboard.h>
 #include <PaperEngine/component/TransformComponent.h>
-#include <PaperEngine/mmd/MMDModel.h>
 
 class TestLayer : public PaperEngine::Layer {
 public:
