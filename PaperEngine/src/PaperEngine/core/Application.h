@@ -48,6 +48,8 @@ namespace PaperEngine {
 		/// <returns></returns>
 		inline static Application& Get() { return *s_instance; }
 
+		static GraphicsAPI GetGraphicsAPI() { return s_instance->m_window->get_context().getGraphicsAPI(); }
+
 		PE_API static void Shutdown();
 
 	protected:

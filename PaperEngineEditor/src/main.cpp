@@ -16,6 +16,7 @@
 #include <PaperEngine/component/MeshComponent.h>
 #include <PaperEngine/core/Keyboard.h>
 #include <PaperEngine/component/TransformComponent.h>
+#include <PaperEngine/imgui/ImGuiUtils.h>
 
 class TestLayer : public PaperEngine::Layer {
 public:
@@ -29,7 +30,18 @@ public:
 
 		camEntity = scene->create_entity();
 		auto& cameraCom = camEntity.add_component<PaperEngine::CameraComponent>();
-		cameraCom.target = PaperEngine::RenderTexture::CreateSwapchainRenderTexture();
+		//cameraCom.target = PaperEngine::RenderTexture::CreateSwapchainRenderTexture();
+		PaperEngine::RenderTextureSpecification renderTextureSpec;
+		renderTextureSpec.width = 2560;
+		renderTextureSpec.height = 1440;
+		cameraCom.target = PaperEngine::RenderTexture::Create(renderTextureSpec);
+
+		m_textureIDs.resize(PaperEngine::Application::Get().get_window().get_context().get_swapchain_image_count());
+		for (uint32_t i = 0; i < m_textureIDs.size(); i++) {
+			auto texture = cameraCom.target->get_texture(i);
+			m_textureIDs[i] = PaperEngine::ImGuiUtils::GetImGuiTexture(texture);
+		}
+
 		cameraCom.cameraOrder = 1000;
 
 		auto testVertexShader = PaperEngine::Shader::Create();
@@ -135,17 +147,73 @@ public:
 	}
 
 	void on_imgui_render() override {
+
+		// Dockspace
+		static bool dockspaceOpen = true;
+		static bool opt_fullscreen_persistant = true;
+		bool opt_fullscreen = opt_fullscreen_persistant;
+		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+
+		ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+		if (opt_fullscreen) {
+			ImGuiViewport* viewport = ImGui::GetMainViewport();
+			ImGui::SetNextWindowPos(viewport->Pos);
+			ImGui::SetNextWindowSize(viewport->Size);
+			ImGui::SetNextWindowViewport(viewport->ID);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+			windowFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+			windowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+		}
+
+		if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode) {
+			windowFlags |= ImGuiWindowFlags_NoBackground;
+		}
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+		ImGui::Begin("DockSpace", &dockspaceOpen, windowFlags);
+		ImGui::PopStyleVar();
+
+		if (opt_fullscreen)
+			ImGui::PopStyleVar(2);
+
+		ImGuiIO& io = ImGui::GetIO();
+		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
+			ImGuiID dockspace_id = ImGui::GetID("DockSpace");
+			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+		}
+
+		if (ImGui::BeginMenuBar())
+		{
+			if (ImGui::BeginMenu("File"))
+			{
+
+				if (ImGui::MenuItem("Exit", "")) {
+					PaperEngine::Application::Shutdown();
+				}
+
+				ImGui::EndMenu();
+			}
+
+			ImGui::EndMenuBar();
+		}
+
+		// inside dockspace
+
 		ImGui::Begin("Test Layer");
 		ImGui::Text("Hello, World!");
 		static float poxX = 0;
 		ImGui::SliderFloat("Pos X", &poxX, -100.f, 100.f);
+		ImGui::Image(m_textureIDs[PaperEngine::Application::Get().get_window().get_context().get_current_swapchain_index()], ImVec2(2560, 1440));
 		ImGui::End();
 
 		auto& transformCom = meshEntity.get_component<PaperEngine::TransformComponent>();
 		glm::vec3 pos = transformCom.transform.get_position();
 		pos.x = poxX;
 		transformCom.transform.set_position(pos);
-		ImGui::ShowDemoWindow();
+
+
+		ImGui::End();
 	}
 private:
 	
@@ -153,6 +221,8 @@ private:
 	PaperEngine::Ref<PaperEngine::SceneRenderer> sceneRenderer;
 	PaperEngine::Entity camEntity;
 	PaperEngine::Entity meshEntity;
+
+	std::vector<ImTextureID> m_textureIDs;
 
 };
 
@@ -172,6 +242,6 @@ private:
 
 PaperEngine::Application* PaperEngine::CreateApplication(int argc, char** argv) {
 	PaperEngine::ApplicationSpecification spec;
-	spec.name = "Sandbox";
+	spec.name = "PaperEngineEditor";
 	return new SandboxApp(spec);
 }

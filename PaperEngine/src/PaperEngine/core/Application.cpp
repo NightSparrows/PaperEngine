@@ -22,6 +22,9 @@ namespace PaperEngine {
 		m_window->init();
 		m_window->set_event_callback(PE_BIND_EVENT_FN(Application::on_event));
 
+		m_imguiLayer = ImGuiLayer::Create();
+		m_imguiLayer->on_attach();
+
 	}
 
 	Application::~Application()
@@ -34,9 +37,6 @@ namespace PaperEngine {
 		PE_PROFILE_BEGIN_SESSION("Runtime", "PaperEngineProfile-Runtime.json");
 		//m_imguiLayer = new ImGuiLayer();
 		//push_overlay(m_imguiLayer);
-
-		m_imguiLayer = ImGuiLayer::Create();
-		m_imguiLayer->on_attach();
 
 		m_running = true;
 		Clock clock;

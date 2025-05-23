@@ -28,6 +28,10 @@ namespace PaperEngine {
 
 		void init() override;
 
+
+		GraphicsAPI getGraphicsAPI() override;
+
+
 		void cleanUp() override;
 
 		bool beginFrame() override;

@@ -24,17 +24,30 @@ if (PAPER_ENGINE_PROFILING)
 endif()
 
 # copying dll to project
-if (PAPER_ENGINE_BUILD_SHARED)
-	add_custom_command(TARGET PaperEngine POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_if_different
-			$<IF:$<CONFIG:Debug>,
-				$<TARGET_FILE_DIR:PaperEngine>/PaperEngined.dll,
-				$<TARGET_FILE_DIR:PaperEngine>/PaperEngine.dll
-			>
-			$<TARGET_FILE_DIR:Sandbox>
-	)
+#if (PAPER_ENGINE_BUILD_SHARED)
 
-endif()
+	# if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+		# add_custom_command(TARGET PaperEngine POST_BUILD
+			# COMMAND ${CMAKE_COMMAND} -E copy_if_different
+			# $<TARGET_FILE_DIR:PaperEngine>/PaperEngined.dll
+			# $<TARGET_FILE_DIR:PaperEngineEditor>
+			# COMMAND_EXPAND_LISTS
+			# COMMAND echo "Copying debug dll file"
+            # COMMENT "Copying debug dll file"
+		# )
+	# else()
+		# add_custom_command(TARGET PaperEngine POST_BUILD
+			# COMMAND ${CMAKE_COMMAND} -E copy_if_different
+			# $<TARGET_FILE_DIR:PaperEngine>/PaperEngine.dll
+			# $<TARGET_FILE_DIR:PaperEngineEditor>
+			# COMMAND_EXPAND_LISTS
+			# COMMAND echo "Copying debug dll file"
+            # COMMENT "Copying debug dll file"
+		# )
+	# endif()
+
+#endif()
+
 # define for engine building
 target_compile_definitions(PaperEngine PRIVATE PE_BUILD_ITSELF)
 

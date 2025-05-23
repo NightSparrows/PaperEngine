@@ -28,8 +28,12 @@ namespace PaperEngine {
 
 		VkFormat get_format() const { return m_format; }
 
+		VkSampler get_sampler() const { return m_sampler; }
+
 	protected:
 		void create_image_view();
+
+		void create_sampler();
 
 	public:
 
@@ -43,6 +47,8 @@ namespace PaperEngine {
 
 		VkFormat m_format{ VK_FORMAT_UNDEFINED };
 		VkImageType m_type{ VK_IMAGE_TYPE_MAX_ENUM };
+
+		VkSampler m_sampler{VK_NULL_HANDLE};
 
 		// whether the source (VkImage) is native or not
 		bool m_isNative{ false };

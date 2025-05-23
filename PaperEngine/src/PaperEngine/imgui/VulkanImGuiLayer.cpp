@@ -61,6 +61,7 @@ namespace PaperEngine {
 
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
 		io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
 		io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
@@ -75,6 +76,7 @@ namespace PaperEngine {
 			VkDescriptorPoolSize pool_sizes[] =
 			{
 				{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE },
+				{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 50 /* magic number of image allocation count */},
 			};
 			VkDescriptorPoolCreateInfo pool_info = {};
 			pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -85,6 +87,25 @@ namespace PaperEngine {
 			pool_info.poolSizeCount = (uint32_t)IM_ARRAYSIZE(pool_sizes);
 			pool_info.pPoolSizes = pool_sizes;
 			CHECK_VK_RESULT(vkCreateDescriptorPool(VulkanContext::GetDevice(), &pool_info, nullptr, &m_descPool));
+		}
+
+		// create image descriptor set layout
+		{
+			VkDescriptorSetLayoutCreateInfo create_info = {};
+			create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+
+			std::array<VkDescriptorSetLayoutBinding, 1> bindings;
+			bindings[0] = {
+				.binding = 0,
+				.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+				.descriptorCount = 1,
+				.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
+				.pImmutableSamplers = nullptr
+			};
+			create_info.bindingCount = static_cast<uint32_t>(bindings.size());
+			create_info.pBindings = bindings.data();
+
+			CHECK_VK_RESULT(vkCreateDescriptorSetLayout(VulkanContext::GetDevice(), &create_info, nullptr, &m_imageSetLayout));
 		}
 
 		// create render pass
@@ -155,6 +176,9 @@ namespace PaperEngine {
 
 		vkDestroyRenderPass(VulkanContext::GetDevice(), m_renderPass, nullptr);
 		m_renderPass = VK_NULL_HANDLE;
+
+		vkDestroyDescriptorSetLayout(VulkanContext::GetDevice(), m_imageSetLayout, nullptr);
+		m_imageSetLayout = VK_NULL_HANDLE;
 
 		vkDestroyDescriptorPool(VulkanContext::GetDevice(), m_descPool, nullptr);
 		m_descPool = VK_NULL_HANDLE;
@@ -240,10 +264,36 @@ namespace PaperEngine {
 			});
 	}
 
-	ImTextureID VulkanImGuiLayer::AddTextureImpl(VkSampler sampler, VkImageView imageView)
+	ImTextureID VulkanImGuiLayer::addTextureImpl(TextureHandle texture)
 	{
-		// Experimental
-		return reinterpret_cast<ImTextureID>(ImGui_ImplVulkan_AddTexture(sampler, imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL));
+		VulkanTextureHandle vkTexture = std::dynamic_pointer_cast<VulkanTexture>(texture);
+
+		// Create Descriptor Set:
+		VkDescriptorSet descriptor_set;
+		{
+			VkDescriptorSetAllocateInfo alloc_info = {};
+			alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+			alloc_info.descriptorPool = m_descPool;
+			alloc_info.descriptorSetCount = 1;
+			alloc_info.pSetLayouts = &m_imageSetLayout;
+			CHECK_VK_RESULT(vkAllocateDescriptorSets(VulkanContext::GetDevice(), &alloc_info, &descriptor_set));
+		}
+
+		// Update the Descriptor Set:
+		{
+			VkDescriptorImageInfo desc_image[1] = {};
+			desc_image[0].sampler = vkTexture->get_sampler();
+			desc_image[0].imageView = vkTexture->get_image_view();
+			desc_image[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			VkWriteDescriptorSet write_desc[1] = {};
+			write_desc[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			write_desc[0].dstSet = descriptor_set;
+			write_desc[0].descriptorCount = 1;
+			write_desc[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			write_desc[0].pImageInfo = desc_image;
+			vkUpdateDescriptorSets(VulkanContext::GetDevice(), 1, write_desc, 0, nullptr);
+		}
+		return (ImTextureID)descriptor_set;
 	}
 
 	void VulkanImGuiLayer::create_framebuffers()

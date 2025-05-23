@@ -26,6 +26,9 @@ namespace PaperEngine {
 
 		const entt::registry& get_registry() const { return m_registry; }
 
+	protected:
+		void remove_children(Entity entity);
+
 	private:
 		entt::registry m_registry;
 

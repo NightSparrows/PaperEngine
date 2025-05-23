@@ -243,6 +243,11 @@ namespace PaperEngine {
 		VulkanMeshRenderer::Init();
 	}
 
+	GraphicsAPI VulkanContext::getGraphicsAPI()
+	{
+		return GraphicsAPI::Vulkan;
+	}
+
 	void VulkanContext::cleanUp()
 	{
 		if (m_instance == VK_NULL_HANDLE)

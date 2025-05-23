@@ -1,14 +1,16 @@
-﻿#pragma once 
+﻿#pragma once
 
 #include <PaperEngine/renderer/Model.h>
 
 namespace PaperEngine {
 
-
-	class ModelLoader {
+	class AssimpLoader {
 	public:
 
+
 		static ModelHandle LoadModel(const std::string& path);
+
+
 	};
 
 }

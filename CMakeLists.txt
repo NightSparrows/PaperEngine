@@ -39,7 +39,7 @@ FetchContent_MakeAvailable(VMA)
 FetchContent_Declare(
 	imgui
     GIT_REPOSITORY https://github.com/ocornut/imgui.git
-    GIT_TAG master
+    GIT_TAG docking
 )
 FetchContent_MakeAvailable(imgui)
 
@@ -94,5 +94,6 @@ endif()
 
 add_subdirectory(PaperEngine)
 add_subdirectory(Sandbox)
+add_subdirectory(PaperEngineEditor)
 
 

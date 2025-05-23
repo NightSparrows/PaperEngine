@@ -98,6 +98,8 @@ namespace PaperEngine {
 				};
 				vkCmdSetScissor(std::static_pointer_cast<VulkanCommandBuffer>(cmd)->get_handle(), 0, 1, &scissor);
 				vkCmdSetViewport(std::static_pointer_cast<VulkanCommandBuffer>(cmd)->get_handle(), 0, 1, &viewport);
+
+				// set global set
 				cmd->bindDescriptorSet(0, globalSet);
 			}
 			if (currentMaterial != renderCmd.material) {

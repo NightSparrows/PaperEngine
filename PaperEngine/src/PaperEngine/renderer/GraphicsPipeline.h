@@ -116,5 +116,5 @@ namespace PaperEngine {
 
 	};
 
-	typedef Ref< GraphicsPipeline> GraphicsPipelineHandle;
+	typedef Ref<GraphicsPipeline> GraphicsPipelineHandle;
 }

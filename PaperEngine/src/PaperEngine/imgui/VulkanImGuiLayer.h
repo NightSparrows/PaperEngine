@@ -26,7 +26,7 @@ namespace PaperEngine {
 
 		// add a texture to present in imgui
 		// call it just one
-		static ImTextureID AddTextureImpl(VkSampler sampler, VkImageView imageView);
+		ImTextureID addTextureImpl(TextureHandle texture) override;
 
 	protected:
 		void create_framebuffers();
@@ -35,6 +35,8 @@ namespace PaperEngine {
 
 	protected:
 		VkDescriptorPool m_descPool{ VK_NULL_HANDLE };
+
+		VkDescriptorSetLayout m_imageSetLayout{ VK_NULL_HANDLE };
 
 		VkRenderPass m_renderPass{ VK_NULL_HANDLE };
 

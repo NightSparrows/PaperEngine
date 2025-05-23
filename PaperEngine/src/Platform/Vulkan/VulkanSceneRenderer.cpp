@@ -52,10 +52,10 @@ namespace PaperEngine {
 			return a->cameraOrder < b->cameraOrder;
 			});
 
+		// render each camera to its target (the primary camera to last and render to final image
 		for (const auto com : components) {
 			renderSceneCamera(com->camera, com->target->get_texture());
 		}
-		// render each camera to its target (the primary camera to last and render to final image
 	}
 
 	void VulkanSceneRenderer::addRenderer(RendererHandle renderer)

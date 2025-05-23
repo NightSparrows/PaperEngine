@@ -6,6 +6,7 @@ namespace PaperEngine {
 
 	struct TransformComponent {
 		Transform transform;
+
 	};
 
 }

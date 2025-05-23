@@ -58,6 +58,8 @@ namespace PaperEngine {
 	public:
 		virtual ~Texture() = default;
 
+
+
 		PE_API static Ref<Texture> Load2DFromFile(const std::string& filePath, TextureLoadSpec loadSpec = TextureLoadSpec());
 
 		/// <summary>

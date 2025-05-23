@@ -6,6 +6,13 @@
 #include <PaperEngine/renderer/CommandBuffer.h>
 
 namespace PaperEngine {
+
+	enum class GraphicsAPI
+	{
+		None = 0,
+		Vulkan = 1,
+	};
+
 	class GraphicsContext
 	{
 	public:
@@ -15,6 +22,8 @@ namespace PaperEngine {
 		GraphicsContext& operator=(const GraphicsContext&) = delete;
 
 		virtual void init() = 0;
+
+		virtual GraphicsAPI getGraphicsAPI() = 0;
 
 		virtual void cleanUp() = 0;
 

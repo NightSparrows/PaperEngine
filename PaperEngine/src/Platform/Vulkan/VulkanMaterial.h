@@ -15,11 +15,12 @@ namespace PaperEngine {
 	public:
 		enum BindingType {
 			Uniformbuffer,
-			Texture
+			Texture,
+			None,				// wired to the binding
 		};
 
 		struct MaterialCPUData {
-			BindingType type;
+			BindingType type{ None };
 			std::vector<char> buffer;
 			VulkanTextureHandle texture;
 		};

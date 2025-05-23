@@ -2,6 +2,9 @@
 
 #include <PaperEngine/core/Base.h>
 #include <PaperEngine/core/Layer.h>
+#include <PaperEngine/renderer/Texture.h>
+
+#include <imgui.h>
 
 namespace PaperEngine {
 
@@ -12,10 +15,16 @@ namespace PaperEngine {
 
 		virtual void end_frame() = 0;
 
+		virtual ImTextureID addTextureImpl(TextureHandle texture) = 0;
+
+
+
 		static Ref<ImGuiLayer> Create();
 
-	protected:
+		static std::shared_ptr<ImGuiLayer> GetInstance();
 
+	protected:
+		static std::weak_ptr<ImGuiLayer> s_instance;
 	};
 
 }
