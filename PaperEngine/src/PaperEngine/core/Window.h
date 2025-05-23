@@ -18,6 +18,8 @@ namespace PaperEngine {
 		uint32_t Width;
 		uint32_t Height;
 
+		bool disableMinimizeBox{ false };
+
 		WindowProps(const std::string& title = "Paper Engine",
 			uint32_t width = 1600,
 			uint32_t height = 900)

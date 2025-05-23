@@ -19,4 +19,13 @@ namespace PaperEngine {
 		return layerInstance->addTextureImpl(texture);
     }
 
+    PE_API void ImGuiUtils::FreeImGuiTexture(ImTextureID texture)
+    {
+        auto layerInstance = ImGuiLayer::GetInstance();
+        if (!layerInstance)
+            return;
+
+        return layerInstance->freeTextureImpl(texture);
+    }
+
 }

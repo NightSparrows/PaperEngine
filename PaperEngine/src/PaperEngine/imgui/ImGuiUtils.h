@@ -10,6 +10,7 @@ namespace PaperEngine {
 
 		PE_API static ImTextureID GetImGuiTexture(TextureHandle texture);
 
+		PE_API static void FreeImGuiTexture(ImTextureID texture);
 
 	};
 

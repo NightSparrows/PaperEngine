@@ -452,7 +452,7 @@ namespace PaperEngine {
 		vkb::SwapchainBuilder builder(m_device);
 
 		VkSurfaceFormatKHR swapchain_format = {
-			VK_FORMAT_R8G8B8A8_UNORM,
+			VK_FORMAT_R8G8B8A8_SRGB,
 			VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
 		};
 

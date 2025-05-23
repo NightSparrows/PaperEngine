@@ -28,14 +28,18 @@ public:
 
 		scene = PaperEngine::CreateRef<PaperEngine::Scene>();
 
+#pragma region Camera initialization demo for main camera
+
 		camEntity = scene->create_entity();
 		auto& cameraCom = camEntity.add_component<PaperEngine::CameraComponent>();
 		//cameraCom.target = PaperEngine::RenderTexture::CreateSwapchainRenderTexture();
 		PaperEngine::RenderTextureSpecification renderTextureSpec;
 		renderTextureSpec.width = 2560;
 		renderTextureSpec.height = 1440;
-		cameraCom.target = PaperEngine::RenderTexture::Create(renderTextureSpec);
+		m_sceneRenderTexture = PaperEngine::RenderTexture::Create(renderTextureSpec);
+		cameraCom.target = m_sceneRenderTexture;
 
+		// for editor scene showing
 		m_textureIDs.resize(PaperEngine::Application::Get().get_window().get_context().get_swapchain_image_count());
 		for (uint32_t i = 0; i < m_textureIDs.size(); i++) {
 			auto texture = cameraCom.target->get_texture(i);
@@ -43,6 +47,8 @@ public:
 		}
 
 		cameraCom.cameraOrder = 1000;
+		
+#pragma endregion
 
 		auto testVertexShader = PaperEngine::Shader::Create();
 		testVertexShader->load_from_file("../../Sandbox/assets/shaders/test/vert.spv");
@@ -101,6 +107,10 @@ public:
 	void on_detach() override {
 		scene.reset();
 		sceneRenderer.reset();
+		for (uint32_t i = 0; i < m_textureIDs.size(); i++) {
+			PaperEngine::ImGuiUtils::FreeImGuiTexture(m_textureIDs[i]);
+		}
+		m_sceneRenderTexture.reset();
 	}
 
 	void on_update(PaperEngine::Timestep delta_time) override {
@@ -204,8 +214,32 @@ public:
 		ImGui::Text("Hello, World!");
 		static float poxX = 0;
 		ImGui::SliderFloat("Pos X", &poxX, -100.f, 100.f);
-		ImGui::Image(m_textureIDs[PaperEngine::Application::Get().get_window().get_context().get_current_swapchain_index()], ImVec2(2560, 1440));
 		ImGui::End();
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+		ImGui::Begin("Scene");
+		ImVec2 viewportSize = ImGui::GetContentRegionAvail();
+		if (m_sceneViewportSize != viewportSize) {
+			m_sceneViewportSize = viewportSize;
+			m_sceneRenderTexture->change_size((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+			sceneRenderer->resize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+			auto cameraCom = camEntity.try_get_component<PaperEngine::CameraComponent>();
+			if (cameraCom) {
+				for (uint32_t i = 0; i < m_textureIDs.size(); i++) {
+					PaperEngine::ImGuiUtils::FreeImGuiTexture(m_textureIDs[i]);
+					auto texture = cameraCom->target->get_texture(i);
+					m_textureIDs[i] = PaperEngine::ImGuiUtils::GetImGuiTexture(texture);
+				}
+			}
+		}
+		else {
+			// skip this frame
+			ImGui::Image(
+				m_textureIDs[PaperEngine::Application::Get().get_window().get_context().get_current_swapchain_index()],
+				m_sceneViewportSize);
+		}
+		ImGui::End();
+		ImGui::PopStyleVar();
 
 		auto& transformCom = meshEntity.get_component<PaperEngine::TransformComponent>();
 		glm::vec3 pos = transformCom.transform.get_position();
@@ -221,6 +255,9 @@ private:
 	PaperEngine::Ref<PaperEngine::SceneRenderer> sceneRenderer;
 	PaperEngine::Entity camEntity;
 	PaperEngine::Entity meshEntity;
+
+	ImVec2 m_sceneViewportSize;
+	PaperEngine::RenderTextureHandle m_sceneRenderTexture;
 
 	std::vector<ImTextureID> m_textureIDs;
 
@@ -242,6 +279,6 @@ private:
 
 PaperEngine::Application* PaperEngine::CreateApplication(int argc, char** argv) {
 	PaperEngine::ApplicationSpecification spec;
-	spec.name = "PaperEngineEditor";
+	spec.name = "PaperEngine Editor";
 	return new SandboxApp(spec);
 }

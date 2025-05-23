@@ -17,7 +17,7 @@ namespace PaperEngine {
 
 		virtual ImTextureID addTextureImpl(TextureHandle texture) = 0;
 
-
+		virtual void freeTextureImpl(ImTextureID texture) = 0;
 
 		static Ref<ImGuiLayer> Create();
 

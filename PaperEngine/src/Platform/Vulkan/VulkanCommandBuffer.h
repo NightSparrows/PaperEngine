@@ -34,6 +34,8 @@ namespace PaperEngine {
 
 		void writeTexture(TextureHandle texture, const void* data, const ImageOffset& offset, const ImageExtent& extent) override;
 
+		void copyTexture(TextureHandle srcTexture, TextureHandle dstTexture, const ImageOffset& srcOffset, const ImageOffset& dstOffset, const ImageExtent& extent) override;
+
 		void bindDescriptorSet(uint32_t setSlot, DescriptorSetHandle set, BindPoint bindPoint = Graphics) override;
 
 		void bindDescriptorSets(uint32_t firstSet, uint32_t setCount, DescriptorSetHandle* set, BindPoint bindPoint = Graphics) override;

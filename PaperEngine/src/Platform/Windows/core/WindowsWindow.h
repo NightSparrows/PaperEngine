@@ -43,6 +43,8 @@ namespace PaperEngine {
     private:
         GLFWwindow* m_handle{ nullptr };
 
+		bool m_disableMinimizeBox{ false };
+
 		Scope<GraphicsContext> m_context;
 
         struct WindowData {

@@ -31,6 +31,7 @@ namespace PaperEngine {
 		m_data.height = props.Height;
 		m_data.width = props.Width;
 		m_data.title = props.Title;
+		m_disableMinimizeBox = props.disableMinimizeBox;
 
 		if (s_windowCount == 0)
 		{
@@ -50,14 +51,19 @@ namespace PaperEngine {
 
 	void WindowsWindow::init()
 	{
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);	// vulkan 
 		m_handle = glfwCreateWindow(m_data.width, m_data.height, m_data.title.c_str(), nullptr, nullptr);
 
 		PE_CORE_ASSERT(m_handle, "Failed to create GLFW window!");
 
 #ifdef PE_PLATFORM_WINDOWS
-		SetWindowLongPtr(glfwGetWin32Window(m_handle), GWL_STYLE, GetWindowLongPtrA(glfwGetWin32Window(m_handle), GWL_STYLE) & ~(WS_MAXIMIZEBOX | WS_MINIMIZEBOX));
+		//SetWindowLongPtr(glfwGetWin32Window(m_handle), GWL_STYLE, GetWindowLongPtrA(glfwGetWin32Window(m_handle), GWL_STYLE) & ~(WS_MAXIMIZEBOX | WS_MINIMIZEBOX));
+		auto style = GetWindowLongPtrA(glfwGetWin32Window(m_handle), GWL_STYLE);
+		if (m_disableMinimizeBox) {
+			style &= ~WS_MINIMIZEBOX;
+		}
+		SetWindowLongPtr(glfwGetWin32Window(m_handle), GWL_STYLE, style);
 #endif // PE_PLATFORM_WINDOWS
 
 		s_windowCount++;

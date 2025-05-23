@@ -142,6 +142,11 @@ namespace PaperEngine {
 
 	}
 
+	glm::ivec2 VulkanSceneRenderer::getSize() const
+	{
+		return { m_width, m_height };
+	}
+
 	void VulkanSceneRenderer::renderSceneCamera(const Camera& camera, TextureHandle targetImage)
 	{
 		auto& currentFrameInfo = m_frames[VulkanContext::GetCurrentImageIndex()];
@@ -184,24 +189,7 @@ namespace PaperEngine {
 		cmd->setTextureState(lastImage, TextureState::TransferSrc);
 		cmd->setTextureState(targetImage, TextureState::TransferDst);
 
-		VkImageCopy copy{};
-		copy.extent = { .width = lastImage->get_width(), .height = lastImage->get_height(), .depth = 1 };
-		copy.dstSubresource = {
-			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-			.layerCount = 1,
-		};
-		copy.srcSubresource = {
-			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-			.layerCount = 1,
-		};
-		vkCmdCopyImage(
-			cmd->get_handle(), 
-			lastImage->get_image(), 
-			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 
-			std::static_pointer_cast<VulkanTexture>(targetImage)->get_image(), 
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
-			1, 
-			&copy);
+		cmd->copyTexture(lastImage, targetImage, { 0, 0 }, { 0, 0 }, { lastImage->get_width(), lastImage->get_height(), 1 });
 
 #pragma endregion
 

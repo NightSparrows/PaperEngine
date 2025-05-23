@@ -28,6 +28,8 @@ namespace PaperEngine {
 		// call it just one
 		ImTextureID addTextureImpl(TextureHandle texture) override;
 
+		void freeTextureImpl(ImTextureID texture) override;
+
 	protected:
 		void create_framebuffers();
 
@@ -40,7 +42,7 @@ namespace PaperEngine {
 
 		VkRenderPass m_renderPass{ VK_NULL_HANDLE };
 
-		std::vector<VkFramebuffer> m_framebuffers;
+		std::vector<VulkanFramebufferHandle> m_framebuffers;
 		// used to check whether the view is invalid
 		// not holding it
 		std::vector<VkImageView> m_swapchainViews;		

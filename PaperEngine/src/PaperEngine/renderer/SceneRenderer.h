@@ -29,6 +29,8 @@ namespace PaperEngine {
 
 		virtual void addRenderer(RendererHandle renderer) = 0;
 
+		virtual glm::ivec2 getSize() const = 0;
+
 		PE_API static Ref<SceneRenderer> Create(const SceneRendererSpec& spec);
 
 	protected:

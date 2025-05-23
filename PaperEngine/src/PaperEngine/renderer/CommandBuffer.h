@@ -65,6 +65,8 @@ namespace PaperEngine {
 
 		virtual void writeTexture(TextureHandle texture, const void* data, const ImageOffset& offset, const ImageExtent& extent) = 0;
 
+		virtual void copyTexture(TextureHandle srcTexture, TextureHandle dstTexture, const ImageOffset& srcOffset, const ImageOffset& dstOffset, const ImageExtent& extent) = 0;
+
 		/// <summary>
 		/// Future support subresource
 		/// </summary>

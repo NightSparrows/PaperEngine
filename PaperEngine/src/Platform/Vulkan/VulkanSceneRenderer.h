@@ -29,6 +29,8 @@ namespace PaperEngine {
 
 		void createFramebuffers(uint32_t width, uint32_t height);
 
+		glm::ivec2 getSize() const override;
+
 	protected:
 
 		void renderSceneCamera(const Camera& camera, TextureHandle targetImage);

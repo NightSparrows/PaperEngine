@@ -199,6 +199,31 @@ namespace PaperEngine {
 		m_textures.push_back(texture);
 	}
 
+	void VulkanCommandBuffer::copyTexture(TextureHandle srcTexture, TextureHandle dstTexture, const ImageOffset& srcOffset, const ImageOffset& dstOffset, const ImageExtent& extent)
+	{
+		PE_CORE_ASSERT(m_handle != VK_NULL_HANDLE, "Command buffer is not open, cannot copy texture.");
+		VkImageCopy copy = {
+			.srcSubresource = {
+				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+				.mipLevel = 0,
+				.baseArrayLayer = 0,
+				.layerCount = 1
+			},
+			.srcOffset = { srcOffset.x, srcOffset.y, 0 },
+			.dstSubresource = {
+				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+				.mipLevel = 0,
+				.baseArrayLayer = 0,
+				.layerCount = 1
+			},
+			.dstOffset = { dstOffset.x, dstOffset.y, 0 },
+			.extent = { extent.width, extent.height, extent.depth }
+		};
+		vkCmdCopyImage(m_handle, std::static_pointer_cast<VulkanTexture>(srcTexture)->get_image(), std::static_pointer_cast<VulkanTexture>(srcTexture)->m_currentLayout, std::static_pointer_cast<VulkanTexture>(dstTexture)->get_image(), std::static_pointer_cast<VulkanTexture>(dstTexture)->m_currentLayout, 1, &copy);
+		m_textures.push_back(srcTexture);
+		m_textures.push_back(dstTexture);
+	}
+
 	void VulkanCommandBuffer::bindDescriptorSet(uint32_t setSlot, DescriptorSetHandle set, BindPoint bindPoint)
 	{
 		this->bindDescriptorSets(setSlot, 1, &set, bindPoint);
@@ -266,6 +291,11 @@ namespace PaperEngine {
 		vkCmdBeginRenderPass(m_handle, &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
 		m_framebuffers.push_back(framebuffer);	// hold it
 		m_currentFramebuffer = framebuffer;
+
+		// hold the attachments too
+		for (const auto& attachment : framebuffer->get_attachments()) {
+			m_textures.push_back(attachment.texture);
+		}
 	}
 
 	void VulkanCommandBuffer::endFramebuffer()

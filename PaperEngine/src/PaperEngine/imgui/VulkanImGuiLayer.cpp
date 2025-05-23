@@ -35,20 +35,11 @@ namespace PaperEngine {
 		VulkanCommandBufferHandle cmd = CreateRef<VulkanCommandBuffer>();
 		cmd->open();
 		cmd->setTextureState(VulkanContext::GetSwapchainTexture(VulkanContext::GetCurrentImageIndex()), TextureState::ColorAttachment);
-		VkRenderPassBeginInfo beginInfo = {
-			.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-			.renderPass = m_renderPass,
-			.framebuffer = m_framebuffers[VulkanContext::GetCurrentImageIndex()],
-			.renderArea = {
-				.extent = VulkanContext::GetSwapchain().extent,
-			},
-			.clearValueCount = 0
-		};
-		vkCmdBeginRenderPass(cmd->get_handle(), &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
+		cmd->beginFramebuffer(m_framebuffers[VulkanContext::GetCurrentImageIndex()]);
 
 		ImGui_ImplVulkan_RenderDrawData(draw_data, cmd->get_handle());
-		vkCmdEndRenderPass(cmd->get_handle());
+		cmd->endFramebuffer();
 		cmd->close();
 		VulkanContext::GetCommandBufferManager()->executeCommandBuffer(cmd);
 
@@ -170,9 +161,7 @@ namespace PaperEngine {
 
 		ImGui_ImplVulkan_Shutdown();
 
-		for (auto framebuffer : m_framebuffers) {
-			vkDestroyFramebuffer(VulkanContext::GetDevice(), framebuffer, nullptr);
-		}
+		m_framebuffers.clear();
 
 		vkDestroyRenderPass(VulkanContext::GetDevice(), m_renderPass, nullptr);
 		m_renderPass = VK_NULL_HANDLE;
@@ -296,29 +285,30 @@ namespace PaperEngine {
 		return (ImTextureID)descriptor_set;
 	}
 
+	void VulkanImGuiLayer::freeTextureImpl(ImTextureID texture)
+	{
+		CHECK_VK_RESULT(vkFreeDescriptorSets(VulkanContext::GetDevice(), m_descPool, 1, (VkDescriptorSet*)&texture));
+	}
+
 	void VulkanImGuiLayer::create_framebuffers()
 	{
-		for (auto framebuffer : m_framebuffers) {
-			vkDestroyFramebuffer(VulkanContext::GetDevice(), framebuffer, nullptr);
-		}
-
 		m_framebuffers.resize(VulkanContext::GetImageCount());
 		m_swapchainViews.resize(VulkanContext::GetImageCount());
-		VkFramebufferCreateInfo createInfo = {
-			.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-			.renderPass = m_renderPass,
-			.attachmentCount = 1,
-			.width = VulkanContext::GetSwapchain().extent.width,
-			.height = VulkanContext::GetSwapchain().extent.height,
-			.layers = 1
-		};
+
 		m_width = VulkanContext::GetSwapchain().extent.width;
 		m_height = VulkanContext::GetSwapchain().extent.height;
+		FramebufferSpec framebufferSpec = {
+			.width = m_width,
+			.height = m_height,
+			.renderPass = m_renderPass
+		};
+		framebufferSpec.attachments.resize(1);
 		for (uint32_t i = 0; i < VulkanContext::GetImageCount(); i++) {
 			VkImageView view = VulkanContext::GetSwapchainTexture(i)->get_image_view();
+			framebufferSpec.attachments[0].texture = VulkanContext::GetSwapchainTexture(i);
+
 			m_swapchainViews[i] = view;
-			createInfo.pAttachments = &view;
-			CHECK_VK_RESULT(vkCreateFramebuffer(VulkanContext::GetDevice(), &createInfo, nullptr, &m_framebuffers[i]));
+			m_framebuffers[i] = CreateRef<VulkanFramebuffer>(framebufferSpec);
 		}
 		ImGuiIO& io = ImGui::GetIO();
 		io.DisplaySize.x = static_cast<float>(m_width);
