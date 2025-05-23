@@ -76,6 +76,10 @@ namespace PaperEngine {
 		switch (state)
 		{
 		case TextureState::TransferDst:
+			if (vkTexture->m_currentLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+				// already in transfer dst state
+				return;
+			}
 			srcStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 			dstStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;			// when to start
 			barrier.srcAccessMask = 0;
@@ -93,6 +97,9 @@ namespace PaperEngine {
 			barrier.subresourceRange.layerCount = 1;
 			break;
 		case TextureState::TransferSrc:
+			if (vkTexture->m_currentLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL) {
+				return;
+			}
 			srcStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 			dstStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;			// when to start
 			barrier.srcAccessMask = 0;
@@ -110,6 +117,9 @@ namespace PaperEngine {
 			barrier.subresourceRange.layerCount = 1;
 			break;
 		case TextureState::ShaderReadOnly:
+			if (vkTexture->m_currentLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+				return;
+			}
 			srcStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;		// wait this stage to be finish (must after this stage) (where to wait for previous works to finish)
 			dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;		// wait after this stage (last stage) (block the next work from starting) (which stage will read this image)
 			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -124,6 +134,9 @@ namespace PaperEngine {
 			barrier.subresourceRange.layerCount = 1;
 			break;
 		case TextureState::Present:
+			if (vkTexture->m_currentLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR) {
+				return;
+			}
 			srcStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;		// wait this stage to be finish (must after this stage) (where to wait for previous works to finish)
 			dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;		// wait after this stage (last stage) (block the next work from starting)
 			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
@@ -138,6 +151,9 @@ namespace PaperEngine {
 			barrier.subresourceRange.layerCount = 1;
 			break;
 		case TextureState::ColorAttachment:
+			if (vkTexture->m_currentLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
+				return;
+			}
 			srcStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;		// wait this stage to be finish (must after this stage) (where to wait for previous works to finish)
 			dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;		// wait after this stage (last stage) (block the next work from starting)
 			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;

@@ -110,6 +110,7 @@ public:
 		for (uint32_t i = 0; i < m_textureIDs.size(); i++) {
 			PaperEngine::ImGuiUtils::FreeImGuiTexture(m_textureIDs[i]);
 		}
+		m_textureIDs.clear();
 		m_sceneRenderTexture.reset();
 	}
 
@@ -234,6 +235,14 @@ public:
 		}
 		else {
 			// skip this frame
+			auto cameraCom = camEntity.try_get_component<PaperEngine::CameraComponent>();
+			if (cameraCom) {
+				auto cmd = PaperEngine::CommandBuffer::Create({ .isPrimary = true });
+				cmd->open();
+				cmd->setTextureState(cameraCom->target->get_texture(PaperEngine::Application::Get().get_window().get_context().get_current_swapchain_index()), PaperEngine::TextureState::ShaderReadOnly);
+				cmd->close();
+				PaperEngine::Application::Get().get_window().get_context().executeCommandBuffer(cmd);
+			}
 			ImGui::Image(
 				m_textureIDs[PaperEngine::Application::Get().get_window().get_context().get_current_swapchain_index()],
 				m_sceneViewportSize);
