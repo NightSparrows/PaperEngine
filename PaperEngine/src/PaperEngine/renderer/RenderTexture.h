@@ -20,7 +20,7 @@ namespace PaperEngine {
 
 		PE_API TextureHandle get_texture(uint32_t index);
 
-		PE_API void change_size(uint32_t width, uint32_t height);
+		PE_API void resize(uint32_t width, uint32_t height);
 
 		PE_API static Ref<RenderTexture> Create(const RenderTextureSpecification& spec);
 

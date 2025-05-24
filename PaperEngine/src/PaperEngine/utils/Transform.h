@@ -30,11 +30,17 @@ namespace PaperEngine {
 
 		PE_API void set_scale(const glm::vec3& scale) { m_isDirty = true; m_scale = scale; }
 
+		PE_API glm::vec3& get_position() { m_isDirty = true; return m_position; }
+
 		PE_API const glm::vec3& get_position() const { return m_position; }
 
 		PE_API const glm::quat& get_rotation() const { return m_rotation; }
 
+		PE_API glm::quat& get_rotation() { return m_rotation; }
+
 		PE_API const glm::vec3& get_scale() const { return m_scale; }
+
+		PE_API glm::vec3& get_scale() { return m_scale; }
 
 		PE_API const glm::mat4& matrix() const;
 

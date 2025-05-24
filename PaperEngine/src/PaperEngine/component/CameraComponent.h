@@ -6,6 +6,17 @@
 
 namespace PaperEngine {
 
+	enum class CameraType {
+		/// <summary>
+		/// its will change the aspect ratio when the viewport is change
+		/// </summary>
+		MainCamera,				// the main camera, render to the swapchain
+		/// <summary>
+		/// You must control size manually
+		/// </summary>
+		RenderTexture			// render to a render texture
+	};
+
 	/// <summary>
 	/// There's no primary camera for it
 	/// just set by the editor (maybe)
@@ -16,14 +27,14 @@ namespace PaperEngine {
 		Camera camera;
 
 		void setAsMainCamera() {
-			isMainCamera = true;
+			cameraType = CameraType::MainCamera;
 			cameraOrder = UINT32_MAX;
 		}
 
 		// whether this camera is active or not
 		bool isAcive{ true };				
 
-		bool isMainCamera{ false };		// if this is the main camera, it will be render to the swapchain, or editor scene viewport in runtime
+		CameraType cameraType{ CameraType::MainCamera };
 
 		/// <summary>
 		/// If that scene can be render to the whole scene
@@ -31,6 +42,8 @@ namespace PaperEngine {
 		/// </summary>
 		uint32_t cameraOrder{ 0 };		// small number render first
 		// what texture render to
+		// I think no swapchain buffer render directly to anymore
+		// because the editor and runtime just very complex to seperate
 		RenderTextureHandle target;
 	};
 

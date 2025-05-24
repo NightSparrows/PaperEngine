@@ -2,11 +2,14 @@
 #include <PaperEngine/scene/Scene.h>
 #include <PaperEngine/scene/Entity.h>
 #include <PaperEngine/component/TransformComponent.h>
+#include <PaperEngine/component/CameraComponent.h>
+#include <PaperEngine/component/TagComponent.h>
 
 namespace PaperEngine {
 	Entity Scene::create_entity()
 	{
 		Entity entity = { m_registry.create(), this };
+		entity.add_component<TagComponent>();
 		// every entity need a transform component
 		entity.add_component<TransformComponent>();
 		entity.add_component<ChildComponent>();
@@ -30,6 +33,17 @@ namespace PaperEngine {
 
 
 		m_registry.destroy(entity.get_handle());
+	}
+
+	void Scene::on_resize(uint32_t width, uint32_t height)
+	{
+		auto view = m_registry.view<CameraComponent>();
+		for (auto entity : view) {
+			auto& camera = view.get<CameraComponent>(entity);
+			if (camera.cameraType == CameraType::MainCamera) {
+				camera.camera.set_viewport((float)width, (float)height);
+			}
+		}
 	}
 
 	void Scene::remove_children(Entity entity)

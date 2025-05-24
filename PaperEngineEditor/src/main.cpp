@@ -17,6 +17,9 @@
 #include <PaperEngine/core/Keyboard.h>
 #include <PaperEngine/component/TransformComponent.h>
 #include <PaperEngine/imgui/ImGuiUtils.h>
+#include <PaperEngine/component/TagComponent.h>
+
+#include "editor/SceneHierarchyPanel.h"
 
 class TestLayer : public PaperEngine::Layer {
 public:
@@ -26,11 +29,16 @@ public:
 		sceneRenderer = PaperEngine::SceneRenderer::Create({.width = 2560, .height = 1440});
 		sceneRenderer->addRenderer(PaperEngine::MeshRenderer::Create());
 
-		scene = PaperEngine::CreateRef<PaperEngine::Scene>();
+		// just for testing
+		m_activeScene = PaperEngine::CreateRef<PaperEngine::Scene>();
+
+		m_sceneHierarchyPanel.set_context(m_activeScene);
 
 #pragma region Camera initialization demo for main camera
 
-		camEntity = scene->create_entity();
+		camEntity = m_activeScene->create_entity();
+		auto& tagCom = camEntity.get_component<PaperEngine::TagComponent>();
+		tagCom.name = "Main Camera";
 		auto& cameraCom = camEntity.add_component<PaperEngine::CameraComponent>();
 		//cameraCom.target = PaperEngine::RenderTexture::CreateSwapchainRenderTexture();
 		PaperEngine::RenderTextureSpecification renderTextureSpec;
@@ -90,7 +98,9 @@ public:
 		PaperEngine::MeshHandle mesh = PaperEngine::Mesh::Create();
 		mesh->load_mesh_data(meshData);
 		
-		meshEntity = scene->create_entity();
+		meshEntity = m_activeScene->create_entity();
+		auto& meshEntityTag = meshEntity.get_component<PaperEngine::TagComponent>();
+		meshEntityTag.name = "Mesh Entity";
 		auto& meshCom = meshEntity.add_component<PaperEngine::MeshComponent>();
 		meshCom.mesh = mesh;
 		meshCom.materials.push_back(PaperEngine::Material::Create(PaperEngine::MaterialSpec{ .graphicsPipeline = graphicsPipeline }));
@@ -105,18 +115,20 @@ public:
 	}
 
 	void on_detach() override {
-		scene.reset();
+		m_activeScene.reset();
 		sceneRenderer.reset();
 		for (uint32_t i = 0; i < m_textureIDs.size(); i++) {
 			PaperEngine::ImGuiUtils::FreeImGuiTexture(m_textureIDs[i]);
 		}
 		m_textureIDs.clear();
 		m_sceneRenderTexture.reset();
+		m_sceneHierarchyPanel.set_context(nullptr);
 	}
 
 	void on_update(PaperEngine::Timestep delta_time) override {
 
 		// camera movement
+		if (m_sceneViewportFocused)
 		{
 			glm::vec3 moveVector(0);
 			if (PaperEngine::Keyboard::IsKeyDown(PaperEngine::Key::W)) {
@@ -136,12 +148,12 @@ public:
 			if (glm::length(moveVector) != 0) {
 				moveVector = glm::normalize(moveVector) * delta_time.to_seconds() * 100.f;
 
-				auto& camCom = camEntity.get_component<PaperEngine::CameraComponent>();
-				camCom.camera.set_position(camCom.camera.get_position() + moveVector);
+				auto& transform = camEntity.get_component<PaperEngine::TransformComponent>().transform;
+				transform.set_position(transform.get_position() + moveVector);
 			}
 		}
 
-		sceneRenderer->renderScene(*scene);
+		sceneRenderer->renderScene(*m_activeScene);
 
 		// 2d renderer for gui?
 
@@ -211,20 +223,16 @@ public:
 
 		// inside dockspace
 
-		ImGui::Begin("Test Layer");
-		ImGui::Text("Hello, World!");
-		static float poxX = 0;
-		ImGui::SliderFloat("Pos X", &poxX, -100.f, 100.f);
-		ImGui::End();
-
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 		ImGui::Begin("Scene");
 		ImVec2 viewportSize = ImGui::GetContentRegionAvail();
-		if (m_sceneViewportSize != viewportSize) {
+		m_sceneViewportFocused = ImGui::IsWindowFocused();
+		if (m_sceneViewportSize != viewportSize && (viewportSize.x != 0 && viewportSize.y != 0)) {
 			m_sceneViewportSize = viewportSize;
-			m_sceneRenderTexture->change_size((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+			m_sceneRenderTexture->resize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
 			sceneRenderer->resize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
 			auto cameraCom = camEntity.try_get_component<PaperEngine::CameraComponent>();
+			cameraCom->camera.set_viewport(viewportSize.x, viewportSize.y);
 			if (cameraCom) {
 				for (uint32_t i = 0; i < m_textureIDs.size(); i++) {
 					PaperEngine::ImGuiUtils::FreeImGuiTexture(m_textureIDs[i]);
@@ -250,26 +258,25 @@ public:
 		ImGui::End();
 		ImGui::PopStyleVar();
 
-		auto& transformCom = meshEntity.get_component<PaperEngine::TransformComponent>();
-		glm::vec3 pos = transformCom.transform.get_position();
-		pos.x = poxX;
-		transformCom.transform.set_position(pos);
-
+		// scene hierarchy panel
+		m_sceneHierarchyPanel.on_imgui_render();
 
 		ImGui::End();
 	}
 private:
 	
-	PaperEngine::Ref<PaperEngine::Scene> scene;
+	PaperEngine::Ref<PaperEngine::Scene> m_activeScene;
 	PaperEngine::Ref<PaperEngine::SceneRenderer> sceneRenderer;
 	PaperEngine::Entity camEntity;
 	PaperEngine::Entity meshEntity;
 
 	ImVec2 m_sceneViewportSize;
 	PaperEngine::RenderTextureHandle m_sceneRenderTexture;
+	bool m_sceneViewportFocused{ false };
 
 	std::vector<ImTextureID> m_textureIDs;
 
+	PaperEngine::SceneHierarchyPanel m_sceneHierarchyPanel;
 };
 
 class SandboxApp : public PaperEngine::Application {

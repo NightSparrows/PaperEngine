@@ -4,6 +4,7 @@
 #include <PaperEngine/scene/Scene.h>
 
 #include <PaperEngine/component/CameraComponent.h>
+#include <PaperEngine/component/TransformComponent.h>
 
 #include "VulkanSceneRenderer.h"
 #include "VulkanContext.h"
@@ -41,20 +42,27 @@ namespace PaperEngine {
 		}
 
 		// get cameras
-		std::vector<const CameraComponent*> components;
-		for (auto [entity, cameraCom] : scene.get_registry().view<CameraComponent>().each()) {
+		struct CameraInfo {
+			const CameraComponent* component;
+			glm::mat4 viewMatrix;
+		};
+		std::vector<CameraInfo> cameraInfos;
+		for (auto [entity, cameraCom, transCom] : scene.get_registry().view<CameraComponent, TransformComponent>().each()) {
 			if (!cameraCom.isAcive)
 				continue;
 
-			components.push_back(&cameraCom);
+			auto& info = cameraInfos.emplace_back();
+			info.component = &cameraCom;
+			info.viewMatrix = glm::inverse(transCom.transform.matrix());
+			//info.viewMatrix = transCom.transform.matrix();
 		}
-		std::sort(components.begin(), components.end(), [](const CameraComponent* a, const CameraComponent* b) {
-			return a->cameraOrder < b->cameraOrder;
+		std::sort(cameraInfos.begin(), cameraInfos.end(), [](const CameraInfo& a, const CameraInfo& b) {
+			return a.component->cameraOrder < b.component->cameraOrder;
 			});
 
 		// render each camera to its target (the primary camera to last and render to final image
-		for (const auto com : components) {
-			renderSceneCamera(com->camera, com->target->get_texture());
+		for (const auto& info : cameraInfos) {
+			renderSceneCamera(info.component->camera, info.viewMatrix, info.component->target->get_texture());
 		}
 	}
 
@@ -147,7 +155,7 @@ namespace PaperEngine {
 		return { m_width, m_height };
 	}
 
-	void VulkanSceneRenderer::renderSceneCamera(const Camera& camera, TextureHandle targetImage)
+	void VulkanSceneRenderer::renderSceneCamera(const Camera& camera, const glm::mat4 viewMatrix, TextureHandle targetImage)
 	{
 		auto& currentFrameInfo = m_frames[VulkanContext::GetCurrentImageIndex()];
 
@@ -156,17 +164,18 @@ namespace PaperEngine {
 		// 
 		GlobalUniformBufferStruct globalStruct{};
 		globalStruct.projectionMatrix = camera.get_projection_matrix();
-		globalStruct.viewMatrix = camera.get_view_matrix();
+		globalStruct.viewMatrix = viewMatrix;
 		cmd->open();
 		cmd->writeBuffer(currentFrameInfo.globalUniformBuffer, &globalStruct, sizeof(GlobalUniformBufferStruct));
 		cmd->close();
 		VulkanContext::GetCommandBufferManager()->executeCommandBuffer(cmd);
 
-		cmd->open();
-
-		// TODO: pre depth rendering
+		// TODO: pre depth rendering (for forward+ rendering)
+		// TODO: point lights map computing (for forward+ rendering)
 		// TODO: shadowmap rendering
 
+		// the main mesh rendering pass
+		cmd->open();
 		cmd->beginFramebuffer(currentFrameInfo.lightingFramebuffer);
 
 		// you must bind the global set after graphics pipeline is bind

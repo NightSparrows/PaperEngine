@@ -22,6 +22,8 @@ namespace PaperEngine {
 
 		void on_update(Timestep delta_time) {}
 
+		PE_API void on_resize(uint32_t width, uint32_t height);
+
 		entt::registry& get_registry() { return m_registry; }
 
 		const entt::registry& get_registry() const { return m_registry; }
@@ -32,7 +34,7 @@ namespace PaperEngine {
 	private:
 		entt::registry m_registry;
 
-		Ref<Camera> m_activeCamera;
+		entt::entity m_mainCameraEntity{ entt::null };
 
 		friend class Entity;
 	};

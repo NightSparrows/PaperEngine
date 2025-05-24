@@ -29,11 +29,12 @@ namespace PaperEngine {
 
 	std::shared_ptr<ImGuiLayer> ImGuiLayer::GetInstance()
 	{
-		if (s_instance.expired()) {
+		auto instance = s_instance.lock();
+		if (!instance) {
 			PE_CORE_ASSERT(false, "ImGuiLayer not created");
 			return nullptr;
 		}
-		return s_instance.lock();
+		return instance;
 	}
 
 }

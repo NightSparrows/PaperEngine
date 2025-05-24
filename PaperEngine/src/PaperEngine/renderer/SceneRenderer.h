@@ -23,6 +23,11 @@ namespace PaperEngine {
 		SceneRenderer(const SceneRenderer&) = delete;
 		SceneRenderer& operator=(const SceneRenderer&) = delete;
 
+		/// <summary>
+		/// Resize the renderer (usually resize the back buffers)
+		/// </summary>
+		/// <param name="width"></param>
+		/// <param name="height"></param>
 		virtual void resize(uint32_t width, uint32_t height) = 0;
 
 		virtual void renderScene(const Scene& scene) = 0;

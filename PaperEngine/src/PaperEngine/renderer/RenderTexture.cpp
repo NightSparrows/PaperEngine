@@ -33,7 +33,7 @@ namespace PaperEngine {
 		return m_impl->textures[index];
 	}
 
-	PE_API void RenderTexture::change_size(uint32_t width, uint32_t height)
+	PE_API void RenderTexture::resize(uint32_t width, uint32_t height)
 	{
 		m_textureSpec.width = width;
 		m_textureSpec.height = height;

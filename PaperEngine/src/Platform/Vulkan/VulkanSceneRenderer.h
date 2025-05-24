@@ -33,7 +33,7 @@ namespace PaperEngine {
 
 	protected:
 
-		void renderSceneCamera(const Camera& camera, TextureHandle targetImage);
+		void renderSceneCamera(const Camera& camera, const glm::mat4 viewMatrix, TextureHandle targetImage);
 
 	public:
 

@@ -113,8 +113,8 @@ public:
 			if (glm::length(moveVector) != 0) {
 				moveVector = glm::normalize(moveVector) * delta_time.to_seconds() * 100.f;
 
-				auto& camCom = camEntity.get_component<PaperEngine::CameraComponent>();
-				camCom.camera.set_position(camCom.camera.get_position() + moveVector);
+				auto& transform = camEntity.get_component<PaperEngine::TransformComponent>().transform;
+				transform.set_position(transform.get_position() + moveVector);
 			}
 		}
 

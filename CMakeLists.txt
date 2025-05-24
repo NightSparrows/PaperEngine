@@ -88,6 +88,14 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(assimp)
 
+# Fetch json
+FetchContent_Declare(
+	json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG develop # Replace with the latest version if needed
+)
+FetchContent_MakeAvailable(json)
+
 if (NOT Vulkan_FOUND)
     message(FATAL_ERROR "Vulkan SDK not found.")
 endif()

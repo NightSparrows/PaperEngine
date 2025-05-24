@@ -10,10 +10,14 @@ namespace PaperEngine {
 
 	class Entity {
 	public:
-		Entity() = default;
-		Entity(entt::entity handle, Scene* scene);
-		Entity(const Entity&) = default;
-		Entity& operator=(const Entity& other) = default;
+		/// <summary>
+		/// A blank entities with null
+		/// </summary>
+		/// <returns></returns>
+		PE_API Entity() = default;
+		PE_API Entity(entt::entity handle, Scene* scene);
+		PE_API Entity(const Entity&) = default;
+		PE_API Entity& operator=(const Entity& other) = default;
 
 		template<typename T, typename... Args>
 		T& add_component(Args&&... args) {
@@ -72,6 +76,19 @@ namespace PaperEngine {
 		entt::entity get_handle() const { return m_handle; }
 
 		glm::mat4 getWorldPosition() const;
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="newParent">
+		/// If this set to empty, this entity will be set to root of the scene.
+		/// </param>
+		void setParent(const Entity& newParent);
+
+		const Scene* get_scene() const { return m_scene; }
+
+	protected:
+		void remove_child(const Entity& child);
 
 	private:
 		entt::entity m_handle{ entt::null };

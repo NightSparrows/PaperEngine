@@ -13,34 +13,24 @@ namespace PaperEngine {
 	public:
 
 		Camera() = default;
-		Camera(const glm::vec3& position, const glm::quat& rotation, const glm::vec3& scale)
-			: m_position(position), m_rotation(rotation), m_scale(scale) {
-		}
 
-		void update() const {
-			if (m_isDirty) {
-				glm::mat4 transform = glm::translate(glm::mat4(1.f), m_position) *
-					glm::toMat4(m_rotation) *
-					glm::scale(glm::mat4(1.f), m_scale);
+		PE_API void update() const;
 
-				m_viewMatrix = glm::inverse(transform);
-				m_projectionMatrix = glm::perspective(glm::radians(m_fov), m_aspectRatio, m_zNear, m_zFar);
-				m_viewProjectionMatrix = m_projectionMatrix * m_viewMatrix;
-				m_isDirty = false;
-			}
-		}
+		void set_viewport(float width, float height) { m_aspectRatio = width / height; m_isDirty = true; }
 
-		void set_position(const glm::vec3& position) { m_position = position; m_isDirty = true; }
-		void set_rotation(const glm::quat& rotation) { m_rotation = rotation; m_isDirty = true; }
-		void set_scale(const glm::vec3& scale) { m_scale = scale; m_isDirty = true; }
+		void set_camera_quality(uint32_t quality) { m_cameraQuality = quality; }
 
-		const glm::vec3& get_position() const { return m_position; }
-		const glm::quat& get_rotation() const { return m_rotation; }
-		const glm::vec3& get_scale() const { return m_scale; }
-
-		const glm::mat4& get_view_matrix() const { update();  return m_viewMatrix; }
 		const glm::mat4& get_projection_matrix() const { update(); return m_projectionMatrix; }
-		const glm::mat4& get_view_projection_matrix() const { update(); return m_viewProjectionMatrix; }
+
+		uint32_t get_camera_quality() const { return m_cameraQuality; }
+
+		uint32_t& get_camera_quality() { return m_cameraQuality; }
+
+		float& fov() { m_isDirty = true; return m_fov; }
+
+		float& zNear() { m_isDirty = true; return m_zNear; }
+
+		float& zFar() { m_isDirty = true; return m_zFar; }
 
 	private:
 		mutable bool m_isDirty{ true };
@@ -50,13 +40,12 @@ namespace PaperEngine {
 		float m_zNear{ 0.1f };
 		float m_zFar{ 1000.f };
 
-		glm::vec3 m_position{ 0, 0, 0 };
-		glm::quat m_rotation = glm::identity<glm::quat>();
-		glm::vec3 m_scale{ 1.f, 1.f, 1.f };
-
-		mutable glm::mat4 m_viewMatrix{ 1.f };
 		mutable glm::mat4 m_projectionMatrix{ 1.f };
-		mutable glm::mat4 m_viewProjectionMatrix{ 1.f };
+
+		// the quality value for renderer to decide the quality it will draw for this camera
+		// 0 for the max quality
+		uint32_t m_cameraQuality{ 0 };
+
 
 		// TODO: target image 2d (where the scene to render)
 		//Ref<RenderTarget> m_renderTarget;

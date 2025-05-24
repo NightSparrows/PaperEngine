@@ -5,6 +5,8 @@ file(GLOB_RECURSE EDITOR_SOURCES src/*.cpp src/*.h)
 add_executable(PaperEngineEditor ${EDITOR_SOURCES})
 target_link_libraries(PaperEngineEditor PRIVATE PaperEngine)
 
+target_link_libraries(PaperEngineEditor PRIVATE nlohmann_json::nlohmann_json)
+
 if (PAPER_ENGINE_BUILD_SHARED)
 	add_custom_command(TARGET PaperEngineEditor POST_BUILD
 	  COMMAND ${CMAKE_COMMAND} 
