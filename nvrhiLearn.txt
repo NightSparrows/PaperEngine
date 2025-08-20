@@ -1,0 +1,4 @@
+
+
+drawIndexed
+使用vertexCount當成index count

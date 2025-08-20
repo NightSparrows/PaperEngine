@@ -1,0 +1,56 @@
+
+|- Scene Renderer
+	每個Camera都有一個自己的Scene Renderer
+	|- Size: Width, height
+	|- 使用Forward Plus
+	1. Filter Renderable Mesh (Frustum Culling)
+	1. Render Depth only
+		|- MeshDepthRenderer (使用Mesh但只Render depth，不care materials)
+	2. Calculate the lighting tiles (compute shader)
+	3. Render shadow maps
+		Directional Light一定需要
+		沒在light tiles裡的point light不用計算Shadow
+	4. Render scene
+	5. Post processing
+|- Graphics Pipeline
+	就是ShaderProgram
+|- Material
+	|- 使用Component
+	|- Graphics Pipeline: 使用什麼Shader
+	|- Variables list
+		{
+			[Name]
+			[Type]
+			[Value]
+		}
+		Variable:
+			|- Type: Buffer, Texture, float, int
+	|- Raw Data
+		nvrhi::BindingSetHandle bindingSet;
+|- Mesh 
+	|- 使用Component
+	|- AABB box
+		用來Cull （Frustum Culling）
+	|- Type:
+		- Static  ：只有position, normal, texcoord
+		- Animated：加上boneId, boneWeight
+	|- SubMeshes List
+		vertexOffset
+		vertexCount
+	|= Raw Data
+		nvrhi::BufferHandle meshBuffer;
+
+|- Skeleton
+	|- 使用Component
+	Animated Mesh 才需要
+	有BoneId - BoneName的List
+	|- Bone List
+		[BoneID]
+		[BoneName]
+	|- Raw Data
+		std::vector<BoneInfo> boneInfos;
+
+|- Script Component
+	|- namespace Name
+	|- className
+	
