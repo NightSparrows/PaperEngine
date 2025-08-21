@@ -2,7 +2,7 @@
 
 #include <PaperEngine/core/Layer.h>
 
-#include <imgui.h>
+#include <PaperEngine/imgui/ImGuiInclude.h>
 
 namespace PaperEngine {
 

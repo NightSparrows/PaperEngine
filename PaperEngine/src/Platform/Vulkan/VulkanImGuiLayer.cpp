@@ -4,8 +4,17 @@
 #include "VulkanImGuiLayer.h"
 
 #include <PaperEngine/core/Application.h>
+#include <PaperEngine/events/KeyEvent.h>
+#include <PaperEngine/events/MouseEvent.h>
 
 #include <vulkan/vulkan.h>
+
+// TODO if use GLFW
+#include <GLFW/glfw3.h>
+#include <backends/imgui_impl_glfw.h>
+ImGuiKey ImGui_ImplGlfw_KeyToImGuiKey(int keycode, int scancode);
+
+
 
 namespace PaperEngine {
 
@@ -275,8 +284,88 @@ namespace PaperEngine {
 		Application::Application::Get()->getGraphicsContext()->getNVRhiDevice()->executeCommandList(m_commandList);
 	}
 
-	void VulkanImGuiLayer::onEvent(Event&)
+	void VulkanImGuiLayer::onEvent(Event& e)
 	{
+		EventDispatcher dispatcher(e);
+		dispatcher.dispatch<KeyPressedEvent>([](KeyPressedEvent& e) {
+
+			ImGuiIO& io = ImGui::GetIO();
+			//ImGui_ImplGlfw_KeyCallback;
+			if (!e.IsRepeat()) {
+				ImGuiKey imgui_key = ImGui_ImplGlfw_KeyToImGuiKey(e.get_key_code(), e.get_scancode());
+				io.AddKeyEvent(imgui_key, true);
+				io.SetKeyEventNativeData(imgui_key, e.get_key_code(), e.get_scancode()); // To support legacy indexing (<1.87 user code)
+
+				io.AddKeyEvent(ImGuiKey_ModCtrl, (e.get_mods() & GLFW_MOD_CONTROL) != 0);
+				io.AddKeyEvent(ImGuiKey_ModShift, (e.get_mods() & GLFW_MOD_SHIFT) != 0);
+				io.AddKeyEvent(ImGuiKey_ModAlt, (e.get_mods() & GLFW_MOD_ALT) != 0);
+				io.AddKeyEvent(ImGuiKey_ModSuper, (e.get_mods() & GLFW_MOD_SUPER) != 0);
+			}
+			if (io.WantCaptureKeyboard)
+				return true;	// handle
+			return false;
+			});
+		dispatcher.dispatch<KeyReleasedEvent>([](KeyReleasedEvent& e) {
+
+			ImGuiIO& io = ImGui::GetIO();
+			ImGuiKey imgui_key = ImGui_ImplGlfw_KeyToImGuiKey(e.get_key_code(), e.get_scancode());
+			io.AddKeyEvent(imgui_key, false);
+			io.SetKeyEventNativeData(imgui_key, e.get_key_code(), e.get_scancode()); // To support legacy indexing (<1.87 user code)
+
+			io.AddKeyEvent(ImGuiKey_ModCtrl, (e.get_mods() & GLFW_MOD_CONTROL) != 0);
+			io.AddKeyEvent(ImGuiKey_ModShift, (e.get_mods() & GLFW_MOD_SHIFT) != 0);
+			io.AddKeyEvent(ImGuiKey_ModAlt, (e.get_mods() & GLFW_MOD_ALT) != 0);
+			io.AddKeyEvent(ImGuiKey_ModSuper, (e.get_mods() & GLFW_MOD_SUPER) != 0);
+			if (io.WantCaptureKeyboard)
+				return true;	// handle
+			return false;
+			});
+		dispatcher.dispatch<KeyTypedEvent>([](KeyTypedEvent& e) {
+			ImGuiIO& io = ImGui::GetIO();
+			io.AddInputCharacter(e.get_key_code());
+			if (io.WantCaptureKeyboard)
+				return true;	// handle
+			return false;
+			});
+		dispatcher.dispatch<MouseButtonPressedEvent>([](MouseButtonPressedEvent& e) {
+
+			ImGuiIO& io = ImGui::GetIO();
+			io.AddMouseButtonEvent(e.GetMouseButton(), true);
+			if (io.WantCaptureMouse)
+				return true;
+			return false;
+			});
+		dispatcher.dispatch<MouseButtonReleasedEvent>([](MouseButtonReleasedEvent& e) {
+			ImGuiIO& io = ImGui::GetIO();
+			io.AddMouseButtonEvent(e.GetMouseButton(), false);
+			if (io.WantCaptureMouse)
+				return true;
+			return false;
+			});
+		dispatcher.dispatch<MouseMovedEvent>([](MouseMovedEvent& e) {
+			ImGuiIO& io = ImGui::GetIO();
+
+			float x = e.GetX(), y = e.GetY();
+			if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+				int window_x, window_y;
+				glfwGetWindowPos((GLFWwindow*)Application::Get()->getWindow()->getNativeWindow(), &window_x, &window_y);
+				x += window_x;
+				y += window_y;
+			}
+
+			io.AddMousePosEvent(x, y);
+			if (io.WantCaptureMouse)
+				return true;
+			return false;
+			});
+		dispatcher.dispatch<MouseScrolledEvent>([](MouseScrolledEvent& e) {
+			ImGuiIO& io = ImGui::GetIO();
+			io.AddMouseWheelEvent(e.GetXOffset(), e.GetYOffset());
+			if (io.WantCaptureMouse)
+				return true;
+			return false;
+			});
+
 	}
 
 	void VulkanImGuiLayer::onImGuiRender()
