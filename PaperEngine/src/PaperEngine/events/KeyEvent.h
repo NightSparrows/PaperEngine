@@ -32,7 +32,7 @@ namespace PaperEngine {
 
 		bool IsRepeat() const { return m_IsRepeat; }
 
-		std::string ToString() const override
+		std::string toString() const override
 		{
 			std::stringstream ss;
 			ss << "KeyPressedEvent: " << m_keyCode << " (repeat = " << m_IsRepeat << ")";
@@ -51,7 +51,7 @@ namespace PaperEngine {
 			: KeyEvent(keycode, scancode, mods) {
 		}
 
-		std::string ToString() const override
+		std::string toString() const override
 		{
 			std::stringstream ss;
 			ss << "KeyReleasedEvent: " << m_keyCode;
@@ -68,7 +68,7 @@ namespace PaperEngine {
 			: KeyEvent(keycode, 0, 0) {
 		}
 
-		std::string ToString() const override
+		std::string toString() const override
 		{
 			std::stringstream ss;
 			ss << "KeyTypedEvent: " << m_keyCode;

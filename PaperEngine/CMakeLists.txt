@@ -10,6 +10,7 @@ file(GLOB_RECURSE PAPER_ENGINE_SOURCES src/*.cpp src/*.h)
 if (MSVC)
 	# parallel compiling
     add_compile_options(/MP)
+	
 endif()
 # target
 if (PAPER_ENGINE_BUILD_SHARED)
@@ -67,7 +68,7 @@ target_link_libraries(PaperEngine PUBLIC nvrhi_vk)
 target_include_directories(PaperEngine PUBLIC ${nvrhi_SOURCE_DIR}/include)
 
 # include vk-bootstrap
-# target_link_libraries(PaperEngine PUBLIC vk-bootstrap::vk-bootstrap)
+target_link_libraries(PaperEngine PUBLIC vk-bootstrap::vk-bootstrap)
 
 # include yaml
 # target_link_libraries(PaperEngine PRIVATE yaml-cpp)

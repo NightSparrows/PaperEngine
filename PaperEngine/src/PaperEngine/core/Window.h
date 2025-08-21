@@ -37,6 +37,8 @@ namespace PaperEngine {
 		virtual void init() = 0;
 		virtual void cleanUp() = 0;
 
+		virtual bool shouldClose() const = 0;
+
 		virtual void onUpdate() = 0;
 
 		virtual glm::vec2 getCursorDeltaPosition() const = 0;

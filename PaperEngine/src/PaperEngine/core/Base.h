@@ -53,7 +53,13 @@ namespace PaperEngine {
 	constexpr Ref<T> CreateRef(Args&& ... args) {
 		return std::make_shared<T>(std::forward<Args>(args)...);
 	}
+
+	template<typename T, typename U>
+	Ref<T> CastRef(const Ref<U>& input) {
+		return std::dynamic_pointer_cast<T>(input); // 可改 static_pointer_cast
+	}
+
 }
 
-
+#include <PaperEngine/core/Logger.h>
 #include <PaperEngine/core/Assert.h>

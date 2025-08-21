@@ -3,11 +3,11 @@
 #include <PaperEngine/core/Logger.h>
 #include <PaperEngine/core/Application.h>
 
-extern PaperEngine::Application* PaperEngine::CreateApplication(int argc, char** argv);
+extern PaperEngine::Application* PaperEngine::CreateApplication(int argc, const char** argv);
 
 namespace PaperEngine {
 
-	int PaperMain(int argc, char** argv) {
+	int PaperMain(int argc, const char** argv) {
 
 		// PaperEngine::Init();
 		Logger::Init();
@@ -25,13 +25,15 @@ namespace PaperEngine {
 #ifdef PE_DIST
 
 #ifdef PE_PLATFORM_WINDOWS
-PE_API int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hPreInst, LPSTR lpCmdLine, int nCmdShow) {
+int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPreInst, LPSTR lpCmdLine, int nCmdShow) {
+#else
+int main(int __argc, const char** __argv) {
+#endif // PE_PLATFORM_WINDOWS
 	return PaperEngine::PaperMain(__argc, __argv);
 }
-#endif // PE_PLATFORM_WINDOWS
 
 #else
-int main(int argc, char** argv) {
+int main(int argc, const char** argv) {
 	return PaperEngine::PaperMain(argc, argv);
 }
 

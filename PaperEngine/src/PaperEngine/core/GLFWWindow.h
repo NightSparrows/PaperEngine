@@ -24,6 +24,8 @@ namespace PaperEngine {
 
         void cleanUp() override;
 
+        bool shouldClose() const override;
+
         void onUpdate() override;
 
         glm::vec2 getCursorDeltaPosition() const override;

@@ -1,0 +1,24 @@
+[23:01:10] [warning] PaperEngine: [VULKAN] General: Layer VK_LAYER_OBS_HOOK uses API version 1.3 which is older than the application specified API version of 1.4. May cause issues.
+[23:01:10] [trace] PaperEngine: Object addresses:
+[23:01:10] [trace] PaperEngine:    0: 0x000001e5899352c0 
+[23:01:10] [warning] PaperEngine: [VULKAN] General: Layer VK_LAYER_RTSS uses API version 1.3 which is older than the application specified API version of 1.4. May cause issues.
+[23:01:10] [trace] PaperEngine: Object addresses:
+[23:01:10] [trace] PaperEngine:    0: 0x000001e5899352c0 
+[23:01:10] [trace] PaperEngine: [VulkanGraphicsContext] Swapchain recreated with size 2560x1440
+[23:01:10] [trace] PaperEngine: [Vulkan] Vulkan graphics context initialized successfully!
+[23:01:10] [trace] PaperEngine: VulkanImGuiLayer attached successfully.
+[23:01:10] [trace] PaperEngine: ImGui font texture updated successfully. view: 0x1e589cca540
+[23:01:10] [error] PaperEngine: [VULKAN] Validation: vkCreateGraphicsPipelines(): pCreateInfos[0].pStages[1] SPIR-V (VK_SHADER_STAGE_FRAGMENT_BIT) uses descriptor [Set 0, Binding 0, variable "sampler0"] of type VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE but expected VK_DESCRIPTOR_TYPE_SAMPLER or VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER.
+The Vulkan spec states: If a resource variable is declared in a shader, and the descriptor type is not VK_DESCRIPTOR_TYPE_MUTABLE_EXT, the corresponding descriptor set in layout must match the descriptor type (https://vulkan.lunarg.com/doc/view/1.4.321.1/windows/antora/spec/latest/chapters/pipelines.html#VUID-VkGraphicsPipelineCreateInfo-layout-07990)
+[23:01:10] [trace] PaperEngine: Object addresses:
+[23:01:10] [trace] PaperEngine:    0: 0x0000220000000022 
+[23:01:10] [trace] PaperEngine:    1: 0x00002f000000002f 
+[23:01:16] [trace] PaperEngine: [VulkanGraphicsContext] Swapchain recreated with size 3840x2035
+[23:01:17] [trace] PaperEngine: [VulkanGraphicsContext] Swapchain recreated with size 2560x1440
+[23:01:19] [trace] PaperEngine: [VulkanGraphicsContext] Swapchain recreated with size 3840x2035
+[23:01:21] [trace] PaperEngine: [VulkanGraphicsContext] Swapchain recreated with size 2560x1440
+[23:01:23] [trace] PaperEngine: [VulkanGraphicsContext] Swapchain recreated with size 1628x1440
+[23:01:24] [trace] PaperEngine: [VulkanGraphicsContext] Swapchain recreated with size 1029x1440
+[23:01:25] [trace] PaperEngine: [VulkanGraphicsContext] Swapchain recreated with size 2011x1440
+[23:01:26] [trace] PaperEngine: [VulkanGraphicsContext] Swapchain recreated with size 2598x1440
+[23:01:28] [trace] PaperEngine: [VulkanGraphicsContext] Swapchain recreated with size 2774x1440

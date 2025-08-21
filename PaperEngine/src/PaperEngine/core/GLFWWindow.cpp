@@ -175,6 +175,11 @@ namespace PaperEngine {
 		}
 	}
 
+	bool GLFWWindow::shouldClose() const
+	{
+		return glfwWindowShouldClose(m_handle) == GLFW_TRUE;
+	}
+
 	void GLFWWindow::onUpdate()
 	{
 		m_data.mouseDeltaX = 0;
