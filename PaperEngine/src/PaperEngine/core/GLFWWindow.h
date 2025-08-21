@@ -28,6 +28,8 @@ namespace PaperEngine {
 
         void onUpdate() override;
 
+        void setTitle(const std::string& title) override;
+
         glm::vec2 getCursorDeltaPosition() const override;
 
         void setEventCallback(const EventCallbackFn& callback) override;

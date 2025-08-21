@@ -41,6 +41,8 @@ namespace PaperEngine {
 
 		virtual void onUpdate() = 0;
 
+		virtual void setTitle(const std::string& title) = 0;
+
 		virtual glm::vec2 getCursorDeltaPosition() const = 0;
 
 		virtual void setEventCallback(const EventCallbackFn& callback) = 0;

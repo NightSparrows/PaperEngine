@@ -9,7 +9,7 @@
 
 #include <vulkan/vulkan.h>
 
-// TODO if use GLFW
+// 因為我的Engine Vulkan一定使用GLFW
 #include <GLFW/glfw3.h>
 #include <backends/imgui_impl_glfw.h>
 ImGuiKey ImGui_ImplGlfw_KeyToImGuiKey(int keycode, int scancode);
@@ -174,10 +174,10 @@ namespace PaperEngine {
 		ImGui::DestroyContext();
 	}
 
-	void VulkanImGuiLayer::onUpdate(float deltaTime)
+	void VulkanImGuiLayer::onUpdate(Timestep deltaTime)
 	{
 		ImGuiIO& io = ImGui::GetIO();
-		io.DeltaTime = deltaTime;
+		io.DeltaTime = deltaTime.toSeconds();
 	}
 
 	void VulkanImGuiLayer::onPreRender()

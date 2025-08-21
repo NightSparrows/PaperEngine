@@ -2,6 +2,7 @@
 
 #include <PaperEngine/core/Base.h>
 #include <PaperEngine/events/Event.h>
+#include <PaperEngine/core/Timestep.h>
 
 #include <nvrhi/nvrhi.h>
 
@@ -19,7 +20,7 @@ namespace PaperEngine {
 		/// Logic update, not rendering.
 		/// </summary>
 		/// <param name="deltaTime"></param>
-		virtual void onUpdate(float deltaTime) {}
+		virtual void onUpdate(Timestep deltaTime) {}
 
 		/// <summary>
 		/// 用於可以直接在該frame渲染的東西

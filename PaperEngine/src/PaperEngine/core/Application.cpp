@@ -6,10 +6,7 @@
 #include <PaperEngine/core/Assert.h>
 #include <PaperEngine/core/Logger.h>
 #include <PaperEngine/events/ApplicationEvent.h>
-
-
-void test() {
-}
+#include <PaperEngine/utils/Clock.h>
 
 namespace PaperEngine {
 
@@ -48,14 +45,28 @@ namespace PaperEngine {
 
 		// 測試用Command
 		auto cmd = m_graphicsContext->getNVRhiDevice()->createCommandList();
+		Clock clock;
+
+		Timestep FPSCounter(std::chrono::seconds(0));
+
 		while (m_running) {
 
+			auto deltaTime = clock.resetClock();
+			FPSCounter += deltaTime;
+
+			if (FPSCounter.toSeconds() >= 1.0f) {
+				// 每秒更新一次FPS
+				m_window->setTitle(fmt::format("Sandbox - FPS: {}", m_framePerSecond));
+				FPSCounter = Timestep(std::chrono::seconds(0));
+				m_framePerSecond = 0;
+			}
 			// update
+
 			{
 				m_window->onUpdate();
 				// Update logic, input handling, etc.
 				for (auto layer : m_layerManager) {
-					layer->onUpdate(0.2f);
+					layer->onUpdate(deltaTime); // TODO 修改
 				}
 			}
 
@@ -94,6 +105,7 @@ namespace PaperEngine {
 						m_graphicsContext->getNVRhiDevice()->executeCommandList(cmd);
 
 						m_graphicsContext->present();
+						m_framePerSecond++;
 					}
 				}
 			}

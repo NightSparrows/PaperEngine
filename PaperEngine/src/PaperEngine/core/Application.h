@@ -43,6 +43,7 @@ namespace PaperEngine {
 
 		/// <summary>
 		/// Used for after all of the engine stuff initialized
+		/// 就是Engine的物件的初始化完才呼叫這個函式。
 		/// </summary>
 		virtual void onInit() {}
 
@@ -78,6 +79,8 @@ namespace PaperEngine {
 		RenderAPI m_renderAPI = RenderAPI::Vulkan;
 
 		LayerManager m_layerManager;
+
+		uint32_t m_framePerSecond = 0;
 
 #ifdef PE_ENABLE_IMGUI
 		Ref<ImGuiLayer> m_imguiLayer;

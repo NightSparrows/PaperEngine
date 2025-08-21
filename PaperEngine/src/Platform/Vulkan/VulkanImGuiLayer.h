@@ -15,7 +15,7 @@ namespace PaperEngine {
 		/// Logic update, not rendering.
 		/// </summary>
 		/// <param name="deltaTime"></param>
-		void onUpdate(float deltaTime) override;
+		void onUpdate(Timestep deltaTime) override;
 
 		/// <summary>
 		/// 用於可以直接在該frame渲染的東西

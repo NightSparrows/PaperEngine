@@ -187,6 +187,12 @@ namespace PaperEngine {
 		glfwPollEvents();
 	}
 
+	void GLFWWindow::setTitle(const std::string& title)
+	{
+		m_data.title = title;
+		glfwSetWindowTitle(m_handle, m_data.title.c_str());
+	}
+
 	glm::vec2 GLFWWindow::getCursorDeltaPosition() const
 	{
 		return glm::vec2(static_cast<float>(m_data.mouseDeltaX), static_cast<float>(m_data.mouseDeltaY));
