@@ -45,14 +45,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(imgui)
 
-# get nvrhi
-FetchContent_Declare(
-    NVRHI
-    GIT_REPOSITORY https://github.com/NightSparrows/NVRHI.git
-    GIT_TAG main
-)
-FetchContent_MakeAvailable(NVRHI)
-
 # Fetch GLM
 FetchContent_Declare(
     glm
@@ -71,6 +63,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(entt)
 
 add_subdirectory(vendor/vk-bootstrap)
+add_subdirectory(vendor/NVRHI)
 
 add_subdirectory(PaperEngine)
 add_subdirectory(Sandbox)

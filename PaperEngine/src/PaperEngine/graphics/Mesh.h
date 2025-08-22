@@ -13,6 +13,7 @@ namespace PaperEngine {
 		///		vec3 normal;
 		///		vec2 texcoord;
 		/// }
+		/// 並且如果使用更新就會重新allocate
 		/// </summary>
 		Static,
 		/// <summary>
@@ -59,6 +60,8 @@ namespace PaperEngine {
 		/// <param name="size"></param>
 		/// <param name="indexOffset"></param>
 		void loadRawDataAsync(nvrhi::CommandListHandle cmd, const void* data, uint32_t size, uint32_t indexOffset);
+
+		void bindSubMesh(nvrhi::GraphicsState& state, nvrhi::DrawArguments& drawArgs, uint32_t subMeshIndex) const;
 
 		/// <summary>
 		/// 設定Mesh Type

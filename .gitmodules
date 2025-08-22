@@ -1,3 +1,6 @@
 [submodule "vendor/vk-bootstrap"]
 	path = vendor/vk-bootstrap
 	url = https://github.com/NightSparrows/vk-bootstrap
+[submodule "vendor/NVRHI"]
+	path = vendor/NVRHI
+	url = https://github.com/NightSparrows/NVRHI

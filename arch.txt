@@ -10,7 +10,7 @@
 	3. Render shadow maps
 		Directional Light一定需要
 		沒在light tiles裡的point light不用計算Shadow
-	4. Render scene
+	4. Render scene (Mesh Renderer)
 	5. Post processing
 |- Graphics Pipeline
 	就是ShaderProgram
