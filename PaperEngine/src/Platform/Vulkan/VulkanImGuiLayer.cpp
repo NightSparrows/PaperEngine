@@ -20,6 +20,8 @@ namespace PaperEngine {
 
 	void VulkanImGuiLayer::onAttach()
 	{
+		auto device = Application::Get()->getGraphicsContext()->getNVRhiDevice();
+
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 
@@ -41,7 +43,7 @@ namespace PaperEngine {
 
 
 
-		m_commandList = Application::Get()->getGraphicsContext()->getNVRhiDevice()->createCommandList();
+		m_commandList = device->createCommandList();
 
 		// loading shaders
 		{
@@ -65,7 +67,7 @@ namespace PaperEngine {
 				.setDebugName("ImGuiVertexShader")
 				.setShaderType(nvrhi::ShaderType::Vertex)
 				.setEntryName("main_vs");
-			m_vertexShader = Application::Get()->getGraphicsContext()->getNVRhiDevice()->createShader(
+			m_vertexShader = device->createShader(
 				shaderDesc,
 				vertexShaderData.data(), vertexShaderData.size());
 
@@ -88,7 +90,7 @@ namespace PaperEngine {
 				.setDebugName("ImGuiFragmentShader")
 				.setEntryName("main_ps")
 				.setShaderType(nvrhi::ShaderType::Pixel);
-			m_fragmentShader = Application::Get()->getGraphicsContext()->getNVRhiDevice()->createShader(
+			m_fragmentShader = device->createShader(
 				shaderDesc,
 				fragShaderData.data(), fragShaderData.size());
 
@@ -105,7 +107,7 @@ namespace PaperEngine {
 			{ "COLOR",		nvrhi::Format::RGBA8_UNORM,		1, 0, offsetof(ImDrawVert, col), sizeof(ImDrawVert), false }
 		};
 
-		m_shaderAttribLayout = Application::Get()->getGraphicsContext()->getNVRhiDevice()->createInputLayout(
+		m_shaderAttribLayout = device->createInputLayout(
 			vertexAttribLayouts,
 			sizeof(vertexAttribLayouts) / sizeof(nvrhi::VertexAttributeDesc),
 			m_vertexShader);
@@ -146,7 +148,7 @@ namespace PaperEngine {
 				nvrhi::BindingLayoutItem::Texture_SRV(0),
 				nvrhi::BindingLayoutItem::Sampler(0)
 			};
-			m_bindingLayout = Application::Get()->getGraphicsContext()->getNVRhiDevice()->createBindingLayout(layoutDesc);
+			m_bindingLayout = device->createBindingLayout(layoutDesc);
 
 			m_basePSODesc.primType = nvrhi::PrimitiveType::TriangleList;
 			m_basePSODesc.inputLayout = m_shaderAttribLayout;
@@ -160,7 +162,7 @@ namespace PaperEngine {
 			const auto desc = nvrhi::SamplerDesc()
 				.setAllAddressModes(nvrhi::SamplerAddressMode::Wrap)
 				.setAllFilters(true);
-			m_fontSampler = Application::Get()->getGraphicsContext()->getNVRhiDevice()->createSampler(desc);
+			m_fontSampler = device->createSampler(desc);
 
 			if (m_fontSampler == nullptr)
 				return;
