@@ -9,6 +9,11 @@
 
 #include "VulkanGraphicsContext.h"
 
+#ifdef PE_DEBUG
+#include <nvrhi/validation.h>
+#endif // PE_DEBUG
+
+
 // 啟用 Vulkan-Hpp 動態載入
 #include <vulkan/vulkan.hpp>
 namespace vk {
@@ -258,6 +263,10 @@ namespace PaperEngine {
 			.computeQueueIndex = static_cast<int>(m_instance.computeQueueIndex),
 		};
 		m_instance.device = nvrhi::vulkan::createDevice(deviceDesc);
+#ifdef PE_DEBUG
+		m_instance.validationDevice = nvrhi::validation::createValidationLayer(m_instance.device);
+#endif // PE_DEBUG
+
 #pragma endregion
 
 #pragma region Swapchain creation
@@ -307,7 +316,8 @@ namespace PaperEngine {
 
 		vkb::destroy_swapchain(m_instance.vkbSwapchain);
 
-		m_instance.device.Reset();
+		m_instance.validationDevice = nullptr;
+		m_instance.device = nullptr;
 
 		vkDestroyDevice(m_instance.vkbDevice, nullptr);
 
@@ -433,6 +443,8 @@ namespace PaperEngine {
 
 	nvrhi::DeviceHandle VulkanGraphicsContext::getNVRhiDevice() const
 	{
+		if (m_instance.validationDevice)
+			return m_instance.validationDevice;
 		return m_instance.device;
 	}
 

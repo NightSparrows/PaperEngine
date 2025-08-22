@@ -90,14 +90,16 @@ PS_INPUT main_vs(VS_INPUT input)
 	return output;
 }
 
-#if defined(SPIRV) || defined(TARGET_VULKAN)
-[[vk::binding(0, 0)]] SamplerState sampler0  : register(s0, space0);
-[[vk::binding(0, 0)]] Texture2D    texture0  : register(t0, space0);
-#else
+// #if defined(SPIRV) || defined(TARGET_VULKAN)
+// [[vk::binding(1, 0)]] SamplerState sampler0  : register(s1, space0);
+// [[vk::binding(0, 0)]] Texture2D    texture0  : register(t0, space0);
+// #else
+// sampler sampler0 : register(s1);
+// Texture2D texture0 : register(t0);
+
+// #endif
 sampler sampler0 : register(s0);
 Texture2D texture0 : register(t0);
-
-#endif
 
 float4 main_ps(PS_INPUT input) : SV_Target
 {

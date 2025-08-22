@@ -113,12 +113,9 @@ namespace PaperEngine {
 			m_graphicsContext->getNVRhiDevice()->runGarbageCollection();
 		}
 
+		cmd = nullptr;
+
 		m_layerManager.cleanUp();
-
-#ifdef PE_ENABLE_IMGUI
-		m_imguiLayer.reset();
-#endif // PE_ENABLE_IMGUI 
-
 
 		m_graphicsContext->cleanUp();
 
