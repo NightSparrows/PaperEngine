@@ -6,6 +6,20 @@
 
 namespace PaperEngine {
 
+	struct StaticVertex {
+		float position[3]; // vec3 position
+		float normal[3];   // vec3 normal
+		float texcoord[2]; // vec2 texcoord
+	};
+
+	struct SkeletalVertex {
+		float position[3]; // vec3 position
+		float normal[3];   // vec3 normal
+		float texcoord[2]; // vec2 texcoord
+		int boneIndices[4]; // ivec4 boneIndices
+		float boneWeights[4]; // vec4 boneWeights
+	};
+
 	enum class MeshType {
 		/// <summary>
 		/// vertex format {
@@ -40,55 +54,46 @@ namespace PaperEngine {
 		// 編輯Mesh的Submesh
 		std::vector<SubMeshInfo>& getSubMeshes() { return m_subMeshes; }
 
-		/// <summary>
-		/// 載入Raw資料到Mesh中，因為不需要Format
-		/// 速度是最快的
-		/// 這個method會自行allocate command buffer並執行資料上傳
-		/// </summary>
-		/// <param name="data"></param>
-		/// <param name="size"></param>
-		/// <param name="indexOffset"></param>
-		void loadRawData(const void* data, uint32_t size, uint32_t indexOffset);
+		void loadStaticMesh(nvrhi::CommandListHandle cmdList, const std::vector<StaticVertex>& vertices);
+
+		void loadSkeletalMesh(nvrhi::CommandListHandle cmdList, const std::vector<SkeletalVertex>& vertices);
+
+		void loadIndexBuffer(nvrhi::CommandListHandle cmdList, const void* indicesData, size_t indicesCount, nvrhi::Format type = nvrhi::Format::R32_UINT);
 
 		/// <summary>
-		/// 載入Raw資料到Mesh中，因為不需要Format
-		/// 速度是最快的
-		/// 需要給予command list來record上傳命令
+		/// Bind this Mesh
+		/// no submesh information
+		/// 使用mesh畫的順序為
+		/// bindMesh
+		///  for each submesh
+		///		bindSubMesh
+		///		drawIndexed
 		/// </summary>
-		/// <param name="cmd"></param>
-		/// <param name="data"></param>
-		/// <param name="size"></param>
-		/// <param name="indexOffset"></param>
-		void loadRawDataAsync(nvrhi::CommandListHandle cmd, const void* data, uint32_t size, uint32_t indexOffset);
+		/// <param name="state"></param>
+		/// <param name="drawArgs"></param>
+		void bindMesh(nvrhi::GraphicsState& state, nvrhi::DrawArguments& drawArgs) const;
 
-		void bindSubMesh(nvrhi::GraphicsState& state, nvrhi::DrawArguments& drawArgs, uint32_t subMeshIndex) const;
+		void bindSubMesh(nvrhi::DrawArguments& drawArgs, uint32_t subMeshIndex) const;
 
 		/// <summary>
 		/// 設定Mesh Type
 		/// 會依據該Type來決定Mesh的格式處理方式
 		/// </summary>
 		/// <param name="type"></param>
-		void setType(MeshType type) { m_type = type; }
 		MeshType getType() const { return m_type; }
-
-		void setIndexBufferOffset(uint32_t offset) { m_indexBufferOffset = offset; }
-		uint32_t getIndexBufferOffset() const { return m_indexBufferOffset; }
-
 
 	private:
 
-		/// Buffer結構
-		///     "Vertices"
-		///		"Indices"
-		nvrhi::BufferHandle m_buffer;
+		nvrhi::BufferHandle m_vertexBuffer;
+
+		nvrhi::Format m_indexFormat = nvrhi::Format::R32_UINT; // 預設為32位元整數索引格式
+		nvrhi::BufferHandle m_indexBuffer;
 
 		/// <summary>
 		/// 主要是用來區分materials
 		/// </summary>
 		std::vector<SubMeshInfo> m_subMeshes;
 		MeshType m_type = MeshType::Static;
-		// Index 資料在buffer的偏移量
-		uint32_t m_indexBufferOffset = 0;
 	};
 
 }

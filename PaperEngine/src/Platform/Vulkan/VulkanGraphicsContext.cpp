@@ -113,13 +113,7 @@ namespace PaperEngine {
 	{
 		PE_CORE_ASSERT(glfwVulkanSupported(), "GLFW is not support vulkan");
 
-		std::vector<const char*> layers = {
-#ifdef PE_DEBUG
-			"VK_LAYER_KHRONOS_validation"
-#endif
-		};
-
-		std::vector<const char*> extensions = {
+		std::vector<const char*> instanceExtensions = {
 			VK_KHR_SURFACE_EXTENSION_NAME,
 #if defined (_WIN32)
 			"VK_KHR_win32_surface",
@@ -144,7 +138,7 @@ namespace PaperEngine {
 				.request_validation_layers()
 				.set_debug_callback(VulkanDebugCallback)
 #endif // PE_DEBUG
-				.enable_extensions(extensions)
+				.enable_extensions(instanceExtensions)
 				.build();
 
 			if (!inst_result) {
@@ -261,6 +255,8 @@ namespace PaperEngine {
 			.transferQueueIndex = static_cast<int>(m_instance.transferQueueIndex),
 			.computeQueue = m_instance.computeQueue,
 			.computeQueueIndex = static_cast<int>(m_instance.computeQueueIndex),
+			.instanceExtensions = instanceExtensions.data(),
+			.numInstanceExtensions = instanceExtensions.size(),
 		};
 		m_instance.device = nvrhi::vulkan::createDevice(deviceDesc);
 #ifdef PE_DEBUG

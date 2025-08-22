@@ -24,7 +24,8 @@ namespace PaperEngine {
 
 		/// <summary>
 		/// 用於可以直接在該frame渲染的東西
-		/// 不需寫入swapchainImage
+		/// swapchainIndex已經更新了
+		/// 但不會寫入swapchainImage（因為swapchainImage不保證準備好）
 		/// </summary>
 		virtual void onPreRender() {}
 

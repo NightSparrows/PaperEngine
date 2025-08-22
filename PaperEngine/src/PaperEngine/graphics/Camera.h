@@ -4,6 +4,10 @@
 
 namespace PaperEngine {
 
+	/// <summary>
+	/// 只包含ProjectionMatrix
+	/// ViewMatrix由外部（如Transform component）
+	/// </summary>
 	class Camera {
 	public:
 		

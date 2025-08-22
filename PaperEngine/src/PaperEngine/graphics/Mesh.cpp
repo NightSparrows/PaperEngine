@@ -7,54 +7,105 @@
 
 namespace PaperEngine {
 
-	void Mesh::loadRawData(const void* data, uint32_t size, uint32_t indexOffset)
+	void Mesh::loadStaticMesh(nvrhi::CommandListHandle cmdList, const std::vector<StaticVertex>& vertices)
 	{
 		auto device = Application::Get()->getGraphicsContext()->getNVRhiDevice();
 
-		m_indexBufferOffset = indexOffset;
+		m_type = MeshType::Static;
 
-		auto bufferDesc = nvrhi::BufferDesc()
-			.setByteSize(size)
-			.setIsVertexBuffer(true)
-			.setIsIndexBuffer(true);
-		m_buffer = device->createBuffer(bufferDesc);
+		nvrhi::BufferDesc vertexBufferDesc;
+		vertexBufferDesc
+			.setByteSize(vertices.size() * sizeof(StaticVertex))
+			.setDebugName("StaticMeshVertexBuffer")
+			.setInitialState(nvrhi::ResourceStates::CopyDest)
+			.setIsVertexBuffer(true);
+		m_vertexBuffer = device->createBuffer(vertexBufferDesc);
 
-		auto cmd = device->createCommandList();
-		cmd->open();
-		cmd->writeBuffer(m_buffer, data, size);
-		cmd->close();
-		Application::Get()->getGraphicsContext()->getNVRhiDevice()->executeCommandList(cmd, nvrhi::CommandQueue::Copy);
+		cmdList->beginTrackingBufferState(m_vertexBuffer, nvrhi::ResourceStates::CopyDest);
+		cmdList->writeBuffer(m_vertexBuffer, vertices.data(), vertexBufferDesc.byteSize);
+		cmdList->setPermanentBufferState(m_vertexBuffer, nvrhi::ResourceStates::VertexBuffer);
 	}
 
-	void Mesh::loadRawDataAsync(nvrhi::CommandListHandle cmd, const void* data, uint32_t size, uint32_t indexOffset)
+	void Mesh::loadSkeletalMesh(nvrhi::CommandListHandle cmdList, const std::vector<SkeletalVertex>& vertices)
 	{
-		PE_CORE_ASSERT(cmd, "Mesh::loadRawDataAsync: Command list is null");
-
 		auto device = Application::Get()->getGraphicsContext()->getNVRhiDevice();
 
-		m_indexBufferOffset = indexOffset;
-
-		auto bufferDesc = nvrhi::BufferDesc()
-			.setByteSize(size)
-			.setIsVertexBuffer(true)
-			.setIsIndexBuffer(true);
-		m_buffer = device->createBuffer(bufferDesc);
-
-		cmd->writeBuffer(m_buffer, data, size);
+		m_type = MeshType::Skeletal;
+		
+		nvrhi::BufferDesc vertexBufferDesc;
+		vertexBufferDesc
+			.setByteSize(vertices.size() * sizeof(SkeletalVertex))
+			.setDebugName("SkeletalMeshVertexBuffer")
+			.setInitialState(nvrhi::ResourceStates::CopyDest)
+			.setIsVertexBuffer(true);
+		m_vertexBuffer = device->createBuffer(vertexBufferDesc);
+		cmdList->beginTrackingBufferState(m_vertexBuffer, nvrhi::ResourceStates::CopyDest);
+		cmdList->writeBuffer(m_vertexBuffer, vertices.data(), vertexBufferDesc.byteSize);
+		cmdList->setPermanentBufferState(m_vertexBuffer, nvrhi::ResourceStates::VertexBuffer);
 	}
 
-	void Mesh::bindSubMesh(nvrhi::GraphicsState& state, nvrhi::DrawArguments& drawArgs, uint32_t subMeshIndex) const
+	void Mesh::loadIndexBuffer(nvrhi::CommandListHandle cmdList, const void* indicesData, size_t indicesCount, nvrhi::Format type)
 	{
-		PE_CORE_ASSERT(subMeshIndex < m_subMeshes.size(), "Mesh::bindSubMesh: subMeshIndex out of range");
+		auto device = Application::Get()->getGraphicsContext()->getNVRhiDevice();
+
+		m_indexFormat = type;
+		
+		nvrhi::BufferDesc indexBufferDesc;
+		indexBufferDesc
+			.setByteSize(indicesCount * (type == nvrhi::Format::R16_UINT ? sizeof(uint16_t) : sizeof(uint32_t)))
+			.setDebugName("MeshIndexBuffer")
+			.setInitialState(nvrhi::ResourceStates::CopyDest)
+			.setIsIndexBuffer(true);
+		m_indexBuffer = device->createBuffer(indexBufferDesc);
+		cmdList->beginTrackingBufferState(m_indexBuffer, nvrhi::ResourceStates::CopyDest);
+		cmdList->writeBuffer(m_indexBuffer, indicesData, indexBufferDesc.byteSize);
+		cmdList->setPermanentBufferState(m_indexBuffer, nvrhi::ResourceStates::IndexBuffer);
+	}
+
+	void Mesh::bindMesh(nvrhi::GraphicsState& state, nvrhi::DrawArguments& drawArgs) const
+	{
+		state.indexBuffer.buffer = m_indexBuffer;
+		state.indexBuffer.format = m_indexFormat; // Assuming 32-bit indices, can be changed if needed
+		state.indexBuffer.offset = 0;
+		switch (m_type)
+		{
+		case PaperEngine::MeshType::Static:
+		{
+			state.vertexBuffers = {
+				{ m_vertexBuffer, 0, offsetof(StaticVertex, position) },
+				{ m_vertexBuffer, 1, offsetof(StaticVertex, normal) },
+				{ m_vertexBuffer, 2, offsetof(StaticVertex, texcoord) }
+			};
+		}
+			break;
+		case PaperEngine::MeshType::Skeletal:
+		{
+			state.vertexBuffers = {
+				{ m_vertexBuffer, 0, offsetof(SkeletalVertex, position) },
+				{ m_vertexBuffer, 1, offsetof(SkeletalVertex, normal) },
+				{ m_vertexBuffer, 2, offsetof(SkeletalVertex, texcoord) },
+				{ m_vertexBuffer, 3, offsetof(SkeletalVertex, boneIndices) },
+				{ m_vertexBuffer, 4, offsetof(SkeletalVertex, boneWeights) }
+			};
+		}
+			break;
+		default:
+			break;
+		}
+	}
+
+	void Mesh::bindSubMesh(nvrhi::DrawArguments& drawArgs, uint32_t subMeshIndex) const
+	{
+		if (subMeshIndex >= m_subMeshes.size())
+		{
+			PE_CORE_ERROR("SubMesh index out of range: {}", subMeshIndex);
+			return;
+		}
 		const SubMeshInfo& subMesh = m_subMeshes[subMeshIndex];
-		
-		state.indexBuffer.buffer = m_buffer;
-		state.indexBuffer.format = nvrhi::Format::R32_UINT; // Assuming 32-bit indices, can be changed if needed
-		state.indexBuffer.offset = m_indexBufferOffset;
-		
 		drawArgs.vertexCount = subMesh.indicesCount;
 		drawArgs.startIndexLocation = subMesh.indicesOffset;
-		drawArgs.startVertexLocation = 0; // Assuming no vertex offset, can be modified if needed
+		drawArgs.startVertexLocation = 0;
+		drawArgs.startInstanceLocation = 0;
 	}
 
 }
