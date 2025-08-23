@@ -15,6 +15,8 @@
 #ifdef PE_PLATFORM_WINDOWS
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
+#include <ShellScalingApi.h>
+#pragma comment(lib, "Shcore.lib")
 #endif // PE_PLATFORM_WINDOWS
 
 namespace PaperEngine {
@@ -78,6 +80,46 @@ namespace PaperEngine {
 			WindowResizeEvent e(data->width, data->height);
 			data->eventCallback(e);
 			});
+
+		glfwSetWindowPosCallback(m_handle, [](GLFWwindow* window, int xpos, int ypos) {
+			WindowData* data = (WindowData*)glfwGetWindowUserPointer(window);
+			// data->eventCallback(WindowMovedEvent(xpos, ypos));
+
+#ifdef PE_PLATFORM_WINDOWS
+			HWND hwnd = glfwGetWin32Window(window);
+			auto monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+
+			uint32_t dpiX;
+			uint32_t dpiY;
+			GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, &dpiX, &dpiY);
+
+			data->dpiScaleFactorX = static_cast<float>(dpiX) / 96.0f; // 96 DPI is the default DPI
+			data->dpiScaleFactorY = static_cast<float>(dpiY) / 96.0f; // 96 DPI is the default DPI
+#elif PE_PLATFORM_LINUX
+		// Linux support for display scaling using GLFW.
+		// This has limited utility due to the issue described above (NULL monitor),
+		// and because GLFW doesn't support fractional scaling properly.
+		// For example, on a system with 150% scaling it will report scale = 2.0
+		// but the window will be either too small or too big, depending on 'resizeWindowWithDisplayScale'
+
+			GLFWmonitor* monitor = glfwGetWindowMonitor(window);
+
+			// Non-fullscreen windows have NULL monitor, let's use the primary monitor in this case
+			if (!monitor)
+				monitor = glfwGetPrimaryMonitor();
+
+			glfwGetMonitorContentScale(monitor, &data->dpiScaleFactorX, &data->dpiScaleFactorY);
+#endif // PE_PLATFORM_WINDOWS
+			if (data->prevDpiScaleFactorX != data->dpiScaleFactorX ||
+				data->prevDpiScaleFactorY != data->dpiScaleFactorY)
+			{
+				data->prevDpiScaleFactorX = data->dpiScaleFactorX;
+				data->prevDpiScaleFactorY = data->dpiScaleFactorY;
+				DisplayScaleChangedEvent e(data->dpiScaleFactorX, data->dpiScaleFactorY);
+				data->eventCallback(e);
+				PE_CORE_TRACE("Display scale changed: X = {0}, Y = {1}", data->dpiScaleFactorX, data->dpiScaleFactorY);
+			}
+		});
 
 		glfwSetWindowCloseCallback(m_handle, [](GLFWwindow* window) {
 			WindowData* data = (WindowData*)glfwGetWindowUserPointer(window);

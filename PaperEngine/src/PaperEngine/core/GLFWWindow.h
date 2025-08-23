@@ -56,6 +56,12 @@ namespace PaperEngine {
 			double lastMouseX = 0, lastMouseY = 0;
 
             double mouseDeltaX, mouseDeltaY;
+
+            double dpiScaleFactorX;
+            double dpiScaleFactorY;
+
+			double prevDpiScaleFactorX;
+			double prevDpiScaleFactorY;
         };
 
         WindowData m_data;
