@@ -95,6 +95,7 @@ namespace PaperEngine {
 
 						}
 
+#pragma region Present this frame
 						cmd->open();
 
 						cmd->setTextureState(m_graphicsContext->getCurrentSwapchainTexture(),
@@ -104,8 +105,11 @@ namespace PaperEngine {
 						cmd->close();
 						m_graphicsContext->getNVRhiDevice()->executeCommandList(cmd);
 
-						m_graphicsContext->present();
-						m_framePerSecond++;
+						if (m_graphicsContext->present()) {
+							m_framePerSecond++;
+						}
+#pragma endregion
+
 					}
 				}
 			}
