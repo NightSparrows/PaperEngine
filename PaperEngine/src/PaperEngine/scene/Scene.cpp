@@ -2,6 +2,7 @@
 #include "Entity.h"
 
 #include <PaperEngine/components/TransformComponent.h>
+#include <PaperEngine/components/TagComponent.h>
 
 namespace PaperEngine {
 
@@ -9,6 +10,7 @@ namespace PaperEngine {
     {
 		Entity entity = { m_registry.create(), this };
         entity.addComponent<TransformComponent>();
+        entity.addComponent<TagComponent>().name = name.empty() ? "Entity" : name;
         return entity;
     }
 
