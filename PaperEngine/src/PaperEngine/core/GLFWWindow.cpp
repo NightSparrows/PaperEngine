@@ -117,7 +117,7 @@ namespace PaperEngine {
 				data->prevDpiScaleFactorY = data->dpiScaleFactorY;
 				DisplayScaleChangedEvent e(data->dpiScaleFactorX, data->dpiScaleFactorY);
 				data->eventCallback(e);
-				PE_CORE_TRACE("Display scale changed: X = {0}, Y = {1}", data->dpiScaleFactorX, data->dpiScaleFactorY);
+				//PE_CORE_TRACE("Display scale changed: X = {0}, Y = {1}", data->dpiScaleFactorX, data->dpiScaleFactorY);
 			}
 		});
 
