@@ -44,7 +44,9 @@ namespace PaperEngine {
 		uint32_t transferQueueIndex = -1;
 
 		nvrhi::DeviceHandle device;
+#ifdef PE_DEBUG
 		nvrhi::DeviceHandle validationDevice;
+#endif // PE_DEBUG
 
 		std::vector<nvrhi::TextureHandle> swapchainTextures;
 		uint32_t swapchainIndex = 0;

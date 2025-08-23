@@ -312,7 +312,9 @@ namespace PaperEngine {
 
 		vkb::destroy_swapchain(m_instance.vkbSwapchain);
 
+#ifdef PE_DEBUG
 		m_instance.validationDevice = nullptr;
+#endif // PE_DEBUG
 		m_instance.device = nullptr;
 
 		vkDestroyDevice(m_instance.vkbDevice, nullptr);
@@ -439,8 +441,11 @@ namespace PaperEngine {
 
 	nvrhi::DeviceHandle VulkanGraphicsContext::getNVRhiDevice() const
 	{
+#ifdef PE_DEBUG
 		if (m_instance.validationDevice)
 			return m_instance.validationDevice;
+#endif // PE_DEBUG
+
 		return m_instance.device;
 	}
 
