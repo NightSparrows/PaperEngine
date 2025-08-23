@@ -14,7 +14,7 @@ namespace PaperEngine {
 
 		PE_API Entity createEntity(const std::string& name);
 
-		const entt::registry& getRegistry() const { return m_registry; }
+		entt::registry& getRegistry() { return m_registry; }
 
 	private:
 		entt::registry m_registry; // 使用entt的registry來管理實體和組件
