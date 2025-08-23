@@ -98,8 +98,8 @@ PS_INPUT main_vs(VS_INPUT input)
 // Texture2D texture0 : register(t0);
 
 // #endif
-sampler sampler0 : register(s0, space0);
-Texture2D texture0 : register(t0, space0);
+[[vk::binding(128)]] sampler sampler0 : register(s0, space0);
+[[vk::binding(0)]] Texture2D texture0 : register(t0, space0);
 
 float4 main_ps(PS_INPUT input) : SV_Target
 {
