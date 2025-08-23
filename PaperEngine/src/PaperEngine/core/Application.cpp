@@ -126,6 +126,11 @@ namespace PaperEngine {
 		m_window->cleanUp();
 	}
 
+	nvrhi::IDevice* Application::GetNVRHIDevice() {
+		PE_CORE_ASSERT(s_instance, "Application instance is null, cannot get NVRHI device.");
+		return s_instance->m_graphicsContext->getNVRhiDevice();
+	}
+
 	void Application::Shutdown()
 	{
 		PE_CORE_ASSERT(s_instance, "Application instance is null, cannot shutdown.");

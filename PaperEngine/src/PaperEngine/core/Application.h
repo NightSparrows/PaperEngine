@@ -47,6 +47,8 @@ namespace PaperEngine {
 		/// </summary>
 		virtual void onInit() {}
 
+		PE_API void pushLayer(Layer* layer) { m_layerManager.pushLayer(layer); }
+
 		PE_API Ref<GraphicsContext> getGraphicsContext() { return m_graphicsContext; }
 
 		PE_API Window* getWindow() { return m_window.get(); }
@@ -60,6 +62,8 @@ namespace PaperEngine {
 		/// </summary>
 		/// <returns></returns>
 		PE_API static Application* Get() { return s_instance; }
+
+		PE_API static nvrhi::IDevice* GetNVRHIDevice();
 
 		PE_API static void Shutdown();
 

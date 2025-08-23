@@ -83,13 +83,11 @@ namespace PaperEngine {
 
 		nvrhi::TextureHandle getCurrentSwapchainTexture() override;
 
-		void submitFinalDrawCmd(nvrhi::CommandListHandle cmd) override;
-
 		void setOnBackBufferResizingCallback(const std::function<void()>& callback) override;
 
 		void setOnBackBufferResizedCallback(const std::function<void()>& callback) override;
 
-		nvrhi::DeviceHandle getNVRhiDevice() const override;
+		nvrhi::IDevice* getNVRhiDevice() const override;
 
 		nvrhi::FramebufferHandle getCurrentFramebuffer() override;
 
@@ -107,7 +105,5 @@ namespace PaperEngine {
 		std::function<void()> m_onBackBufferResizedCallback;
 
 		bool m_resizeRequested = false;
-
-		std::vector<nvrhi::CommandListHandle> m_frameCommandLists;
 	};
 }

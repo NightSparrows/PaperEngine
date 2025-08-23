@@ -358,9 +358,6 @@ namespace PaperEngine {
 		m_instance.currentImageAvailableFence = m_instance.imageAvailableFences[m_instance.imageAvailableFenceIndex];
 		m_instance.imageAvailableFenceIndex = (m_instance.imageAvailableFenceIndex + 1) % m_instance.imageAvailableFences.size();
 
-		// 確定上一個commandList執行完成
-		m_frameCommandLists[m_instance.swapchainIndex].Reset();
-
 		if (result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR) {
 			// Successfully acquired the next image
 			// 會畫到swapchain image的command需要wait
@@ -424,11 +421,6 @@ namespace PaperEngine {
 		return m_instance.swapchainTextures[m_instance.swapchainIndex];
 	}
 
-	void VulkanGraphicsContext::submitFinalDrawCmd(nvrhi::CommandListHandle cmd)
-	{
-		m_frameCommandLists[m_instance.swapchainIndex] = cmd;
-	}
-
 	void VulkanGraphicsContext::setOnBackBufferResizingCallback(const std::function<void()>& callback)
 	{
 		m_onBackBufferResizingCallback = callback;
@@ -439,7 +431,7 @@ namespace PaperEngine {
 		m_onBackBufferResizedCallback = callback;
 	}
 
-	nvrhi::DeviceHandle VulkanGraphicsContext::getNVRhiDevice() const
+	nvrhi::IDevice* VulkanGraphicsContext::getNVRhiDevice() const
 	{
 #ifdef PE_DEBUG
 		if (m_instance.validationDevice)
@@ -470,6 +462,7 @@ namespace PaperEngine {
 		auto swapResult = vkb::SwapchainBuilder(m_instance.vkbDevice)
 			.set_desired_format(surfaceFormat)
 			.set_desired_present_mode(VK_PRESENT_MODE_MAILBOX_KHR)
+			.add_image_usage_flags(VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT)
 			.set_old_swapchain(m_instance.vkbSwapchain)
 			.build();
 		if (!swapResult) {
@@ -483,8 +476,11 @@ namespace PaperEngine {
 
 		{
 			auto textureDesc = nvrhi::TextureDesc()
+				.setDebugName("Swap chain image")
+				.setInitialState(nvrhi::ResourceStates::Present)
+				.setKeepInitialState(true)
 				.setDimension(nvrhi::TextureDimension::Texture2D)
-				.setFormat(nvrhi::Format::RGBA8_UNORM)
+				.setFormat(nvrhi::Format::RGBA8_UNORM)			// TODO 改一下configuable
 				.setWidth(m_window->getWidth())
 				.setHeight(m_window->getHeight())
 				.setIsRenderTarget(true);
@@ -494,7 +490,6 @@ namespace PaperEngine {
 			}
 		}
 
-		m_frameCommandLists.resize(m_instance.vkbSwapchain.image_count);
 		PE_CORE_TRACE("[VulkanGraphicsContext] Swapchain recreated with size {}x{}", m_instance.vkbSwapchain.extent.width, m_instance.vkbSwapchain.extent.height);
 
 		return true;

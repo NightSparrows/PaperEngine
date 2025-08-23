@@ -35,19 +35,6 @@ namespace PaperEngine {
 #pragma endregion
 
 		/// <summary>
-		/// 這是present前最後一個CommandList
-		/// 
-		/// 假設從swapchain Image available
-		/// 到present前只有一個commandList需要被執行
-		/// 
-		/// 這代表會寫入到swapchain image的command只能由這個command執行
-		/// 必須在Render裡submit，否則會出問題
-		/// 
-		/// </summary>
-		/// <param name="cmd"></param>
-		virtual void submitFinalDrawCmd(nvrhi::CommandListHandle cmd) = 0;
-
-		/// <summary>
 		/// 取得Swapchain的數量。
 		/// </summary>
 		/// <returns></returns>
@@ -63,7 +50,7 @@ namespace PaperEngine {
 
 		virtual nvrhi::TextureHandle getCurrentSwapchainTexture() = 0;
 
-		virtual nvrhi::DeviceHandle getNVRhiDevice() const = 0;
+		virtual nvrhi::IDevice* getNVRhiDevice() const = 0;
 
 		virtual nvrhi::FramebufferHandle getCurrentFramebuffer() = 0;
 
