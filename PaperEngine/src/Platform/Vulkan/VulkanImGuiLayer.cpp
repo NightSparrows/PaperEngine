@@ -4,6 +4,7 @@
 #include "VulkanImGuiLayer.h"
 
 #include <PaperEngine/core/Application.h>
+#include <PaperEngine/events/ApplicationEvent.h>
 #include <PaperEngine/events/KeyEvent.h>
 #include <PaperEngine/events/MouseEvent.h>
 
@@ -387,6 +388,17 @@ namespace PaperEngine {
 			return false;
 			});
 
+		//dispatcher.dispatch<DisplayScaleChangedEvent>([](DisplayScaleChangedEvent& e) {
+		//	ImGuiIO& io = ImGui::GetIO();
+
+		//	io.Fonts->Clear();
+		//	io.Fonts->SetTexID(0);
+
+		//	ImGui::GetStyle() = ImGuiStyle();
+		//	ImGui::GetStyle().ScaleAllSizes(e.getScaleX());
+
+		//	return false;
+		//	});
 	}
 
 	void VulkanImGuiLayer::onImGuiRender()
