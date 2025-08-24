@@ -14,8 +14,9 @@ namespace PaperEngine {
 
 		nvrhi::BufferDesc instanceBufferDesc;
 		instanceBufferDesc
-			.setByteSize(sizeof(glm::mat4) * 10000)
-			.setIsConstantBuffer(true);
+			.setByteSize(sizeof(InstanceData) * 10000)
+			.setIsConstantBuffer(true)
+			.setStructStride(sizeof(InstanceData));
 		m_instanceBuffer = Application::GetNVRHIDevice()->createBuffer(instanceBufferDesc);
 
 		nvrhi::BindingLayoutDesc instanceBufLayoutDesc;
