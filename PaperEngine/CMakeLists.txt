@@ -21,6 +21,9 @@ else()
     target_compile_definitions(PaperEngine PUBLIC PE_BUILD_STATIC)
 endif()
 
+
+set_target_properties(PaperEngine PROPERTIES FOLDER PaperEngine)
+
 # enable profiling or not
 if (PAPER_ENGINE_PROFILING)
 	target_compile_definitions(PaperEngine PUBLIC PE_PROFILE)

@@ -34,6 +34,8 @@ namespace PaperEngine {
 		m_graphicsContext->setOnBackBufferResizingCallback(PE_BIND_EVENT_FN(Application::onBackBufferResizing));
 		m_graphicsContext->init();
 
+		m_resourceManager = CreateScope<ResourceManager>();
+
 #ifdef PE_ENABLE_IMGUI
 		m_imguiLayer = ImGuiLayer::Create();
 		m_layerManager.pushOverlay(m_imguiLayer.get());
@@ -121,6 +123,8 @@ namespace PaperEngine {
 
 		m_layerManager.cleanUp();
 
+		m_resourceManager.reset();
+
 		m_graphicsContext->cleanUp();
 
 		m_window->cleanUp();
@@ -139,6 +143,12 @@ namespace PaperEngine {
 			return;
 		}
 		s_instance->m_running = false;
+	}
+
+	PE_API ResourceManager* Application::GetResourceManager()
+	{
+		PE_CORE_ASSERT(s_instance->m_resourceManager, "ResourceManager is not created. Application not run?");
+		return s_instance->m_resourceManager.get();
 	}
 
 	void Application::onEvent(Event& e)

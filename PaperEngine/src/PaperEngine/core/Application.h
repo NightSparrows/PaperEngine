@@ -6,6 +6,7 @@
 #include <PaperEngine/core/Window.h>
 #include <PaperEngine/graphics/GraphicsContext.h>
 #include <PaperEngine/core/LayerManager.h>
+#include <PaperEngine/resourceManager/ResourceManager.h>
 
 
 //純測試，TODO加到cmake
@@ -67,6 +68,8 @@ namespace PaperEngine {
 
 		PE_API static void Shutdown();
 
+		PE_API static ResourceManager* GetResourceManager();
+
 	protected:
 		void onEvent(Event& e);
 
@@ -79,6 +82,8 @@ namespace PaperEngine {
 
 		Scope<Window> m_window;
 		Ref<GraphicsContext> m_graphicsContext;
+
+		Scope<ResourceManager> m_resourceManager;
 
 		RenderAPI m_renderAPI = RenderAPI::Vulkan;
 
