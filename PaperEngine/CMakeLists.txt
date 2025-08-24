@@ -56,14 +56,16 @@ target_link_libraries(PaperEngine PUBLIC spdlog::spdlog)
 target_link_libraries(PaperEngine PUBLIC glm::glm)
 
 # include imgui
-target_include_directories(PaperEngine PUBLIC ${imgui_SOURCE_DIR})
+target_link_libraries(PaperEngine PUBLIC imgui)
+#target_include_directories(PaperEngine PUBLIC ${imgui_SOURCE_DIR})
 
 # include imguizmo
 # set(IMGUIZMO_SRC_DIR vendor/ImGuizmo)
 # target_include_directories(PaperEngine PUBLIC ${IMGUIZMO_SRC_DIR})
 
 # include entt
-target_include_directories(PaperEngine PUBLIC ${entt_SOURCE_DIR}/src)
+# target_include_directories(PaperEngine PUBLIC ${entt_SOURCE_DIR}/src)
+target_link_libraries(PaperEngine PUBLIC EnTT)
 
 # include nvrhi
 target_link_libraries(PaperEngine PUBLIC nvrhi)

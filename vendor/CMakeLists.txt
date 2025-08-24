@@ -1,0 +1,54 @@
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+set(3rdParty_folder "3rdPary")
+
+if(NOT TARGET glfw)
+    option(GLFW_BUILD_EXAMPLES "" OFF)
+    option(GLFW_BUILD_TESTS "" OFF)
+    option(GLFW_BUILD_DOCS "" OFF)
+    option(GLFW_INSTALL "" OFF)
+    add_subdirectory(glfw)
+    set_target_properties(glfw PROPERTIES FOLDER ${3rdParty_folder}/glfw)
+    set_target_properties(update_mappings PROPERTIES FOLDER ${3rdParty_folder}/glfw)
+endif()
+
+if (NOT TARGET spdlog)
+    option(SPDLOG_BUILD_EXAMPLE "" OFF)
+    option(SPDLOG_INSTALL "" OFF)
+    add_subdirectory(spdlog)
+    set_target_properties(spdlog PROPERTIES FOLDER ${3rdParty_folder}/spdlog)
+endif()
+
+if (NOT TARGET glm)
+    option(GLM_BUILD_TESTS "" OFF)
+    option(GLM_BUILD_INSTALL "" OFF)
+	add_subdirectory(glm)
+	set_target_properties(glm PROPERTIES FOLDER ${3rdParty_folder}/glm)
+endif()
+
+if (NOT TARGET vk-bootstrap)
+		
+	add_subdirectory(vk-bootstrap)
+	set_target_properties(vk-bootstrap PROPERTIES FOLDER ${3rdParty_folder}/vk-bootstrap)
+
+endif()
+
+if (NOT TARGET nvrhi)
+	add_subdirectory(NVRHI)
+	set_target_properties(nvrhi PROPERTIES FOLDER ${3rdParty_folder}/NVRHI)
+	set_target_properties(nvrhi_vk PROPERTIES FOLDER ${3rdParty_folder}/NVRHI)
+	set_target_properties(nvrhi_d3d11 PROPERTIES FOLDER ${3rdParty_folder}/NVRHI)
+	set_target_properties(nvrhi_d3d12 PROPERTIES FOLDER ${3rdParty_folder}/NVRHI)
+endif()
+
+option(ENTT_INCLUDE_HEADERS "" ON)
+add_subdirectory(entt)
+
+if (NOT TARGET imgui)
+	set(imgui_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
+	file(GLOB imgui_sources CONFIGURE_DEPENDS "${imgui_SOURCE_DIR}/*.cpp")
+	
+    add_library(imgui ${imgui_sources})
+    target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR})
+    target_include_directories(imgui PUBLIC ${Vulkan_INCLUDE_DIR})
+    set_target_properties(imgui PROPERTIES FOLDER ${3rdParty_folder}/imgui)
+endif()
