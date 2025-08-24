@@ -62,10 +62,10 @@ namespace PaperEngine {
 		cmdList->setPermanentBufferState(m_indexBuffer, nvrhi::ResourceStates::IndexBuffer);
 	}
 
-	void Mesh::bindMesh(nvrhi::GraphicsState& state, nvrhi::DrawArguments& drawArgs) const
+	void Mesh::bindMesh(nvrhi::GraphicsState& state) const
 	{
 		state.indexBuffer.buffer = m_indexBuffer;
-		state.indexBuffer.format = m_indexFormat; // Assuming 32-bit indices, can be changed if needed
+		state.indexBuffer.format = m_indexFormat;
 		state.indexBuffer.offset = 0;
 		switch (m_type)
 		{

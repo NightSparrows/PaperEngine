@@ -1,6 +1,7 @@
 ﻿
 
 #include <PaperEngine/PaperEngine.h>
+#include <PaperEngine/graphics/SceneRenderer.h>
 
 #include <nvrhi/utils.h>
 
@@ -11,10 +12,14 @@ public:
 
 	void onAttach() override {
 		cmd = PaperEngine::Application::GetNVRHIDevice()->createCommandList();
+
+		m_sceneRenderer = PaperEngine::CreateRef<PaperEngine::SceneRenderer>();
+
 		PE_CORE_INFO("TestLayer attached.");
 	}
 	void onDetach() override {
 		cmd = nullptr;
+		m_sceneRenderer = nullptr;
 		PE_CORE_INFO("TestLayer detached.");
 	}
 	void onUpdate(PaperEngine::Timestep ts) override {
@@ -30,6 +35,7 @@ public:
 	}
 private:
 	nvrhi::CommandListHandle cmd;
+	PaperEngine::Ref<PaperEngine::SceneRenderer> m_sceneRenderer;
 };
 
 class SandboxApp : public PaperEngine::Application {

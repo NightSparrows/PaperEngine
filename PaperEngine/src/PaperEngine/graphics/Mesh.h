@@ -67,11 +67,12 @@ namespace PaperEngine {
 		/// bindMesh
 		///  for each submesh
 		///		bindSubMesh
-		///		drawIndexed
+		///		for each instances
+		///			drawIndexed
 		/// </summary>
 		/// <param name="state"></param>
 		/// <param name="drawArgs"></param>
-		void bindMesh(nvrhi::GraphicsState& state, nvrhi::DrawArguments& drawArgs) const;
+		void bindMesh(nvrhi::GraphicsState& state) const;
 
 		void bindSubMesh(nvrhi::DrawArguments& drawArgs, uint32_t subMeshIndex) const;
 

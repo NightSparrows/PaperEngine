@@ -157,7 +157,7 @@ namespace PaperEngine {
 			Layer* layer = *it;
 			layer->onEvent(e);
 			if (e.Handled) {
-				return; // 如果事件已經被處理，則不再繼續傳遞
+				break; // 如果事件已經被處理，則不再繼續傳遞
 			}
 		}
 	}
