@@ -3,7 +3,9 @@
 	每個Camera都有一個自己的Scene Renderer
 	|- Size: Width, height
 	|- 使用Forward Plus
-	1. Filter Renderable Mesh (Frustum Culling)
+	1. Filter Renderable Mesh 
+		Frustum Culling -> Filter給Mesh Renderer用
+		ShadowMap可能需要自己額外實作Culling
 	1. Render Depth only
 		|- MeshDepthRenderer (使用Mesh但只Render depth，不care materials)
 	2. Calculate the lighting tiles (compute shader)
@@ -12,6 +14,7 @@
 		沒在light tiles裡的point light不用計算Shadow
 	4. Render scene (Mesh Renderer)
 	5. Post processing
+	6. Canvas rendering (2D)
 |- Graphics Pipeline
 	就是ShaderProgram
 |- Material
@@ -26,6 +29,7 @@
 		Variable:
 			|- Type: Buffer, Texture, float, int
 	|- Raw Data
+		GraphicsPipelineHandle graphicsPipeline;
 		nvrhi::BindingSetHandle bindingSet;
 |- Mesh 
 	|- 使用Component
