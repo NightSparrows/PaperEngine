@@ -26,6 +26,11 @@ public:
 		// Update logic here
 	}
 
+	void onImGuiRender() {
+		ImGui::Begin("test");
+		ImGui::End();
+	}
+
 	void onFinalRender(nvrhi::IFramebuffer* framebuffer) override {
 		cmd->open();
 		nvrhi::utils::ClearColorAttachment(cmd, framebuffer, 0, nvrhi::Color(0.f));

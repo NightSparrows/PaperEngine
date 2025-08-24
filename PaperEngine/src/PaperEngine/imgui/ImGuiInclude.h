@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <PaperEngine/core/Base.h>
+
 #ifdef PE_PLATFORM_WINDOWS
 #ifdef PE_BUILD_SHARED
 #define IMGUI_API __declspec(dllexport)
