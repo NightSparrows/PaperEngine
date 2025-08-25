@@ -1,5 +1,5 @@
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
-set(3rdParty_folder "3rdPary")
+set(3rdParty_folder "3rdParty")
 
 if(NOT TARGET glfw)
     option(GLFW_BUILD_EXAMPLES "" OFF)
@@ -33,11 +33,15 @@ if (NOT TARGET vk-bootstrap)
 endif()
 
 if (NOT TARGET nvrhi)
+    option(NVRHI_INSTALL "" OFF)
+	option(NVRHI_WITH_VULKAN "" ON)
 	add_subdirectory(NVRHI)
 	set_target_properties(nvrhi PROPERTIES FOLDER ${3rdParty_folder}/NVRHI)
 	set_target_properties(nvrhi_vk PROPERTIES FOLDER ${3rdParty_folder}/NVRHI)
 	set_target_properties(nvrhi_d3d11 PROPERTIES FOLDER ${3rdParty_folder}/NVRHI)
 	set_target_properties(nvrhi_d3d12 PROPERTIES FOLDER ${3rdParty_folder}/NVRHI)
+	set_target_properties(DirectX-Guids PROPERTIES FOLDER ${3rdParty_folder}/NVRHI)
+	set_target_properties(DirectX-Headers PROPERTIES FOLDER ${3rdParty_folder}/NVRHI)
 endif()
 
 option(ENTT_INCLUDE_HEADERS "" ON)

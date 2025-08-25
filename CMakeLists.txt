@@ -10,9 +10,6 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY CTEST_TARGETS_ADDED 1)
 set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMake")
 
-# Use fetch content to get submodule
-include(FetchContent)
-
 # options
 option(PAPER_ENGINE_BUILD_SHARED "Paper Engine build shared" ON)
 option(PAPER_ENGINE_PROFILING "Paper Engine profiling" ON)
