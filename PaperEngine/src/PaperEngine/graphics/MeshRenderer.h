@@ -23,6 +23,7 @@ namespace PaperEngine {
 	class MeshRenderer : public IRenderer {
 	public:
 		MeshRenderer();
+		~MeshRenderer();
 
 		// 不對 應該改成process mesh entity之類的
 		// 因為需要先使用scene renderer做 culling，不用畫的不會被process
@@ -30,6 +31,9 @@ namespace PaperEngine {
 		// 然後在自己做static batching之類的
 		// 另外skinned mesh (有動畫) 跟這個分開好了，比較不複雜
 		void renderScene(std::span<Ref<Scene>> scenes, const GlobalSceneData& globalData) override;
+	
+		void onBackBufferResized();
+
 	private:
 
 		struct InstanceData {
@@ -60,6 +64,7 @@ namespace PaperEngine {
 		nvrhi::BindingSetHandle m_instanceBufferSet;
 		// 紀錄instance buffer的transformation
 		nvrhi::BufferHandle m_instanceBuffer;
+		void* m_instanceBufferCpuPtr{ nullptr };
 	};
 
 }

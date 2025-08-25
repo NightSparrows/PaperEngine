@@ -5,6 +5,8 @@
 #include <nvrhi/nvrhi.h>
 #include <glm/glm.hpp>
 
+#include <PaperEngine/utils/AABB.h>
+
 namespace PaperEngine {
 
 	struct StaticVertex {
@@ -14,11 +16,11 @@ namespace PaperEngine {
 	};
 
 	struct SkeletalVertex {
-		float position[3]; // vec3 position
-		float normal[3];   // vec3 normal
-		float texcoord[2]; // vec2 texcoord
-		int boneIndices[4]; // ivec4 boneIndices
-		float boneWeights[4]; // vec4 boneWeights
+		glm::vec3 position; // vec3 position
+		glm::vec3 normal;   // vec3 normal
+		glm::vec2 texcoord; // vec2 texcoord
+		glm::ivec4 boneIndices; // ivec4 boneIndices
+		glm::vec4 boneWeights; // vec4 boneWeights
 	};
 
 	enum class MeshType {
@@ -84,7 +86,11 @@ namespace PaperEngine {
 		/// <param name="type"></param>
 		PE_API MeshType getType() const { return m_type; }
 
+		inline PE_API const AABB& getAABB() const { return m_aabb; }
+
 	private:
+
+		AABB m_aabb;
 
 		nvrhi::BufferHandle m_vertexBuffer;
 

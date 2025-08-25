@@ -6,6 +6,8 @@
 #include <PaperEngine/components/MeshComponent.h>
 #include <PaperEngine/components/MeshRendererComponent.h>
 
+#include <PaperEngine/utils/Frustum.h>
+
 namespace PaperEngine {
 	
 	MeshRenderer::MeshRenderer()
@@ -17,8 +19,10 @@ namespace PaperEngine {
 			.setByteSize(sizeof(InstanceData) * 10000)
 			.setIsConstantBuffer(true)
 			.setKeepInitialState(true)
-			.setStructStride(sizeof(InstanceData));
+			.setStructStride(sizeof(InstanceData))
+			.setCpuAccess(nvrhi::CpuAccessMode::Write);
 		m_instanceBuffer = Application::GetNVRHIDevice()->createBuffer(instanceBufferDesc);
+		m_instanceBufferCpuPtr = Application::GetNVRHIDevice()->mapBuffer(m_instanceBuffer, nvrhi::CpuAccessMode::Write);
 
 		nvrhi::BindingLayoutDesc instanceBufLayoutDesc;
 		instanceBufLayoutDesc.setVisibility(nvrhi::ShaderType::Vertex);
@@ -33,9 +37,17 @@ namespace PaperEngine {
 
 	}
 
+	MeshRenderer::~MeshRenderer()
+	{
+		Application::GetNVRHIDevice()->unmapBuffer(m_instanceBuffer);
+		m_instanceBufferCpuPtr = nullptr;
+	}
+
 	void MeshRenderer::renderScene(std::span<Ref<Scene>> scenes, const GlobalSceneData& globalData)
 	{
 		m_renderData.clear();
+
+		Frustum cameraFrustum = Frustum::Extract(globalData.projViewMatrix);
 
 		// process mesh
 		for (auto scene : scenes) {
@@ -52,6 +64,8 @@ namespace PaperEngine {
 					continue;
 
 				// TODO: camera frustum culling, or other culling
+				if (!cameraFrustum.isAABBInFrustum(mesh->getAABB() * transform))
+					continue;
 
 				// meshRenderer的materials跟subMesh是一對一的
 				PE_CORE_ASSERT(mesh->getSubMeshes().size() == meshRendererCom.materials.size(), "Wired mesh renderer materials doesn't match mesh submeshes");
@@ -85,9 +99,9 @@ namespace PaperEngine {
 		graphicsState.viewport.addViewportAndScissorRect(
 			nvrhi::Viewport(
 				0,
-				2560,
+				globalData.camera->getWidth(),
 				0,
-				1440,
+				globalData.camera->getHeight(),
 				0,
 				1));
 
@@ -113,11 +127,10 @@ namespace PaperEngine {
 						size_t instanceCount = subMeshData.instanceData.size();
 						size_t transMatSize = instanceCount * sizeof(InstanceData);
 
-						m_cmd->writeBuffer(
-							m_instanceBuffer,
+						memcpy(
+							static_cast<uint8_t*>(m_instanceBufferCpuPtr) + instanceOffset * sizeof(InstanceData),
 							subMeshData.instanceData.data(),
-							transMatSize,
-							instanceOffset * sizeof(InstanceData));
+							transMatSize);
 
 
 						mesh->bindSubMesh(drawArgs, subMesh);
@@ -133,6 +146,10 @@ namespace PaperEngine {
 		}
 		m_cmd->close();
 		Application::GetNVRHIDevice()->executeCommandList(m_cmd);
+	}
+
+	void MeshRenderer::onBackBufferResized() {
+
 	}
 
 }

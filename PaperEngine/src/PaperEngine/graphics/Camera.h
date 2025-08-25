@@ -51,6 +51,14 @@ namespace PaperEngine {
 			return m_farPlane;
 		}
 
+		float getWidth() const {
+			return m_width;
+		}
+
+		float getHeight() const {
+			return m_height;
+		}
+
 	private:
 		mutable bool m_isDirty{ true };
 

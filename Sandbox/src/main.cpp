@@ -1,15 +1,17 @@
 ﻿
 #include <fstream>
 
+#include <random>
+
 #include <PaperEngine/PaperEngine.h>
 #include <PaperEngine/graphics/SceneRenderer.h>
 #include <PaperEngine/components/MeshComponent.h>
 #include <PaperEngine/components/MeshRendererComponent.h>
+#include <PaperEngine/components/TransformComponent.h>
 #include <PaperEngine/core/Mouse.h>
 #include <PaperEngine/core/Keyboard.h>
 
 #include <PaperEngine/loader/TextureLoader.h>
-#include <nvrhi/utils.h>
 
 class TestLayer : public PaperEngine::Layer {
 public:
@@ -17,6 +19,10 @@ public:
 	}
 
 	void onAttach() override {
+
+		camera.setWidth(PaperEngine::Application::Get()->getWindow()->getWidth());
+		camera.setHeight(PaperEngine::Application::Get()->getWindow()->getHeight());
+
 		cmd = PaperEngine::Application::GetNVRHIDevice()->createCommandList();
 
 		m_sceneRenderer = PaperEngine::CreateRef<PaperEngine::SceneRenderer>();
@@ -128,32 +134,22 @@ public:
 		{
 
 			cmd->open();
-
-			auto testEntity = scene->createEntity("test Entity");
-			auto& testMeshCom = testEntity.addComponent<PaperEngine::MeshComponent>();
-			testMeshCom.mesh = PaperEngine::CreateRef<PaperEngine::Mesh>();
+			auto mesh = PaperEngine::CreateRef<PaperEngine::Mesh>();
 			std::vector<PaperEngine::StaticVertex> vertices = {
-				{{-50.f, -50.f, 0}, {0, 1, 0}, {0, 0}},
-				{{-50.f, 50.f, 0}, {0, 1, 0}, {0, 1.0f}},
-				{{50.f, 50.f, 0}, {0, 1, 0}, {1.f, 1.f}},
-				{{50.f, -50.f, 0}, {0, 1, 0}, {1.f, 0}}
+				{{-50.f, 50.f, 0}, {0, 1, 0}, {0, 0}},
+				{{-50.f, -50.f, 0}, {0, 1, 0}, {0, 1.0f}},
+				{{50.f, -50.f, 0}, {0, 1, 0}, {1.f, 1.f}},
+				{{50.f, 50.f, 0}, {0, 1, 0}, {1.f, 0}}
 			};
 			std::vector<uint32_t> indices = {
-				0, 1, 2, 0, 3, 2
+				0, 1, 3, 3, 1, 2
 			};
-			testMeshCom.mesh->loadStaticMesh(cmd, vertices);
-			testMeshCom.mesh->loadIndexBuffer(cmd, indices.data(), indices.size());
-			testMeshCom.mesh->getSubMeshes().resize(1);
-			testMeshCom.mesh->getSubMeshes()[0] = { 0, 6 };
+			mesh->loadStaticMesh(cmd, vertices);
+			mesh->loadIndexBuffer(cmd, indices.data(), indices.size());
+			mesh->getSubMeshes().resize(1);
+			mesh->getSubMeshes()[0] = { 0, 6 };
 
-			auto& meshRendererCom = testEntity.addComponent<PaperEngine::MeshRendererComponent>();
-			meshRendererCom.materials.resize(1);
-
-			// TODO graphics pipeline, variables
-			meshRendererCom.materials[0] = PaperEngine::CreateRef<PaperEngine::Material>(graphicsPipeline);
-
-			nvrhi::SamplerDesc samplerDesc;
-			meshRendererCom.materials[0]->setSampler("sampler0", PaperEngine::Application::GetNVRHIDevice()->createSampler(samplerDesc));
+			PaperEngine::TextureHandle texture = nullptr;
 #pragma region Load test image
 			{
 				std::ifstream file("assets/test/test.png", std::ios::ate | std::ios::binary);
@@ -169,13 +165,12 @@ public:
 
 					PaperEngine::TextureLoader::TextureConfig config;
 					config.generateMipMaps = false;
-					auto texture = textureLoader->load2DFromMemory(
+					texture = textureLoader->load2DFromMemory(
 						cmd,
 						imageFileContent.data(),
 						fileSize,
 						config);
 
-					meshRendererCom.materials[0]->setTexture("texture0", texture);
 					cmd->close();
 					PaperEngine::Application::GetNVRHIDevice()->executeCommandList(cmd);
 				}
@@ -186,6 +181,50 @@ public:
 			}
 #pragma endregion
 
+			static std::random_device rd;
+			static std::mt19937 gen(rd());
+			static std::uniform_real_distribution<float> dist(-1000.0f, 1000.0f);
+			static std::uniform_real_distribution<float> rotDist(0, 1.0f);
+			nvrhi::SamplerDesc samplerDesc;
+			nvrhi::SamplerHandle sampler = PaperEngine::Application::GetNVRHIDevice()->createSampler(samplerDesc);
+			auto material = PaperEngine::CreateRef<PaperEngine::Material>(graphicsPipeline);
+			material->setSampler("sampler0", sampler);
+
+			material->setTexture("texture0", texture);
+			for (uint32_t i = 0; i < 10000; i++) {
+				auto testEntity = scene->createEntity("test Entity");
+				auto& testMeshCom = testEntity.addComponent<PaperEngine::MeshComponent>();
+				testMeshCom.mesh = mesh;
+
+				auto& meshRendererCom = testEntity.addComponent<PaperEngine::MeshRendererComponent>();
+				meshRendererCom.materials.resize(1);
+
+				// TODO graphics pipeline, variables
+				meshRendererCom.materials[0] = material;
+
+				auto& transCom = testEntity.getComponent<PaperEngine::TransformComponent>();
+
+				transCom.transform.setPosition(
+					glm::vec3(dist(gen), dist(gen), dist(gen))
+				);
+
+				float u1 = rotDist(gen);
+				float u2 = rotDist(gen);
+				float u3 = rotDist(gen);
+
+				float sqrt1MinusU1 = std::sqrt(1.0f - u1);
+				float sqrtU1 = std::sqrt(u1);
+
+				float theta1 = 2.0f * glm::pi<float>() * u2;
+				float theta2 = 2.0f * glm::pi<float>() * u3;
+
+				float w = sqrt1MinusU1 * std::sin(theta1);
+				float x = sqrt1MinusU1 * std::cos(theta1);
+				float y = sqrtU1 * std::sin(theta2);
+				float z = sqrtU1 * std::cos(theta2);
+
+				transCom.transform.setRotation(glm::quat(w, x, y, z));
+			}
 		}
 #pragma endregion
 
@@ -255,17 +294,16 @@ public:
 	}
 
 	void onFinalRender(nvrhi::IFramebuffer* framebuffer) override {
-		cmd->open();
-		nvrhi::utils::ClearColorAttachment(cmd, framebuffer, 0, nvrhi::Color(0.f));
-		nvrhi::utils::ClearDepthStencilAttachment(cmd, framebuffer, 1.f, 0);
-
-		cmd->close();
-		PaperEngine::Application::GetNVRHIDevice()->executeCommandList(cmd);
 
 		std::vector<PaperEngine::Ref<PaperEngine::Scene>> scenes;
 		scenes.push_back(scene);
 		m_sceneRenderer->renderScene(scenes, &camera, &cameraTransform, framebuffer);
 
+	}
+
+	void onBackBufferResized() {
+		camera.setWidth(PaperEngine::Application::Get()->getWindow()->getWidth());
+		camera.setHeight(PaperEngine::Application::Get()->getWindow()->getHeight());
 	}
 private:
 	nvrhi::CommandListHandle cmd;

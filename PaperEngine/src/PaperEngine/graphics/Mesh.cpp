@@ -7,6 +7,25 @@
 
 namespace PaperEngine {
 
+	template<typename VertexType, typename TransformFunc>
+	AABB computeAABB(const std::vector<VertexType>& vertices, TransformFunc getPos)
+	{
+		if (vertices.empty())
+			return { glm::vec3(0.0f), glm::vec3(0.0f) };
+
+		glm::vec3 minPt(FLT_MAX);
+		glm::vec3 maxPt(-FLT_MAX);
+
+		for (const auto& v : vertices)
+		{
+			glm::vec3 pos = getPos(v);
+			minPt = glm::min(minPt, pos);
+			maxPt = glm::max(maxPt, pos);
+		}
+
+		return { minPt, maxPt };
+	}
+
 	void Mesh::loadStaticMesh(nvrhi::CommandListHandle cmdList, const std::vector<StaticVertex>& vertices)
 	{
 		auto device = Application::Get()->getGraphicsContext()->getNVRhiDevice();
@@ -20,6 +39,10 @@ namespace PaperEngine {
 			.setInitialState(nvrhi::ResourceStates::CopyDest)
 			.setIsVertexBuffer(true);
 		m_vertexBuffer = device->createBuffer(vertexBufferDesc);
+
+		m_aabb = computeAABB<StaticVertex>(vertices, [](const StaticVertex& v) {
+			return v.position;
+			});
 
 		cmdList->beginTrackingBufferState(m_vertexBuffer, nvrhi::ResourceStates::CopyDest);
 		cmdList->writeBuffer(m_vertexBuffer, vertices.data(), vertexBufferDesc.byteSize);
@@ -39,6 +62,11 @@ namespace PaperEngine {
 			.setInitialState(nvrhi::ResourceStates::CopyDest)
 			.setIsVertexBuffer(true);
 		m_vertexBuffer = device->createBuffer(vertexBufferDesc);
+
+		m_aabb = computeAABB<SkeletalVertex>(vertices, [](const SkeletalVertex& v) {
+			return v.position;
+			});
+
 		cmdList->beginTrackingBufferState(m_vertexBuffer, nvrhi::ResourceStates::CopyDest);
 		cmdList->writeBuffer(m_vertexBuffer, vertices.data(), vertexBufferDesc.byteSize);
 		cmdList->setPermanentBufferState(m_vertexBuffer, nvrhi::ResourceStates::VertexBuffer);

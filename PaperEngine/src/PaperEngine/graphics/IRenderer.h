@@ -13,6 +13,7 @@ namespace PaperEngine {
 	struct GlobalSceneData {
 		const Camera* camera;					// 相機projection
 		const Transform* cameraTransform;			// 相機transformation (view matrix)
+		glm::mat4 projViewMatrix;
 		nvrhi::IBindingSet* globalSet;
 		nvrhi::IFramebuffer* fb;
 	};

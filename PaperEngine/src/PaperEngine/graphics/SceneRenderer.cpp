@@ -1,5 +1,6 @@
 ﻿#include "SceneRenderer.h"
 
+#include <nvrhi/utils.h>
 #include <PaperEngine/core/Application.h>
 
 namespace PaperEngine {
@@ -40,6 +41,9 @@ namespace PaperEngine {
 		globalData.cameraPosition = transform->getPosition();
 		m_cmd->open();
 
+		nvrhi::utils::ClearColorAttachment(m_cmd, fb, 0, nvrhi::Color(0.f));
+		nvrhi::utils::ClearDepthStencilAttachment(m_cmd, fb, 1.f, 0);
+
 		m_cmd->writeBuffer(m_globalDataBuffer, &globalData, sizeof(globalData));
 
 		m_cmd->close();
@@ -50,8 +54,13 @@ namespace PaperEngine {
 		sceneData.cameraTransform = transform;
 		sceneData.fb = fb;
 		sceneData.globalSet = m_globalSet;
+		sceneData.projViewMatrix = globalData.projViewMatrix;
 
 		m_meshRenderer.renderScene(scenes, sceneData);
+	}
+
+	void SceneRenderer::onBackBufferResized() {
+		m_meshRenderer.onBackBufferResized();
 	}
 
 }

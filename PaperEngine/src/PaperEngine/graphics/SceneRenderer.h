@@ -40,6 +40,8 @@ namespace PaperEngine {
 		/// </param>
 		PE_API void renderScene(std::span<Ref<Scene>> scenes, const Camera* camera, const Transform* transform, nvrhi::IFramebuffer* fb);
 
+		PE_API void onBackBufferResized();
+
 	private:
 		nvrhi::CommandListHandle m_cmd;
 
