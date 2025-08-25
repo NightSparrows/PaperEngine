@@ -8,6 +8,8 @@ namespace PaperEngine {
 
 	struct MeshComponent {
 		Ref<Mesh> mesh;
+
+		AABB worldAABB;
 	};
 
 }

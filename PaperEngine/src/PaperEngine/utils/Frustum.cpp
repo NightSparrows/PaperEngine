@@ -10,15 +10,18 @@ namespace PaperEngine {
     Frustum Frustum::Extract(const glm::mat4& vp)
     {
         Frustum f;
+        glm::vec4 row0 = row(vp, 0);
+        glm::vec4 row1 = row(vp, 1);
+        glm::vec4 row2 = row(vp, 2);
+        glm::vec4 row3 = row(vp, 3);
 
-        f.planes[0] = row(vp, 3) + row(vp, 0); // Left
-        f.planes[1] = row(vp, 3) - row(vp, 0); // Right
-        f.planes[2] = row(vp, 3) + row(vp, 1); // Bottom
-        f.planes[3] = row(vp, 3) - row(vp, 1); // Top
-        f.planes[4] = row(vp, 3) + row(vp, 2); // Near
-        f.planes[5] = row(vp, 3) - row(vp, 2); // Far
+        f.planes[0] = row3 + row0; // Left
+        f.planes[1] = row3 - row0; // Right
+        f.planes[2] = row3 + row1; // Bottom
+        f.planes[3] = row3 - row1; // Top
+        f.planes[4] = row3 + row2; // Near
+        f.planes[5] = row3 - row2; // Far
 
-        // normalize planes
         for (auto& p : f.planes)
             p /= glm::length(glm::vec3(p));
 
@@ -38,7 +41,7 @@ namespace PaperEngine {
 
             float distance = glm::dot(normal, positiveVertex) + this->planes[i].w;
 
-            if (distance < 0)
+            if (distance < -0.001f)
                 return false;
         }
 

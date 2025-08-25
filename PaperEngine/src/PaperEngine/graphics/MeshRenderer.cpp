@@ -63,8 +63,10 @@ namespace PaperEngine {
 				if (mesh->getType() == MeshType::Skeletal)
 					continue;
 
-				// TODO: camera frustum culling, or other culling
-				if (!cameraFrustum.isAABBInFrustum(mesh->getAABB() * transform))
+
+				// TODO: 放到entity的移動時才計算aabb的world space，而不是每禎計算world space aabb
+				// TODO: 把AABB移到meshComponent裡，而不是mesh
+				if (!cameraFrustum.isAABBInFrustum(meshCom.worldAABB))
 					continue;
 
 				// meshRenderer的materials跟subMesh是一對一的

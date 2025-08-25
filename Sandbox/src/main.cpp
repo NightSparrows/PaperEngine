@@ -207,6 +207,10 @@ public:
 				transCom.transform.setPosition(
 					glm::vec3(dist(gen), dist(gen), dist(gen))
 				);
+				// TODO 血一個Entity move的function，
+				// transform component跟mesh component裡的aabb
+				// 一起更新
+				testMeshCom.worldAABB = mesh->getAABB().transformed(transCom.transform);
 
 				float u1 = rotDist(gen);
 				float u2 = rotDist(gen);
