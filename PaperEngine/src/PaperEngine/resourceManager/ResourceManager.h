@@ -66,35 +66,35 @@ namespace PaperEngine {
             return std::static_pointer_cast<T>(it->second.lock());
         }
 
-        // 分批垃圾回收
-        void garbageCollectBatch(size_t maxItems = 50) {
-            size_t count = 0;
+        //// 分批垃圾回收
+        //void garbageCollectBatch(size_t maxItems = 50) {
+        //    size_t count = 0;
 
-            while (count < maxItems) {
-                std::unique_lock lock(m_mutex);
-                if (m_typeIt == m_resources.end()) {
-                    // 完成一輪掃描，重置迭代器
-                    m_typeIt = m_resources.begin();
-                    if (m_typeIt != m_resources.end())
-                        m_innerIt = m_typeIt->second.begin();
-                    else
-                        break; // 沒有資源
-                }
+        //    while (count < maxItems) {
+        //        std::unique_lock lock(m_mutex);
+        //        if (m_typeIt == m_resources.end()) {
+        //            // 完成一輪掃描，重置迭代器
+        //            m_typeIt = m_resources.begin();
+        //            if (m_typeIt != m_resources.end())
+        //                m_innerIt = m_typeIt->second.begin();
+        //            else
+        //                break; // 沒有資源
+        //        }
 
-                auto& innerMap = m_typeIt->second;
-                if (m_innerIt == innerMap.end()) {
-                    ++m_typeIt;
-                    continue;
-                }
+        //        auto& innerMap = m_typeIt->second;
+        //        if (m_innerIt == innerMap.end()) {
+        //            ++m_typeIt;
+        //            continue;
+        //        }
 
-                auto currentIt = m_innerIt++;
-                if (currentIt->second.expired()) {
-                    innerMap.erase(currentIt);
-                }
+        //        auto currentIt = m_innerIt++;
+        //        if (currentIt->second.expired()) {
+        //            innerMap.erase(currentIt);
+        //        }
 
-                ++count;
-            }
-        }
+        //        ++count;
+        //    }
+        //}
 
     private:
         std::shared_mutex m_mutex;

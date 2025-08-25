@@ -36,14 +36,13 @@ target_compile_definitions(PaperEngine PRIVATE PE_BUILD_ITSELF)
 target_compile_definitions(PaperEngine PRIVATE "$<$<CONFIG:Debug>:PE_DEBUG>")
 target_compile_definitions(PaperEngine PRIVATE "$<$<CONFIG:Release>:PE_DIST>")
 
-# include vulkan
-target_include_directories(PaperEngine PRIVATE ${Vulkan_INCLUDE_DIRS})
-target_link_libraries(PaperEngine PRIVATE ${Vulkan_LIBRARIES})
-
 # Group the files in Visual Studio based on folder structure
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${PAPER_ENGINE_SOURCES})
 
 target_include_directories(PaperEngine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
+# include vulkan
+target_link_libraries(PaperEngine PRIVATE ${Vulkan_LIBRARY})
 
 # include glfw
 target_link_libraries(PaperEngine PRIVATE glfw)

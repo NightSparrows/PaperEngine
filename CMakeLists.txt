@@ -14,13 +14,6 @@ set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMake")
 option(PAPER_ENGINE_BUILD_SHARED "Paper Engine build shared" ON)
 option(PAPER_ENGINE_PROFILING "Paper Engine profiling" ON)
 
-# find vulkan
-find_package(Vulkan REQUIRED)
-
-if (NOT Vulkan_FOUND)
-    message(FATAL_ERROR "Vulkan SDK not found.")
-endif()
-
 add_subdirectory(vendor)
 
 add_subdirectory(PaperEngine)
