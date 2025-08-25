@@ -2,6 +2,8 @@
 
 #include <nvrhi/nvrhi.h>
 
+#include <PaperEngine/core/Base.h>
+
 namespace PaperEngine {
 
 	/// <summary>
@@ -18,13 +20,13 @@ namespace PaperEngine {
 		/// 你要自己把Layout放進desc，
 		/// 這個單純是你需要設定shader的值之類的（不是全域）
 		/// </param>
-		GraphicsPipeline(nvrhi::GraphicsPipelineDesc desc, nvrhi::BindingLayoutHandle bindingLayout, size_t variableBufferSize);
+		PE_API GraphicsPipeline(nvrhi::GraphicsPipelineDesc desc, nvrhi::BindingLayoutHandle bindingLayout, size_t variableBufferSize);
 
 		nvrhi::IGraphicsPipeline* getGraphicsPipeline(nvrhi::IFramebuffer* fb) const;
 
-		nvrhi::IBindingLayout* getBindingLayout() const;
+		PE_API nvrhi::IBindingLayout* getBindingLayout() const;
 
-		size_t getVariableBufferSize() const { return m_variableBufferSize; }
+		PE_API size_t getVariableBufferSize() const { return m_variableBufferSize; }
 
 	private:
 

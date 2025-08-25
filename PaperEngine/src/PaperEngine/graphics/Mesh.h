@@ -3,13 +3,14 @@
 #include <vector>
 
 #include <nvrhi/nvrhi.h>
+#include <glm/glm.hpp>
 
 namespace PaperEngine {
 
 	struct StaticVertex {
-		float position[3]; // vec3 position
-		float normal[3];   // vec3 normal
-		float texcoord[2]; // vec2 texcoord
+		glm::vec3 position; // vec3 position
+		glm::vec3 normal;   // vec3 normal
+		glm::vec2 texcoord; // vec2 texcoord
 	};
 
 	struct SkeletalVertex {
@@ -52,13 +53,13 @@ namespace PaperEngine {
 		};
 
 		// 編輯Mesh的Submesh
-		std::vector<SubMeshInfo>& getSubMeshes() { return m_subMeshes; }
+		PE_API std::vector<SubMeshInfo>& getSubMeshes() { return m_subMeshes; }
 
-		void loadStaticMesh(nvrhi::CommandListHandle cmdList, const std::vector<StaticVertex>& vertices);
+		PE_API void loadStaticMesh(nvrhi::CommandListHandle cmdList, const std::vector<StaticVertex>& vertices);
 
-		void loadSkeletalMesh(nvrhi::CommandListHandle cmdList, const std::vector<SkeletalVertex>& vertices);
+		PE_API void loadSkeletalMesh(nvrhi::CommandListHandle cmdList, const std::vector<SkeletalVertex>& vertices);
 
-		void loadIndexBuffer(nvrhi::CommandListHandle cmdList, const void* indicesData, size_t indicesCount, nvrhi::Format type = nvrhi::Format::R32_UINT);
+		PE_API void loadIndexBuffer(nvrhi::CommandListHandle cmdList, const void* indicesData, size_t indicesCount, nvrhi::Format type = nvrhi::Format::R32_UINT);
 
 		/// <summary>
 		/// Bind this Mesh
@@ -81,7 +82,7 @@ namespace PaperEngine {
 		/// 會依據該Type來決定Mesh的格式處理方式
 		/// </summary>
 		/// <param name="type"></param>
-		MeshType getType() const { return m_type; }
+		PE_API MeshType getType() const { return m_type; }
 
 	private:
 

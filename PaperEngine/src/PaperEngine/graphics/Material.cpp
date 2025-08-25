@@ -4,8 +4,8 @@
 
 namespace PaperEngine {
 	
-	Material::Material(Ref<GraphicsPipeline> graphicsPipeline, const std::unordered_map<std::string, Variable>& parameterSlots) :
-		m_graphicsPipeline(graphicsPipeline), m_parameterSlots(parameterSlots)
+	Material::Material(Ref<GraphicsPipeline> graphicsPipeline) :
+		m_graphicsPipeline(graphicsPipeline)
 	{
 		m_cmd = Application::GetNVRHIDevice()->createCommandList();
 
@@ -20,26 +20,41 @@ namespace PaperEngine {
 		}
 	}
 
+	PE_API void Material::setOffset(const std::string& name, uint32_t offset)
+	{
+		auto& variable = m_parameterSlots[name];
+
+		variable.offset = offset;
+	}
+
+	PE_API void Material::setSlot(const std::string& name, uint32_t slotIndex)
+	{
+		auto& variable = m_parameterSlots[name];
+
+		variable.slot = slotIndex;
+	}
+
 	void Material::setFloat(const std::string& name, float value)
 	{
-		if (m_parameterSlots.find(name) == m_parameterSlots.end())
-		{
-			PE_CORE_ERROR("Material: Float parameter '{}' not found.", name);
-			return;
-		}
+		//if (m_parameterSlots.find(name) == m_parameterSlots.end())
+		//{
+
+		//	PE_CORE_ERROR("Material: Float parameter '{}' not found.", name);
+		//	return;
+		//}
 
 		auto& variable = m_parameterSlots[name]; 
 		*reinterpret_cast<float*>(m_cpuVariableBuffer.data() + variable.offset) = value;
 		m_variableBufferModified = true;
 	}
 
-	void Material::setTexture(const std::string& name, nvrhi::TextureHandle texture)
+	void Material::setTexture(const std::string& name, TextureHandle texture)
 	{
-		if (m_parameterSlots.find(name) == m_parameterSlots.end())
-		{
-			PE_CORE_ERROR("Material: Texture parameter '{}' not found.", name);
-			return;
-		}
+		//if (m_parameterSlots.find(name) == m_parameterSlots.end())
+		//{
+		//	PE_CORE_ERROR("Material: Texture parameter '{}' not found.", name);
+		//	return;
+		//}
 
 		auto& variable = m_parameterSlots[name];
 		
@@ -51,33 +66,58 @@ namespace PaperEngine {
 			if (bindingItem.slot != variable.slot)
 				continue;
 
-			// 同type同slot
-
-			if (variable.type != VariableType::Texture)
-			{
-				PE_CORE_ERROR("Material: Parameter '{}' is not a texture type.", name);
-				return;
-			}
-
 			// already bind it
-			if (std::get<nvrhi::TextureHandle>(variable.value) == texture)
+			if (std::get<TextureHandle>(variable.value) == texture)
 				return;
 
-			bindingItem = nvrhi::BindingSetItem::Texture_SRV(variable.slot, texture);
+			bindingItem = nvrhi::BindingSetItem::Texture_SRV(variable.slot, texture->getTexture());
 			variable.value = texture;
+			variable.type = VariableType::Texture;
 			m_bindingSet = nullptr;
 			return;
 		}
 
 		// 沒找到，新增他
-		m_bindingSetDesc.addItem(nvrhi::BindingSetItem::Texture_SRV(variable.slot, texture));
+		m_bindingSetDesc.addItem(nvrhi::BindingSetItem::Texture_SRV(variable.slot, texture->getTexture()));
 		variable.value = texture;
+		m_bindingSet = nullptr;
+	}
+
+	void Material::setSampler(const std::string& name, nvrhi::SamplerHandle sampler)
+	{
+
+		auto& variable = m_parameterSlots[name];
+
+		for (auto& bindingItem : m_bindingSetDesc.bindings)
+		{
+			if (bindingItem.type != nvrhi::ResourceType::Sampler)
+				continue;
+
+			if (bindingItem.slot != variable.slot)
+				continue;
+
+			// 同type同slot
+
+			// already bind it
+			if (std::get<nvrhi::SamplerHandle>(variable.value) == sampler)
+				return;
+
+			bindingItem = nvrhi::BindingSetItem::Sampler(variable.slot, sampler);
+			variable.value = sampler;
+			variable.type = VariableType::Sampler;
+			m_bindingSet = nullptr;
+			return;
+		}
+		// 沒找到，新增他
+		m_bindingSetDesc.addItem(nvrhi::BindingSetItem::Sampler(variable.slot, sampler));
+		variable.value = sampler;
+		variable.type = VariableType::Sampler;
 		m_bindingSet = nullptr;
 	}
 
 	nvrhi::IBindingSet* Material::getBindingSet()
 	{
-		if (m_variableBufferModified) {
+		if (m_variableBufferModified && m_cpuVariableBuffer.size() > 0) {
 			m_cmd->open();
 			m_cmd->writeBuffer(m_variableBuffer, m_cpuVariableBuffer.data(), m_cpuVariableBuffer.size());
 			m_cmd->close();

@@ -21,15 +21,15 @@ struct EntityData
 	float4x4 trans;
 };
 
-struct BoneTransformation
-{
-	float4x4 trans;
-};
+//struct BoneTransformation
+//{
+//	float4x4 trans;
+//};
 
-DECLARE_STRUCTURE_BUFFER_SRV(EntityData, g_entityData, 0, 1);
+DECLARE_STRUCTURE_BUFFER_SRV(EntityData, g_entityData, 1, 1);
 
 // 如果是animated
-DECLARE_STRUCTURE_BUFFER_SRV(BoneTransformation, g_boneTrans, 1, 1);
+//DECLARE_STRUCTURE_BUFFER_SRV(BoneTransformation, g_boneTrans, 1, 1);
 
 DECLARE_SAMPLER(sampler0, 0, 2);
 DECLARE_TEXTURE2D_SRV(texture0, 0, 2);

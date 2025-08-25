@@ -71,29 +71,6 @@ static VKAPI_ATTR VkBool32 VulkanDebugCallback(
 	return VK_FALSE;
 }
 
-class MyMessageCallback : public nvrhi::IMessageCallback {
-public:
-	void message(nvrhi::MessageSeverity severity, const char* messageText) override {
-		switch (severity)
-		{
-		case nvrhi::MessageSeverity::Info:
-			PE_CORE_INFO("[NVRHI] ", messageText);
-			break;
-		case nvrhi::MessageSeverity::Warning:
-			PE_CORE_WARN("[NVRHI] ", messageText);
-			break;
-		case nvrhi::MessageSeverity::Error:
-			PE_CORE_ERROR("[NVRHI] ", messageText);
-			break;
-		case nvrhi::MessageSeverity::Fatal:
-			PE_CORE_CRITICAL("[NVRHI] ", messageText);
-			break;
-		default:
-			break;
-		}
-	}
-};
-
 #pragma endregion
 
 namespace PaperEngine {
@@ -244,9 +221,8 @@ namespace PaperEngine {
 			m_instance.vkbInstance.instance, 
 			m_instance.vkbDevice.device);
 
-		MyMessageCallback nvCallback;
 		nvrhi::vulkan::DeviceDesc deviceDesc{
-			.errorCB = &nvCallback,
+			.errorCB = &m_NVMsgCallback,
 			.physicalDevice = m_instance.physicalDevice.physical_device,
 			.device = m_instance.vkbDevice,
 			.graphicsQueue = m_instance.graphicsQueue,
@@ -443,7 +419,7 @@ namespace PaperEngine {
 
 	nvrhi::FramebufferHandle VulkanGraphicsContext::getCurrentFramebuffer()
 	{
-		return m_instance.framebuffers[m_instance.swapchainIndex];
+		return m_instance.framebuffers[m_instance.swapchainIndex].framebuffer;
 	}
 
 	bool VulkanGraphicsContext::createSwapchain()
@@ -508,8 +484,10 @@ namespace PaperEngine {
 			auto framebufferDesc = nvrhi::FramebufferDesc()
 				.addColorAttachment(texture)
 				.setDepthAttachment(depthTexture);
-			m_instance.framebuffers.push_back(
-				m_instance.device->createFramebuffer(framebufferDesc));
+			m_instance.framebuffers.push_back({
+				depthTexture,
+				m_instance.device->createFramebuffer(framebufferDesc)
+				});
 		}
 	}
 

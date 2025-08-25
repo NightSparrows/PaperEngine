@@ -16,21 +16,24 @@ namespace PaperEngine {
 		instanceBufferDesc
 			.setByteSize(sizeof(InstanceData) * 10000)
 			.setIsConstantBuffer(true)
+			.setKeepInitialState(true)
 			.setStructStride(sizeof(InstanceData));
 		m_instanceBuffer = Application::GetNVRHIDevice()->createBuffer(instanceBufferDesc);
 
 		nvrhi::BindingLayoutDesc instanceBufLayoutDesc;
 		instanceBufLayoutDesc.setVisibility(nvrhi::ShaderType::Vertex);
-		instanceBufLayoutDesc.addItem(nvrhi::BindingLayoutItem::StructuredBuffer_SRV(0));
-		m_instanceBufBindingLayout = Application::GetNVRHIDevice()->createBindingLayout(instanceBufLayoutDesc);
+		instanceBufLayoutDesc.addItem(nvrhi::BindingLayoutItem::StructuredBuffer_SRV(1));
+		m_instanceBufBindingLayout = 
+			Application::GetResourceManager()->create<BindingLayout>("MeshRenderer_instanceBufLayout",
+				Application::GetNVRHIDevice()->createBindingLayout(instanceBufLayoutDesc));
 
 		nvrhi::BindingSetDesc instanceBufSetDesc;
-		instanceBufSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(0, m_instanceBuffer));
-		m_instanceBufferSet = Application::GetNVRHIDevice()->createBindingSet(instanceBufSetDesc, m_instanceBufBindingLayout);
+		instanceBufSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(1, m_instanceBuffer));
+		m_instanceBufferSet = Application::GetNVRHIDevice()->createBindingSet(instanceBufSetDesc, m_instanceBufBindingLayout->handle);
 
 	}
 
-	void MeshRenderer::renderScene(std::span<Ref<Scene>> scenes, const GlobalData& globalData)
+	void MeshRenderer::renderScene(std::span<Ref<Scene>> scenes, const GlobalSceneData& globalData)
 	{
 		m_renderData.clear();
 
@@ -48,13 +51,16 @@ namespace PaperEngine {
 				if (mesh->getType() == MeshType::Skeletal)
 					continue;
 
-				// TODO: camera frustum culling
-
-				PE_CORE_ASSERT(mesh->getSubMeshes().size() == meshRendererCom.materials.size(), "Wired mesh renderer materials doesn't match mesh submeshes");
+				// TODO: camera frustum culling, or other culling
 
 				// meshRenderer的materials跟subMesh是一對一的
+				PE_CORE_ASSERT(mesh->getSubMeshes().size() == meshRendererCom.materials.size(), "Wired mesh renderer materials doesn't match mesh submeshes");
+
 				for (uint32_t subMeshIndex = 0; subMeshIndex < mesh->getSubMeshes().size(); subMeshIndex++) {
 					auto material = meshRendererCom.materials[subMeshIndex];
+					
+					// modify的data first
+					material->getBindingSet();
 
 					if (!material)
 						continue;			// TODO: 改成null material之類的可以顯示
@@ -74,7 +80,16 @@ namespace PaperEngine {
 
 		// rendering
 		nvrhi::GraphicsState graphicsState;
+		graphicsState.setFramebuffer(globalData.fb);
 		nvrhi::DrawArguments drawArgs;
+		graphicsState.viewport.addViewportAndScissorRect(
+			nvrhi::Viewport(
+				0,
+				2560,
+				0,
+				1440,
+				0,
+				1));
 
 		/// 0: globalSet
 		/// 1: instance buffer
@@ -92,7 +107,6 @@ namespace PaperEngine {
 				graphicsState.bindings[2] = material->getBindingSet();
 				for (auto& [mesh, meshData] : materialData.meshList) {
 					mesh->bindMesh(graphicsState);
-					m_cmd->setGraphicsState(graphicsState);
 					for (auto& [subMesh, subMeshData] : meshData.subMeshList) {
 
 						// instance buffer uploading
@@ -103,12 +117,13 @@ namespace PaperEngine {
 							m_instanceBuffer,
 							subMeshData.instanceData.data(),
 							transMatSize,
-							instanceCount * sizeof(InstanceData));
+							instanceOffset * sizeof(InstanceData));
 
 
 						mesh->bindSubMesh(drawArgs, subMesh);
 						drawArgs.setStartInstanceLocation(instanceOffset);
 						drawArgs.setInstanceCount(static_cast<uint32_t>(instanceCount));
+						m_cmd->setGraphicsState(graphicsState);
 						m_cmd->drawIndexed(drawArgs);
 
 						instanceOffset += instanceCount;

@@ -31,19 +31,19 @@ namespace PaperEngine {
         return *this;
     }
 
-    PE_API glm::vec3 Transform::get_forward() const
+    PE_API glm::vec3 Transform::getForward() const
     {
         update();
         return m_rotation * glm::vec3(0, 0, -1);
     }
 
-    PE_API glm::vec3 Transform::get_right() const
+    PE_API glm::vec3 Transform::getRight() const
     {
         update();
         return m_rotation * glm::vec3(1, 0, 0);
     }
 
-    PE_API glm::vec3 Transform::get_up() const
+    PE_API glm::vec3 Transform::getUp() const
     {
         update();
         return m_rotation * glm::vec3(0, 1, 0);

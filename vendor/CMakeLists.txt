@@ -57,11 +57,17 @@ add_subdirectory(entt)
 
 if (NOT TARGET imgui)
 	set(imgui_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
-	file(GLOB imgui_sources CONFIGURE_DEPENDS "${imgui_SOURCE_DIR}/*.cpp")
-	file(GLOB imgui_headers CONFIGURE_DEPENDS "${imgui_SOURCE_DIR}/*.h")
 	
     add_library(imgui INTERFACE)
     target_include_directories(imgui INTERFACE ${imgui_SOURCE_DIR})
     target_include_directories(imgui INTERFACE ${Vulkan_INCLUDE_DIR})
     set_target_properties(imgui PROPERTIES FOLDER ${3rdParty_folder}/imgui)
+endif()
+
+if (NOT TARGET stb)
+	set(stb_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stb)
+	add_library(stb INTERFACE)
+    target_include_directories(stb INTERFACE ${stb_SOURCE_DIR})
+    set_target_properties(stb PROPERTIES FOLDER ${3rdParty_folder}/stb)
+	
 endif()

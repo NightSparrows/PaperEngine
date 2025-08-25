@@ -10,9 +10,9 @@
 
 namespace PaperEngine {
 
-	struct GlobalData {
-		Ref<Camera> camera;					// 相機projection
-		Transform cameraTransform;			// 相機transformation (view matrix)
+	struct GlobalSceneData {
+		const Camera* camera;					// 相機projection
+		const Transform* cameraTransform;			// 相機transformation (view matrix)
 		nvrhi::IBindingSet* globalSet;
 		nvrhi::IFramebuffer* fb;
 	};
@@ -20,7 +20,7 @@ namespace PaperEngine {
 	class IRenderer {
 	public:
 
-		virtual void renderScene(std::span<Ref<Scene>> scenes, const GlobalData& globalData) = 0;
+		virtual void renderScene(std::span<Ref<Scene>> scenes, const GlobalSceneData& globalData) = 0;
 
 	};
 

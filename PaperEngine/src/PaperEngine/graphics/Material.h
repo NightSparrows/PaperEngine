@@ -8,6 +8,8 @@
 #include <PaperEngine/core/Base.h>
 #include <PaperEngine/graphics/GraphicsPipeline.h>
 
+#include <PaperEngine/graphics/Texture.h>
+
 namespace PaperEngine {
 
 	class Material {
@@ -15,6 +17,7 @@ namespace PaperEngine {
 
 		enum class VariableType {
 			Texture,
+			Sampler,
 			Float,
 			Vec2,
 			Vec3,
@@ -23,15 +26,16 @@ namespace PaperEngine {
 		};
 
 		struct Variable {
-			uint32_t slot; // 參數槽
+			uint32_t slot = 0; // 參數槽
 			VariableType type;
 
 			/// <summary>
 			/// 如果是float等類型，這個是在其VariableBuffer中的偏移量
 			/// </summary>
-			uint32_t offset;
+			uint32_t offset = 0;
 			std::variant<
-				nvrhi::TextureHandle, // 如果是Texture
+				TextureHandle, // 如果是Texture
+				nvrhi::SamplerHandle,
 				float,               // 如果是Float
 				glm::vec2,          // 如果是Vec2
 				glm::vec3,          // 如果是Vec3
@@ -40,15 +44,21 @@ namespace PaperEngine {
 		};
 
 	public:
-		Material(Ref<GraphicsPipeline> graphicsPipeline, const std::unordered_map<std::string, Variable>& parameterSlots);
+		PE_API Material(Ref<GraphicsPipeline> graphicsPipeline);
 
-		void setFloat(const std::string& name, float value);
+		PE_API void setOffset(const std::string& name, uint32_t offset);
 
-		void setTexture(const std::string& name, nvrhi::TextureHandle texture);
+		PE_API void setSlot(const std::string& name, uint32_t slotIndex);
 
-		nvrhi::IBindingSet* getBindingSet();
+		PE_API void setFloat(const std::string& name, float value);
 
-		Ref<GraphicsPipeline> getGraphicsPipeline() { return m_graphicsPipeline; }
+		PE_API void setTexture(const std::string& name, TextureHandle texture);
+
+		PE_API void setSampler(const std::string& name, nvrhi::SamplerHandle sampler);
+
+		PE_API nvrhi::IBindingSet* getBindingSet();
+
+		PE_API Ref<GraphicsPipeline> getGraphicsPipeline() { return m_graphicsPipeline; }
 
 	private:
 		Ref<GraphicsPipeline> m_graphicsPipeline; // 用於渲染的圖形管線

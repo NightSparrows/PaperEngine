@@ -74,6 +74,10 @@ target_include_directories(PaperEngine PUBLIC ${nvrhi_SOURCE_DIR}/include)
 # include vk-bootstrap
 target_link_libraries(PaperEngine PUBLIC vk-bootstrap::vk-bootstrap)
 
+# include stb
+target_link_libraries(PaperEngine PUBLIC stb)
+
+
 # include yaml
 # target_link_libraries(PaperEngine PRIVATE yaml-cpp)
 

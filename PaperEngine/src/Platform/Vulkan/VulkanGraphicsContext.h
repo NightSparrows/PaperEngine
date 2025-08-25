@@ -25,6 +25,29 @@
 #define CHECK_VK_RESULT(x) x
 #endif
 
+class NVMessageCallback : public nvrhi::IMessageCallback {
+public:
+	void message(nvrhi::MessageSeverity severity, const char* messageText) override {
+		switch (severity)
+		{
+		case nvrhi::MessageSeverity::Info:
+			PE_CORE_INFO("[NVRHI] {}", messageText);
+			break;
+		case nvrhi::MessageSeverity::Warning:
+			PE_CORE_WARN("[NVRHI] {}", messageText);
+			break;
+		case nvrhi::MessageSeverity::Error:
+			PE_CORE_ERROR("[NVRHI] {}", messageText);
+			break;
+		case nvrhi::MessageSeverity::Fatal:
+			PE_CORE_CRITICAL("[NVRHI] {}", messageText);
+			break;
+		default:
+			break;
+		}
+	}
+};
+
 namespace PaperEngine {
 	struct VulkanInstance {
 
@@ -59,7 +82,11 @@ namespace PaperEngine {
 		/// <summary>
 		/// swapchain被使用的framebuffer
 		/// </summary>
-		std::vector<nvrhi::FramebufferHandle> framebuffers;
+		struct SwapchainFramebuffer {
+			nvrhi::TextureHandle depthTexture;
+			nvrhi::FramebufferHandle framebuffer;
+		};
+		std::vector<SwapchainFramebuffer> framebuffers;
 
 	};
 
@@ -98,6 +125,8 @@ namespace PaperEngine {
 
 	private:
 		VulkanInstance m_instance;
+
+		NVMessageCallback m_NVMsgCallback;
 
 		GLFWWindow* m_window;
 

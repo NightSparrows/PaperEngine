@@ -16,6 +16,8 @@
 
 #include <PaperEngine/graphics/IRenderer.h>
 
+#include "BindingLayout.h"
+
 namespace PaperEngine {
 
 	class MeshRenderer : public IRenderer {
@@ -27,7 +29,7 @@ namespace PaperEngine {
 		// 由於是整個scene作process，所以mesh renderer保留process mesh entity的function
 		// 然後在自己做static batching之類的
 		// 另外skinned mesh (有動畫) 跟這個分開好了，比較不複雜
-		void renderScene(std::span<Ref<Scene>> scenes, const GlobalData& globalData) override;
+		void renderScene(std::span<Ref<Scene>> scenes, const GlobalSceneData& globalData) override;
 	private:
 
 		struct InstanceData {
@@ -53,8 +55,8 @@ namespace PaperEngine {
 		std::unordered_map<Ref<GraphicsPipeline>, ShaderData> m_renderData;
 
 		nvrhi::CommandListHandle m_cmd;
-
-		nvrhi::BindingLayoutHandle m_instanceBufBindingLayout;
+		
+		BindingLayoutHandle m_instanceBufBindingLayout;
 		nvrhi::BindingSetHandle m_instanceBufferSet;
 		// 紀錄instance buffer的transformation
 		nvrhi::BufferHandle m_instanceBuffer;
