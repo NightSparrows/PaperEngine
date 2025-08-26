@@ -82,9 +82,9 @@ namespace PaperEngine {
 				// meshRenderer的materials跟subMesh是一對一的
 				PE_CORE_ASSERT(mesh->getSubMeshes().size() == meshRendererCom.materials.size(), "Wired mesh renderer materials doesn't match mesh submeshes");
 
-				// TODO shadowmap mesh processing
+				// TODO shadowmap mesh processing & culling
 
-				// Frustum culling
+				// Frustum culling for meshes
 				if (!cameraFrustum.isAABBInFrustum(meshCom.worldAABB))
 					continue;
 
