@@ -8,6 +8,9 @@ namespace PaperEngine {
 
 	class Clock {
 	public:
+		Clock() {
+			m_startTime = std::chrono::high_resolution_clock::now();
+		}
 
 		Timestep resetClock() {
 			auto current_time = std::chrono::high_resolution_clock::now();
