@@ -56,9 +56,19 @@ namespace PaperEngine {
 
 		PE_API void setSampler(const std::string& name, nvrhi::SamplerHandle sampler);
 
+		/// <summary>
+		/// 每次對Material做更改時都要update
+		/// 之所以不內化純粹是不想一直create
+		/// </summary>
+		/// <returns></returns>
+		PE_API void update();
+
 		PE_API nvrhi::IBindingSet* getBindingSet();
 
 		PE_API Ref<GraphicsPipeline> getGraphicsPipeline() { return m_graphicsPipeline; }
+
+	protected:
+		void generateSet();
 
 	private:
 		Ref<GraphicsPipeline> m_graphicsPipeline; // 用於渲染的圖形管線

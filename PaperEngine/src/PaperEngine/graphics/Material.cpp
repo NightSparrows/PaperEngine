@@ -117,6 +117,17 @@ namespace PaperEngine {
 
 	nvrhi::IBindingSet* Material::getBindingSet()
 	{
+#ifdef PE_DEBUG
+		if (!m_bindingSet) {
+			PE_CORE_WARN("Material doesn't update yet!");
+		}
+#endif // PE_DEBUG
+
+		return m_bindingSet;
+	}
+
+	PE_API void Material::update()
+	{
 		if (m_variableBufferModified && m_cpuVariableBuffer.size() > 0) {
 			m_cmd->open();
 			m_cmd->writeBuffer(m_variableBuffer, m_cpuVariableBuffer.data(), m_cpuVariableBuffer.size());
@@ -125,14 +136,27 @@ namespace PaperEngine {
 			m_variableBufferModified = false;
 		}
 		if (m_bindingSet)
-			return m_bindingSet;
+			return;
 
 		auto device = Application::Get()->getGraphicsContext()->getNVRhiDevice();
 		m_bindingSet = device->createBindingSet(
 			m_bindingSetDesc,
 			m_graphicsPipeline->getBindingLayout());
+	}
 
-		return m_bindingSet;
+	void Material::generateSet()
+	{
+		if (m_variableBufferModified && m_cpuVariableBuffer.size() > 0) {
+			m_cmd->open();
+			m_cmd->writeBuffer(m_variableBuffer, m_cpuVariableBuffer.data(), m_cpuVariableBuffer.size());
+			m_cmd->close();
+			Application::GetNVRHIDevice()->executeCommandList(m_cmd);
+			m_variableBufferModified = false;
+		}
+		auto device = Application::Get()->getGraphicsContext()->getNVRhiDevice();
+		m_bindingSet = device->createBindingSet(
+			m_bindingSetDesc,
+			m_graphicsPipeline->getBindingLayout());
 	}
 
 } // namespace PaperEngine

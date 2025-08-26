@@ -11,6 +11,8 @@
 
 #include <PaperEngine/utils/Frustum.h>
 
+#include <execution>
+
 namespace PaperEngine {
 
 	SceneRenderer::SceneRenderer()
@@ -77,6 +79,7 @@ namespace PaperEngine {
 				TransformComponent,
 				MeshComponent,
 				MeshRendererComponent>();
+
 			for (auto [entity, transformCom, meshCom, meshRendererCom] : sceneView.each()) {
 				const auto& transform = transformCom.transform;
 				const auto& mesh = meshCom.mesh;
@@ -86,7 +89,7 @@ namespace PaperEngine {
 
 				// TODO shadowmap mesh processing & culling
 
-				// Frustum culling for meshes
+					// Frustum culling for meshes
 				if (!cameraFrustum.isAABBInFrustum(meshCom.worldAABB))
 					continue;
 
@@ -95,10 +98,7 @@ namespace PaperEngine {
 					for (uint32_t subMeshIndex = 0; subMeshIndex < mesh->getSubMeshes().size(); subMeshIndex++) {
 						auto material = meshRendererCom.materials[subMeshIndex];
 
-						// modify的data first
-						material->getBindingSet();
-
-						if (!material)
+						if (!material || !material->getBindingSet())
 							continue;			// TODO: 改成null material之類的可以顯示
 
 						m_meshRenderer.addEntity(

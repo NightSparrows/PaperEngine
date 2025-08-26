@@ -194,6 +194,7 @@ public:
 			material->setSampler("sampler0", sampler);
 
 			material->setTexture("texture0", texture);
+			material->update();
 			for (uint32_t i = 0; i < 10000; i++) {
 				auto testEntity = scene->createEntity("test Entity");
 				auto& testMeshCom = testEntity.addComponent<PaperEngine::MeshComponent>();
