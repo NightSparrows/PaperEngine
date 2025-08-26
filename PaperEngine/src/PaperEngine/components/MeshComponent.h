@@ -9,7 +9,7 @@ namespace PaperEngine {
 	struct MeshComponent {
 		Ref<Mesh> mesh;
 
-		AABB worldAABB;
+		AABB worldAABB{};
 	};
 
 }

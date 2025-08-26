@@ -13,7 +13,7 @@ namespace PaperEngine {
         this->m_rotation = glm::rotate(m_rotation, glm::radians(angle), axis);
     }
 
-    const Transform& Transform::operator=(const glm::mat4& matrix)
+    Transform& Transform::operator=(const glm::mat4& matrix)
     {
         glm::vec3 position;
         glm::quat rotation;

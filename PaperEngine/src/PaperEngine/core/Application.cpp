@@ -68,7 +68,7 @@ namespace PaperEngine {
 				m_window->onUpdate();
 				// Update logic, input handling, etc.
 				for (auto layer : m_layerManager) {
-					layer->onUpdate(deltaTime); // TODO 修改
+					layer->onUpdate(deltaTime);
 				}
 			}
 

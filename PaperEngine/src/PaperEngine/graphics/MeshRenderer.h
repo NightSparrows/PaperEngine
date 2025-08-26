@@ -20,10 +20,19 @@
 
 namespace PaperEngine {
 
+	/// <summary>
+	/// 渲染靜態Mesh的Renderer
+	/// </summary>
 	class MeshRenderer : public IRenderer {
 	public:
 		MeshRenderer();
 		~MeshRenderer();
+
+		void addEntity(
+			Ref<Material> material,
+			Ref<Mesh> mesh,
+			uint32_t subMeshIndex,
+			const Transform& transform);
 
 		// 不對 應該改成process mesh entity之類的
 		// 因為需要先使用scene renderer做 culling，不用畫的不會被process
@@ -33,6 +42,10 @@ namespace PaperEngine {
 		void renderScene(std::span<Ref<Scene>> scenes, const GlobalSceneData& globalData) override;
 	
 		void onBackBufferResized();
+
+		inline uint32_t getTotalInstanceCount() const { return m_totalInstanceCount; }
+
+		inline uint32_t getTotalDrawCallCount() const { return m_totalDrawCallCount; }
 
 	private:
 
@@ -57,6 +70,13 @@ namespace PaperEngine {
 		};
 
 		std::unordered_map<Ref<GraphicsPipeline>, ShaderData> m_renderData;
+
+		// 紀錄renderer 的renderer情況
+		uint32_t m_tempInstanceCount{ 0 };
+		uint32_t m_totalInstanceCount{ 0 };
+
+		uint32_t m_tempDrawCallCount{ 0 };
+		uint32_t m_totalDrawCallCount{ 0 };
 
 		nvrhi::CommandListHandle m_cmd;
 		

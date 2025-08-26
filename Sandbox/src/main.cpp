@@ -207,10 +207,6 @@ public:
 				transCom.transform.setPosition(
 					glm::vec3(dist(gen), dist(gen), dist(gen))
 				);
-				// TODO 血一個Entity move的function，
-				// transform component跟mesh component裡的aabb
-				// 一起更新
-				testMeshCom.worldAABB = mesh->getAABB().transformed(transCom.transform);
 
 				float u1 = rotDist(gen);
 				float u2 = rotDist(gen);
@@ -228,6 +224,10 @@ public:
 				float z = sqrtU1 * std::cos(theta2);
 
 				transCom.transform.setRotation(glm::quat(w, x, y, z));
+				// TODO 血一個Entity move的function，
+				// transform component跟mesh component裡的aabb
+				// 一起更新
+				testMeshCom.worldAABB = mesh->getAABB().transformed(transCom.transform);
 			}
 		}
 #pragma endregion
@@ -236,6 +236,7 @@ public:
 
 		PE_CORE_INFO("TestLayer attached.");
 	}
+
 	void onDetach() override {
 		cmd = nullptr;
 		textureLoader = nullptr;
@@ -293,7 +294,10 @@ public:
 	}
 
 	void onImGuiRender() {
-		ImGui::Begin("test");
+		ImGui::Begin("Debug");
+		ImGui::Text("MeshRenderer");
+		ImGui::Text("instance: %u", m_sceneRenderer->getMeshRenderer()->getTotalInstanceCount());
+		ImGui::Text("drawcall: %u", m_sceneRenderer->getMeshRenderer()->getTotalDrawCallCount());
 		ImGui::End();
 	}
 

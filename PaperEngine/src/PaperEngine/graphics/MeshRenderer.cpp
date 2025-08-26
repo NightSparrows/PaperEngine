@@ -43,58 +43,23 @@ namespace PaperEngine {
 		m_instanceBufferCpuPtr = nullptr;
 	}
 
+	void MeshRenderer::addEntity(Ref<Material> material, Ref<Mesh> mesh, uint32_t subMeshIndex, const Transform& transform)
+	{
+		auto& materialList = m_renderData[material->getGraphicsPipeline()].materialList;
+		auto& meshList = materialList[material].meshList;
+		auto& subMeshList = meshList[mesh].subMeshList;
+		auto& subMeshData = subMeshList[subMeshIndex];
+
+		subMeshData.instanceData.emplace_back(transform);
+		m_tempInstanceCount++;
+	}
+
 	void MeshRenderer::renderScene(std::span<Ref<Scene>> scenes, const GlobalSceneData& globalData)
 	{
-		m_renderData.clear();
-
-		Frustum cameraFrustum = Frustum::Extract(globalData.projViewMatrix);
-
-		// process mesh
-		for (auto scene : scenes) {
-			auto sceneView = scene->getRegistry().view<
-				TransformComponent,
-				MeshComponent,
-				MeshRendererComponent>();
-			for (auto [entity, transformCom, meshCom, meshRendererCom] : sceneView.each()) {
-				const auto& transform = transformCom.transform;
-				const auto& mesh = meshCom.mesh;
-
-				// 不處理有動畫的mesh
-				if (mesh->getType() == MeshType::Skeletal)
-					continue;
-
-
-				// TODO: 放到entity的移動時才計算aabb的world space，而不是每禎計算world space aabb
-				// TODO: 把AABB移到meshComponent裡，而不是mesh
-				if (!cameraFrustum.isAABBInFrustum(meshCom.worldAABB))
-					continue;
-
-				// meshRenderer的materials跟subMesh是一對一的
-				PE_CORE_ASSERT(mesh->getSubMeshes().size() == meshRendererCom.materials.size(), "Wired mesh renderer materials doesn't match mesh submeshes");
-
-				for (uint32_t subMeshIndex = 0; subMeshIndex < mesh->getSubMeshes().size(); subMeshIndex++) {
-					auto material = meshRendererCom.materials[subMeshIndex];
-					
-					// modify的data first
-					material->getBindingSet();
-
-					if (!material)
-						continue;			// TODO: 改成null material之類的可以顯示
-
-					auto& materialList = m_renderData[material->getGraphicsPipeline()].materialList;
-					auto& meshList = materialList[material].meshList;
-					auto& subMeshList = meshList[mesh].subMeshList;
-					auto& subMeshData = subMeshList[subMeshIndex];
-
-					subMeshData.instanceData.emplace_back(transform);
-				}
-			}
-		}
-
+		// rendering
 		m_cmd->open();
 
 
-		// rendering
 		nvrhi::GraphicsState graphicsState;
 		graphicsState.setFramebuffer(globalData.fb);
 		nvrhi::DrawArguments drawArgs;
@@ -140,7 +105,7 @@ namespace PaperEngine {
 						drawArgs.setInstanceCount(static_cast<uint32_t>(instanceCount));
 						m_cmd->setGraphicsState(graphicsState);
 						m_cmd->drawIndexed(drawArgs);
-
+						m_tempDrawCallCount++;
 						instanceOffset += instanceCount;
 					}
 				}
@@ -148,6 +113,12 @@ namespace PaperEngine {
 		}
 		m_cmd->close();
 		Application::GetNVRHIDevice()->executeCommandList(m_cmd);
+
+		m_renderData.clear();
+		m_totalInstanceCount = m_tempInstanceCount;
+		m_tempInstanceCount = 0;
+		m_totalDrawCallCount = m_tempDrawCallCount;
+		m_tempDrawCallCount = 0;
 	}
 
 	void MeshRenderer::onBackBufferResized() {

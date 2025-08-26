@@ -1,10 +1,14 @@
 ﻿#pragma once
 
+#include <glm/glm.hpp>
+
 #include <entt/entt.hpp>
 
 #include <PaperEngine/core/Base.h>
 
 #include <PaperEngine/scene/Scene.h>
+
+#include <PaperEngine/utils/Transform.h>
 
 namespace PaperEngine {
 
@@ -13,6 +17,10 @@ namespace PaperEngine {
 	public:
 		PE_API Entity() = default;
 		PE_API Entity(entt::entity handle, Scene* scene);
+
+		PE_API void setPosition(const glm::vec3& position);
+
+		PE_API void setTransform(const Transform& transform);
 
 		template<typename T, typename... Args>
 		T& addComponent(Args&&... args) {

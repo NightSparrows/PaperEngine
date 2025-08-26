@@ -42,6 +42,8 @@ namespace PaperEngine {
 
 		PE_API void onBackBufferResized();
 
+		PE_API MeshRenderer* getMeshRenderer() { return &m_meshRenderer; }
+
 	private:
 		nvrhi::CommandListHandle m_cmd;
 

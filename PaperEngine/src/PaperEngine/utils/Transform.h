@@ -13,7 +13,7 @@ namespace PaperEngine {
 		Transform() = default;
 		Transform(const Transform&) = default;
 		Transform& operator=(const Transform&) = default;
-
+		Transform& operator=(Transform&&) noexcept = default;
 		/// <summary>
 		/// 
 		/// </summary>
@@ -24,7 +24,7 @@ namespace PaperEngine {
 		/// <returns></returns>
 		PE_API void rotate(const glm::vec3& axis, float angle);
 
-		PE_API const Transform& operator=(const glm::mat4& matrix);
+		PE_API Transform& operator=(const glm::mat4& matrix);
 
 		PE_API void setPosition(const glm::vec3& position) { m_isDirty = true; m_position = position; }
 

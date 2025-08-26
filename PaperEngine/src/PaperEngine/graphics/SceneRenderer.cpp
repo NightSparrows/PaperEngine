@@ -3,6 +3,12 @@
 #include <nvrhi/utils.h>
 #include <PaperEngine/core/Application.h>
 
+#include <PaperEngine/components/TransformComponent.h>
+#include <PaperEngine/components/MeshComponent.h>
+#include <PaperEngine/components/MeshRendererComponent.h>
+
+#include <PaperEngine/utils/Frustum.h>
+
 namespace PaperEngine {
 
 	SceneRenderer::SceneRenderer()
@@ -56,11 +62,58 @@ namespace PaperEngine {
 		sceneData.globalSet = m_globalSet;
 		sceneData.projViewMatrix = globalData.projViewMatrix;
 
+#pragma region Filter Renderable Meshes
+
+		Frustum cameraFrustum = Frustum::Extract(globalData.projViewMatrix);
+
+		// process mesh
+		for (auto scene : scenes) {
+			auto sceneView = scene->getRegistry().view<
+				TransformComponent,
+				MeshComponent,
+				MeshRendererComponent>();
+			for (auto [entity, transformCom, meshCom, meshRendererCom] : sceneView.each()) {
+				const auto& transform = transformCom.transform;
+				const auto& mesh = meshCom.mesh;
+
+				// meshRenderer的materials跟subMesh是一對一的
+				PE_CORE_ASSERT(mesh->getSubMeshes().size() == meshRendererCom.materials.size(), "Wired mesh renderer materials doesn't match mesh submeshes");
+
+				// TODO shadowmap mesh processing
+
+				// Frustum culling
+				if (!cameraFrustum.isAABBInFrustum(meshCom.worldAABB))
+					continue;
+
+				if (mesh->getType() == MeshType::Static) {
+
+					for (uint32_t subMeshIndex = 0; subMeshIndex < mesh->getSubMeshes().size(); subMeshIndex++) {
+						auto material = meshRendererCom.materials[subMeshIndex];
+
+						// modify的data first
+						material->getBindingSet();
+
+						if (!material)
+							continue;			// TODO: 改成null material之類的可以顯示
+
+						m_meshRenderer.addEntity(
+							material,
+							mesh,
+							subMeshIndex,
+							transform);
+					}
+				}
+				// TODO process skinned meshes
+			}
+		}
+
+#pragma endregion
+
+
 		m_meshRenderer.renderScene(scenes, sceneData);
 	}
 
 	void SceneRenderer::onBackBufferResized() {
 		m_meshRenderer.onBackBufferResized();
 	}
-
 }
