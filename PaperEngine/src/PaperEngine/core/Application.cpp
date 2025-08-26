@@ -153,15 +153,6 @@ namespace PaperEngine {
 
 	void Application::onEvent(Event& e)
 	{
-		// TODO do the application event handling
-		EventDispatcher dispatcher(e);
-#ifdef PE_DEBUG
-		dispatcher.dispatch<WindowCloseEvent>([this](Event& e) {
-			m_running = false;
-			return true;
-			});
-#endif // PE_DEBUG
-		// TODO: Do the imgui event first
 		for (auto it = m_layerManager.rbegin(); it != m_layerManager.rend(); ++it)
 		{
 			Layer* layer = *it;

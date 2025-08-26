@@ -10,6 +10,7 @@
 #include <PaperEngine/components/TransformComponent.h>
 #include <PaperEngine/core/Mouse.h>
 #include <PaperEngine/core/Keyboard.h>
+#include <PaperEngine/events/ApplicationEvent.h>
 
 #include <PaperEngine/loader/TextureLoader.h>
 
@@ -245,6 +246,14 @@ public:
 		PE_CORE_INFO("TestLayer detached.");
 	}
 	
+	void onEvent(PaperEngine::Event& e) override {
+		PaperEngine::EventDispatcher dispatcher(e);
+		dispatcher.dispatch<PaperEngine::WindowCloseEvent>([](PaperEngine::WindowCloseEvent& e) {
+			PaperEngine::Application::Shutdown();
+			return false;
+			});
+	}
+
 	void onUpdate(PaperEngine::Timestep dt) override {
 		const float SPEED= 100.f;
 		const float LOOK_SENSITIVITY = 10.f;
