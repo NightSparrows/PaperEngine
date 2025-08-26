@@ -84,6 +84,14 @@ target_link_libraries(PaperEngine PUBLIC stb)
 
 # include mono
 # target_include_directories(PaperEngine PRIVATE "vendor/mono/include")
+if (WIN32)
+	target_include_directories(PaperEngine PUBLIC "C:/Program Files/Mono/include/mono-2.0")
+	target_link_directories(PaperEngine PUBLIC "C:/Program Files/Mono/lib")
+	target_link_libraries(PaperEngine PUBLIC mono-2.0-sgen)
+	# TODO 複製mono lib 4.5到執行檔目錄（沒有他會提示你）
+else()
+	message(FATAL_ERROR "未知平台安裝mono")
+endif()
 
 #target_link_libraries(PaperEngine
 #    PRIVATE

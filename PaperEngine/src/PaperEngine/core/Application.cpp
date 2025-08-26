@@ -10,6 +10,8 @@
 
 #include <PaperEngine/debug/Instrumentor.h>
 
+#include <PaperEngine/scripting/ScriptEngine.h>
+
 namespace PaperEngine {
 
 	Application* Application::s_instance = nullptr;
@@ -39,6 +41,7 @@ namespace PaperEngine {
 		m_graphicsContext->init();
 
 		m_resourceManager = CreateScope<ResourceManager>();
+		ScriptEngine::Init();
 
 #ifdef PE_ENABLE_IMGUI
 		m_imguiLayer = ImGuiLayer::Create();
@@ -131,6 +134,7 @@ namespace PaperEngine {
 
 		m_layerManager.cleanUp();
 
+		ScriptEngine::Shutdown();
 		m_resourceManager.reset();
 
 		m_graphicsContext->cleanUp();
