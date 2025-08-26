@@ -20,3 +20,10 @@ struct VulkanBindingOffsets
 所以當binding一個sampler to s0時
 NVRHI他把這個直接bind在128開始
 [[vk::binding(128)]] sampler sampler0 : register(s0, space0);
+
+在BindingLayoutDesc中需要設定
+registerSpaceIsDescriptorSet = true
+才能讓vulkan使用set的作用
+還要指定registerSpace = setIndex
+要啟用這個需要所有在graphicsPipeline啟用的bindingLayout都啟用
+否則會錯誤（要碼都不啟用、要碼都要啟用）

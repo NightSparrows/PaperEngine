@@ -26,7 +26,7 @@ struct EntityData
 //	float4x4 trans;
 //};
 
-DECLARE_STRUCTURE_BUFFER_SRV(EntityData, g_entityData, 1, 1);
+DECLARE_STRUCTURE_BUFFER_SRV(EntityData, g_entityData, 0, 1);
 
 // 如果是animated
 //DECLARE_STRUCTURE_BUFFER_SRV(BoneTransformation, g_boneTrans, 1, 1);

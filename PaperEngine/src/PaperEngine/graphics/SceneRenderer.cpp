@@ -28,6 +28,8 @@ namespace PaperEngine {
 
 		nvrhi::BindingLayoutDesc globalLayoutDesc;
 		globalLayoutDesc
+			.setRegisterSpace(0)			// set = 0
+			.setRegisterSpaceIsDescriptorSet(true)
 			.setVisibility(nvrhi::ShaderType::All)
 			.addItem(nvrhi::BindingLayoutItem::ConstantBuffer(0));
 		m_globalLayout =

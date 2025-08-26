@@ -119,6 +119,8 @@ public:
 
 			nvrhi::BindingLayoutDesc bindingLayoutDesc;
 			bindingLayoutDesc
+				.setRegisterSpace(2)			// set = 2
+				.setRegisterSpaceIsDescriptorSet(true)
 				.setVisibility(nvrhi::ShaderType::All)
 				.addItem(nvrhi::BindingLayoutItem::Texture_SRV(0))
 				.addItem(nvrhi::BindingLayoutItem::Sampler(0));

@@ -27,14 +27,17 @@ namespace PaperEngine {
 		m_instanceBufferCpuPtr = Application::GetNVRHIDevice()->mapBuffer(m_instanceBuffer, nvrhi::CpuAccessMode::Write);
 
 		nvrhi::BindingLayoutDesc instanceBufLayoutDesc;
-		instanceBufLayoutDesc.setVisibility(nvrhi::ShaderType::Vertex);
-		instanceBufLayoutDesc.addItem(nvrhi::BindingLayoutItem::StructuredBuffer_SRV(1));
+		instanceBufLayoutDesc
+			.setRegisterSpace(1)			// set = 1
+			.setRegisterSpaceIsDescriptorSet(true)
+			.setVisibility(nvrhi::ShaderType::Vertex)
+			.addItem(nvrhi::BindingLayoutItem::StructuredBuffer_SRV(0));
 		m_instanceBufBindingLayout = 
 			Application::GetResourceManager()->create<BindingLayout>("MeshRenderer_instanceBufLayout",
 				Application::GetNVRHIDevice()->createBindingLayout(instanceBufLayoutDesc));
 
 		nvrhi::BindingSetDesc instanceBufSetDesc;
-		instanceBufSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(1, m_instanceBuffer));
+		instanceBufSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(0, m_instanceBuffer));
 		m_instanceBufferSet = Application::GetNVRHIDevice()->createBindingSet(instanceBufSetDesc, m_instanceBufBindingLayout->handle);
 
 	}
