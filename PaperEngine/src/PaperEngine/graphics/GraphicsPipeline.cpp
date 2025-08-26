@@ -9,6 +9,11 @@ namespace PaperEngine {
 
 	}
 
+    PE_API void GraphicsPipeline::bind(nvrhi::GraphicsState& graphicsState, nvrhi::IFramebuffer* fb) const
+    {
+        graphicsState.setPipeline(getGraphicsPipeline(fb));
+    }
+
     nvrhi::IGraphicsPipeline* GraphicsPipeline::getGraphicsPipeline(nvrhi::IFramebuffer* fb) const
     {
         if (m_graphicsPipeline)

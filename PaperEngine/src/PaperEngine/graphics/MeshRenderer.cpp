@@ -8,6 +8,8 @@
 
 #include <PaperEngine/utils/Frustum.h>
 
+#include <PaperEngine/debug/Instrumentor.h>
+
 namespace PaperEngine {
 	
 	MeshRenderer::MeshRenderer()
@@ -56,6 +58,7 @@ namespace PaperEngine {
 
 	void MeshRenderer::renderScene(std::span<Ref<Scene>> scenes, const GlobalSceneData& globalData)
 	{
+		PE_PROFILE_FUNCTION();
 		// rendering
 		m_cmd->open();
 
@@ -82,7 +85,7 @@ namespace PaperEngine {
 		// Render
 		size_t instanceOffset = 0;
 		for (auto& [graphicsPipeline, shaderData] : m_renderData) {
-			graphicsState.setPipeline(graphicsPipeline->getGraphicsPipeline(globalData.fb));
+			graphicsPipeline->bind(graphicsState, globalData.fb);
 
 			for (auto& [material, materialData] : shaderData.materialList) {
 				graphicsState.bindings[2] = material->getBindingSet();

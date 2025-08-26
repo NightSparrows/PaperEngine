@@ -6,6 +6,8 @@
 #include <PaperEngine/components/TransformComponent.h>
 #include <PaperEngine/components/MeshComponent.h>
 #include <PaperEngine/components/MeshRendererComponent.h>
+#include <PaperEngine/debug/Instrumentor.h>
+
 
 #include <PaperEngine/utils/Frustum.h>
 
@@ -39,6 +41,7 @@ namespace PaperEngine {
 
 	void SceneRenderer::renderScene(std::span<Ref<Scene>> scenes, const Camera* camera, const Transform* transform, nvrhi::IFramebuffer* fb)
 	{
+		PE_PROFILE_FUNCTION();
 		// 
 		GlobalDataI globalData{};
 		globalData.projectionMatrix = camera->getProjectionMatrix();

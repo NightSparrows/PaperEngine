@@ -22,6 +22,8 @@ namespace PaperEngine {
 		/// </param>
 		PE_API GraphicsPipeline(nvrhi::GraphicsPipelineDesc desc, nvrhi::BindingLayoutHandle bindingLayout, size_t variableBufferSize);
 
+		PE_API void bind(nvrhi::GraphicsState& graphicsState, nvrhi::IFramebuffer* fb) const;
+
 		nvrhi::IGraphicsPipeline* getGraphicsPipeline(nvrhi::IFramebuffer* fb) const;
 
 		PE_API nvrhi::IBindingLayout* getBindingLayout() const;

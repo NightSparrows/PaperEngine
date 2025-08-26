@@ -3,6 +3,8 @@
 #include <PaperEngine/core/Logger.h>
 #include <PaperEngine/core/Application.h>
 
+#include <PaperEngine/debug/Instrumentor.h>
+
 extern PaperEngine::Application* PaperEngine::CreateApplication(int argc, const char** argv);
 
 namespace PaperEngine {
@@ -13,7 +15,9 @@ namespace PaperEngine {
 		Logger::Init();
 
 		Application* app = CreateApplication(argc, argv); // This function Write in application
+		PE_PROFILE_BEGIN_SESSION("Runtime", "PaperProfile-Runtime.json");
 		app->run();
+		PE_PROFILE_END_SESSION();
 		delete app;
 
 		// PaperEngine::CleanUp();

@@ -8,6 +8,8 @@
 #include <PaperEngine/events/ApplicationEvent.h>
 #include <PaperEngine/utils/Clock.h>
 
+#include <PaperEngine/debug/Instrumentor.h>
+
 namespace PaperEngine {
 
 	Application* Application::s_instance = nullptr;
@@ -29,6 +31,8 @@ namespace PaperEngine {
 
 	PE_API void Application::run()
 	{
+		PE_PROFILE_FUNCTION();
+
 		m_graphicsContext = GraphicsContext::Create(m_window.get());
 		m_graphicsContext->setOnBackBufferResizedCallback(PE_BIND_EVENT_FN(Application::onBackBufferResized));
 		m_graphicsContext->setOnBackBufferResizingCallback(PE_BIND_EVENT_FN(Application::onBackBufferResizing));
@@ -52,6 +56,7 @@ namespace PaperEngine {
 		Timestep FPSCounter(std::chrono::seconds(0));
 
 		while (m_running) {
+			PE_PROFILE_SCOPE("RunLoop");
 
 			auto deltaTime = clock.resetClock();
 			FPSCounter += deltaTime;
@@ -67,8 +72,11 @@ namespace PaperEngine {
 			{
 				m_window->onUpdate();
 				// Update logic, input handling, etc.
-				for (auto layer : m_layerManager) {
-					layer->onUpdate(deltaTime);
+				{
+					PE_PROFILE_SCOPE("Layers Update");
+					for (auto layer : m_layerManager) {
+						layer->onUpdate(deltaTime);
+					}
 				}
 			}
 

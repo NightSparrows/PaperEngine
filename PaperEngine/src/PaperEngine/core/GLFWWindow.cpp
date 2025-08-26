@@ -10,7 +10,7 @@
 #include <PaperEngine/events/KeyEvent.h>
 #include <PaperEngine/events/MouseEvent.h>
 #include <PaperEngine/events/ApplicationEvent.h>
-//#include <PaperEngine/debug/Instrumentor.h>
+#include <PaperEngine/debug/Instrumentor.h>
 
 #ifdef PE_PLATFORM_WINDOWS
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -224,6 +224,7 @@ namespace PaperEngine {
 
 	void GLFWWindow::onUpdate()
 	{
+		PE_PROFILE_FUNCTION();
 		m_data.mouseDeltaX = 0;
 		m_data.mouseDeltaY = 0;
 		glfwPollEvents();

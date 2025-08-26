@@ -133,7 +133,6 @@ namespace PaperEngine {
 		drawArgs.vertexCount = subMesh.indicesCount;
 		drawArgs.startIndexLocation = subMesh.indicesOffset;
 		drawArgs.startVertexLocation = 0;
-		drawArgs.startInstanceLocation = 0;
 	}
 
 }
