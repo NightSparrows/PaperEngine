@@ -15,10 +15,7 @@ namespace PaperEngine {
 		glm::vec2 texcoord; // vec2 texcoord
 	};
 
-	struct SkeletalVertex {
-		glm::vec3 position; // vec3 position
-		glm::vec3 normal;   // vec3 normal
-		glm::vec2 texcoord; // vec2 texcoord
+	struct SkeletalVertexInfo {
 		glm::ivec4 boneIndices; // ivec4 boneIndices
 		glm::vec4 boneWeights; // vec4 boneWeights
 	};
@@ -57,9 +54,14 @@ namespace PaperEngine {
 		// 編輯Mesh的Submesh
 		PE_API std::vector<SubMeshInfo>& getSubMeshes() { return m_subMeshes; }
 
-		PE_API void loadStaticMesh(nvrhi::CommandListHandle cmdList, const std::vector<StaticVertex>& vertices);
+		PE_API void loadStaticMesh(
+			nvrhi::CommandListHandle cmdList, 
+			const std::vector<StaticVertex>& vertices);
 
-		PE_API void loadSkeletalMesh(nvrhi::CommandListHandle cmdList, const std::vector<SkeletalVertex>& vertices);
+		PE_API void loadSkeletalMesh(
+			nvrhi::CommandListHandle cmdList, 
+			const std::vector<StaticVertex>& vertices,
+			const std::vector<SkeletalVertexInfo>& boneInfos);
 
 		PE_API void loadIndexBuffer(nvrhi::CommandListHandle cmdList, const void* indicesData, size_t indicesCount, nvrhi::Format type = nvrhi::Format::R32_UINT);
 
@@ -96,6 +98,8 @@ namespace PaperEngine {
 
 		nvrhi::Format m_indexFormat = nvrhi::Format::R32_UINT; // 預設為32位元整數索引格式
 		nvrhi::BufferHandle m_indexBuffer;
+
+		nvrhi::BufferHandle m_boneBuffer;
 
 		/// <summary>
 		/// 主要是用來區分materials

@@ -7,6 +7,7 @@
 #include <PaperEngine/utils/Transform.h>
 
 #include <PaperEngine/graphics/MeshRenderer.h>
+#include "ForwardPlusDepthRenderer.h"
 
 namespace PaperEngine {
 
@@ -21,6 +22,7 @@ namespace PaperEngine {
 	/// <summary>
 	/// 基本上用在場景裡的Camera
 	/// 也能用在editor的虛擬Camera
+	/// 使用Forward Plus Renderer
 	/// </summary>
 	class SceneRenderer {
 	public:
@@ -53,6 +55,7 @@ namespace PaperEngine {
 
 		// 先這樣
 		MeshRenderer m_meshRenderer;
+		ForwardPlusDepthRenderer m_forwardPlusDepthRenderer;
 	};
 
 }

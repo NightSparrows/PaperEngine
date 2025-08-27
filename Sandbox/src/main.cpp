@@ -38,7 +38,6 @@ public:
 		{
 			nvrhi::GraphicsPipelineDesc graphicsPipelineDesc;
 			graphicsPipelineDesc.setPrimType(nvrhi::PrimitiveType::TriangleList);
-			graphicsPipelineDesc.renderState.depthStencilState.depthTestEnable = true;
 			graphicsPipelineDesc.renderState.rasterState.cullMode = nvrhi::RasterCullMode::None;
 
 			graphicsPipelineDesc.bindingLayouts.resize(3);

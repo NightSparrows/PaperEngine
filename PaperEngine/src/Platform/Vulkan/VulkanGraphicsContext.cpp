@@ -241,6 +241,28 @@ namespace PaperEngine {
 
 #pragma endregion
 
+#pragma region Depth Format Get
+		auto getDepthFormat = [this]() {
+			std::array<nvrhi::Format, 3> depthFormatCandidates = { 
+				nvrhi::Format::D32, 
+				nvrhi::Format::D32S8, 
+				nvrhi::Format::D24S8};
+			for (uint32_t i = 0; i < depthFormatCandidates.size(); i++) {
+				VkFormatProperties props;
+				vkGetPhysicalDeviceFormatProperties(m_instance.physicalDevice.physical_device, nvrhi::vulkan::convertFormat(depthFormatCandidates[i]), &props);
+
+				if ((props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) == VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+					return depthFormatCandidates[i];
+				}
+			}
+			return nvrhi::Format::UNKNOWN;
+			};
+		m_instance.depthFormat = getDepthFormat();
+		PE_CORE_ASSERT(m_instance.depthFormat != nvrhi::Format::UNKNOWN, "No proper depth format");
+
+#pragma endregion
+
+
 #pragma region Swapchain creation
 		if (!createSwapchain()) {
 			// TODO FATAL
@@ -422,6 +444,11 @@ namespace PaperEngine {
 		return m_instance.framebuffers[m_instance.swapchainIndex].framebuffer;
 	}
 
+	nvrhi::Format VulkanGraphicsContext::getSupportedDepthFormat()
+	{
+		return m_instance.depthFormat;
+	}
+
 	bool VulkanGraphicsContext::createSwapchain()
 	{
 		vkDeviceWaitIdle(m_instance.vkbDevice.device);
@@ -478,7 +505,7 @@ namespace PaperEngine {
 			auto depthTextureDesc = nvrhi::TextureDesc()
 				.setWidth(m_instance.vkbSwapchain.extent.width)
 				.setHeight(m_instance.vkbSwapchain.extent.height)
-				.setFormat(nvrhi::Format::D32)
+				.setFormat(m_instance.depthFormat)
 				.setIsRenderTarget(true);
 			auto depthTexture = m_instance.device->createTexture(depthTextureDesc);
 			auto framebufferDesc = nvrhi::FramebufferDesc()

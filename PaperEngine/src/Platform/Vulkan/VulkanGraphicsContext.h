@@ -88,6 +88,8 @@ namespace PaperEngine {
 		};
 		std::vector<SwapchainFramebuffer> framebuffers;
 
+		nvrhi::Format depthFormat = nvrhi::Format::UNKNOWN;
+
 	};
 
 	class VulkanGraphicsContext : public GraphicsContext {
@@ -117,6 +119,8 @@ namespace PaperEngine {
 		nvrhi::IDevice* getNVRhiDevice() const override;
 
 		nvrhi::FramebufferHandle getCurrentFramebuffer() override;
+
+		nvrhi::Format getSupportedDepthFormat() override;
 
 	private:
 		bool createSwapchain();

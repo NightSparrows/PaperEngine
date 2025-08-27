@@ -42,6 +42,8 @@ namespace PaperEngine {
 		nvrhi::BindingSetDesc globalSetDesc;
 		globalSetDesc.addItem(nvrhi::BindingSetItem::ConstantBuffer(0, m_globalDataBuffer));
 		m_globalSet = Application::GetNVRHIDevice()->createBindingSet(globalSetDesc, m_globalLayout->handle);
+
+		m_forwardPlusDepthRenderer.init();
 	}
 
 	void SceneRenderer::renderScene(std::span<Ref<Scene>> scenes, const Camera* camera, const Transform* transform, nvrhi::IFramebuffer* fb)
@@ -117,6 +119,8 @@ namespace PaperEngine {
 					continue;
 
 				if (mesh->getType() == MeshType::Static) {
+					
+					m_forwardPlusDepthRenderer.addEntity(mesh, transform);
 
 					for (uint32_t subMeshIndex = 0; subMeshIndex < mesh->getSubMeshes().size(); subMeshIndex++) {
 						auto material = meshRendererCom.materials[subMeshIndex];
@@ -137,6 +141,7 @@ namespace PaperEngine {
 
 #pragma endregion
 		// TODO split mesh renderer prepare render data to here
+		m_forwardPlusDepthRenderer.renderScene(sceneData);
 		// TODO 使用meshRenderer prepare完的renderData render forward plus depth texture
 		// TODO compute light tiles using the filtered lights
 
@@ -151,6 +156,7 @@ namespace PaperEngine {
 	}
 
 	void SceneRenderer::onBackBufferResized() {
-		m_meshRenderer.onBackBufferResized();
+
+
 	}
 }

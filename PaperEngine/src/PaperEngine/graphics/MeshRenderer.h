@@ -25,29 +25,6 @@ namespace PaperEngine {
 	/// </summary>
 	class MeshRenderer : public IRenderer {
 	public:
-		MeshRenderer();
-		~MeshRenderer();
-
-		void addEntity(
-			Ref<Material> material,
-			Ref<Mesh> mesh,
-			uint32_t subMeshIndex,
-			const Transform& transform);
-
-		// 不對 應該改成process mesh entity之類的
-		// 因為需要先使用scene renderer做 culling，不用畫的不會被process
-		// 由於是整個scene作process，所以mesh renderer保留process mesh entity的function
-		// 然後在自己做static batching之類的
-		// 另外skinned mesh (有動畫) 跟這個分開好了，比較不複雜
-		void renderScene(const GlobalSceneData& globalData) override;
-	
-		void onBackBufferResized();
-
-		inline uint32_t getTotalInstanceCount() const { return m_totalInstanceCount; }
-
-		inline uint32_t getTotalDrawCallCount() const { return m_totalDrawCallCount; }
-
-	private:
 
 		struct InstanceData {
 			glm::mat4 trans;
@@ -69,6 +46,32 @@ namespace PaperEngine {
 			std::unordered_map<Ref<Material>, MaterialData> materialList;
 		};
 
+	public:
+		MeshRenderer();
+		~MeshRenderer();
+
+		void addEntity(
+			Ref<Material> material,
+			Ref<Mesh> mesh,
+			uint32_t subMeshIndex,
+			const Transform& transform);
+
+		// 不對 應該改成process mesh entity之類的
+		// 因為需要先使用scene renderer做 culling，不用畫的不會被process
+		// 由於是整個scene作process，所以mesh renderer保留process mesh entity的function
+		// 然後在自己做static batching之類的
+		// 另外skinned mesh (有動畫) 跟這個分開好了，比較不複雜
+		void renderScene(const GlobalSceneData& globalData) override;
+	
+		void onViewportResized(uint32_t width, uint32_t height) override;
+
+
+		inline uint32_t getTotalInstanceCount() const { return m_totalInstanceCount; }
+
+		inline uint32_t getTotalDrawCallCount() const { return m_totalDrawCallCount; }
+
+	private:
+
 		std::unordered_map<Ref<GraphicsPipeline>, ShaderData> m_renderData;
 
 		// 紀錄renderer 的renderer情況
@@ -79,7 +82,7 @@ namespace PaperEngine {
 		uint32_t m_totalDrawCallCount{ 0 };
 
 		nvrhi::CommandListHandle m_cmd;
-		
+
 		BindingLayoutHandle m_instanceBufBindingLayout;
 		nvrhi::BindingSetHandle m_instanceBufferSet;
 		// 紀錄instance buffer的transformation

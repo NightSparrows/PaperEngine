@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <PaperEngine/core/Base.h>
+
 #include <glm/glm.hpp>
 
 namespace PaperEngine {
@@ -51,11 +53,11 @@ namespace PaperEngine {
 			return m_farPlane;
 		}
 
-		float getWidth() const {
+		PE_API float getWidth() const {
 			return m_width;
 		}
 
-		float getHeight() const {
+		PE_API float getHeight() const {
 			return m_height;
 		}
 

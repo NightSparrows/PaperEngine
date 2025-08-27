@@ -54,7 +54,7 @@ namespace PaperEngine {
 
 		virtual nvrhi::FramebufferHandle getCurrentFramebuffer() = 0;
 
-
+		virtual nvrhi::Format getSupportedDepthFormat() = 0;
 
 	public:
 		static Ref<GraphicsContext> Create(Window* window);

@@ -3,6 +3,7 @@
 	每個Camera都有一個自己的Scene Renderer
 	|- Size: Width, height
 	|- 使用Forward Plus
+	|- 2025/08/27 不使用PVP因為沒有要做bindless rendering
 	1. Filter Renderable Mesh 
 		Frustum Culling -> Filter給Mesh Renderer用
 		ShadowMap可能需要自己額外實作Culling

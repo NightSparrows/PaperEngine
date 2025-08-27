@@ -37,7 +37,8 @@ namespace PaperEngine {
 			.setByteSize(vertices.size() * sizeof(StaticVertex))
 			.setDebugName("StaticMeshVertexBuffer")
 			.setInitialState(nvrhi::ResourceStates::CopyDest)
-			.setIsVertexBuffer(true);
+			.setIsVertexBuffer(true)
+			.setStructStride(sizeof(StaticVertex));
 		m_vertexBuffer = device->createBuffer(vertexBufferDesc);
 
 		m_aabb = computeAABB<StaticVertex>(vertices, [](const StaticVertex& v) {
@@ -49,7 +50,9 @@ namespace PaperEngine {
 		cmdList->setPermanentBufferState(m_vertexBuffer, nvrhi::ResourceStates::VertexBuffer);
 	}
 
-	void Mesh::loadSkeletalMesh(nvrhi::CommandListHandle cmdList, const std::vector<SkeletalVertex>& vertices)
+	void Mesh::loadSkeletalMesh(nvrhi::CommandListHandle cmdList,
+		const std::vector<StaticVertex>& vertices,
+		const std::vector<SkeletalVertexInfo>& boneInfos)
 	{
 		auto device = Application::Get()->getGraphicsContext()->getNVRhiDevice();
 
@@ -57,19 +60,32 @@ namespace PaperEngine {
 		
 		nvrhi::BufferDesc vertexBufferDesc;
 		vertexBufferDesc
-			.setByteSize(vertices.size() * sizeof(SkeletalVertex))
+			.setByteSize(vertices.size() * sizeof(StaticVertex))
 			.setDebugName("SkeletalMeshVertexBuffer")
 			.setInitialState(nvrhi::ResourceStates::CopyDest)
-			.setIsVertexBuffer(true);
+			.setIsVertexBuffer(true)
+			.setStructStride(sizeof(StaticVertex));
 		m_vertexBuffer = device->createBuffer(vertexBufferDesc);
 
-		m_aabb = computeAABB<SkeletalVertex>(vertices, [](const SkeletalVertex& v) {
+		m_aabb = computeAABB<StaticVertex>(vertices, [](const StaticVertex& v) {
 			return v.position;
 			});
 
+		nvrhi::BufferDesc boneBufferDesc;
+		boneBufferDesc
+			.setByteSize(boneInfos.size() * sizeof(SkeletalVertexInfo))
+			.setDebugName("SkeletalBoneVertexBuffer")
+			.setInitialState(nvrhi::ResourceStates::CopyDest)
+			.setIsVertexBuffer(true)
+			.setStructStride(sizeof(SkeletalVertexInfo));
+		m_boneBuffer = device->createBuffer(boneBufferDesc);
+
 		cmdList->beginTrackingBufferState(m_vertexBuffer, nvrhi::ResourceStates::CopyDest);
+		cmdList->beginTrackingBufferState(m_boneBuffer, nvrhi::ResourceStates::CopyDest);
 		cmdList->writeBuffer(m_vertexBuffer, vertices.data(), vertexBufferDesc.byteSize);
+		cmdList->writeBuffer(m_boneBuffer, boneInfos.data(), boneBufferDesc.byteSize);
 		cmdList->setPermanentBufferState(m_vertexBuffer, nvrhi::ResourceStates::VertexBuffer);
+		cmdList->setPermanentBufferState(m_boneBuffer, nvrhi::ResourceStates::VertexBuffer);
 	}
 
 	void Mesh::loadIndexBuffer(nvrhi::CommandListHandle cmdList, const void* indicesData, size_t indicesCount, nvrhi::Format type)
@@ -95,30 +111,16 @@ namespace PaperEngine {
 		state.indexBuffer.buffer = m_indexBuffer;
 		state.indexBuffer.format = m_indexFormat;
 		state.indexBuffer.offset = 0;
-		switch (m_type)
-		{
-		case PaperEngine::MeshType::Static:
-		{
-			state.vertexBuffers = {
-				{ m_vertexBuffer, 0, offsetof(StaticVertex, position) },
-				{ m_vertexBuffer, 1, offsetof(StaticVertex, normal) },
-				{ m_vertexBuffer, 2, offsetof(StaticVertex, texcoord) }
-			};
-		}
-			break;
-		case PaperEngine::MeshType::Skeletal:
-		{
-			state.vertexBuffers = {
-				{ m_vertexBuffer, 0, offsetof(SkeletalVertex, position) },
-				{ m_vertexBuffer, 1, offsetof(SkeletalVertex, normal) },
-				{ m_vertexBuffer, 2, offsetof(SkeletalVertex, texcoord) },
-				{ m_vertexBuffer, 3, offsetof(SkeletalVertex, boneIndices) },
-				{ m_vertexBuffer, 4, offsetof(SkeletalVertex, boneWeights) }
-			};
-		}
-			break;
-		default:
-			break;
+		state.vertexBuffers = {
+			{ m_vertexBuffer, 0, offsetof(StaticVertex, position) },
+			{ m_vertexBuffer, 1, offsetof(StaticVertex, normal) },
+			{ m_vertexBuffer, 2, offsetof(StaticVertex, texcoord) }
+		};
+		if (m_type == PaperEngine::MeshType::Skeletal) {
+			state.vertexBuffers.push_back(
+				{ m_boneBuffer, 3, offsetof(SkeletalVertexInfo, boneIndices) });
+			state.vertexBuffers.push_back(
+				{ m_boneBuffer, 4, offsetof(SkeletalVertexInfo, boneWeights) });
 		}
 	}
 

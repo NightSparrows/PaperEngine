@@ -23,7 +23,7 @@ namespace PaperEngine {
 
 		virtual void renderScene(const GlobalSceneData& globalData) = 0;
 
-		virtual void onBackBufferResized() {};
+		virtual void onViewportResized(uint32_t width, uint32_t height) {}
 
 	};
 

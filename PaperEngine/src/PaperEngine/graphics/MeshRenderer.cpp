@@ -127,8 +127,8 @@ namespace PaperEngine {
 		m_tempDrawCallCount = 0;
 	}
 
-	void MeshRenderer::onBackBufferResized() {
+	void MeshRenderer::onViewportResized(uint32_t width, uint32_t height)
+	{
 
 	}
-
 }
