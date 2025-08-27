@@ -27,3 +27,7 @@ registerSpaceIsDescriptorSet = true
 還要指定registerSpace = setIndex
 要啟用這個需要所有在graphicsPipeline啟用的bindingLayout都啟用
 否則會錯誤（要碼都不啟用、要碼都要啟用）
+
+			ConstanceBuffer vs StructuredBuffer
+超大量資料：	不行（<1MB）；		可以
+結構：		可以複雜；			需要有Struct形成的Array

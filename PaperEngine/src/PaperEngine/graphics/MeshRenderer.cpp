@@ -59,7 +59,7 @@ namespace PaperEngine {
 		m_tempInstanceCount++;
 	}
 
-	void MeshRenderer::renderScene(std::span<Ref<Scene>> scenes, const GlobalSceneData& globalData)
+	void MeshRenderer::renderScene(const GlobalSceneData& globalData)
 	{
 		PE_PROFILE_FUNCTION();
 		// rendering

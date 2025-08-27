@@ -1,15 +1,16 @@
 ﻿#include "SceneRenderer.h"
 
-#include <nvrhi/utils.h>
 #include <PaperEngine/core/Application.h>
 
 #include <PaperEngine/components/TransformComponent.h>
 #include <PaperEngine/components/MeshComponent.h>
 #include <PaperEngine/components/MeshRendererComponent.h>
+#include <PaperEngine/components/LightComponent.h>
 #include <PaperEngine/debug/Instrumentor.h>
 
-
 #include <PaperEngine/utils/Frustum.h>
+
+#include <nvrhi/utils.h>
 
 #include <execution>
 
@@ -75,11 +76,32 @@ namespace PaperEngine {
 
 		// process mesh
 		for (auto scene : scenes) {
+			
+			// TODO: Light processing
+			// 就是frustum culling point light不在場景裡的不會process
+			// process好後lightCount更新
+			auto lightView = scene->getRegistry().view<TransformComponent, LightComponent>();
+			for (auto [entity, transCom, lightCom] : lightView.each()) {
+				switch (lightCom.type)
+				{
+				case LightType::Directional:
+					// 無條件加入
+					break;
+				case LightType::Point:
+					// 看radius有沒有在camera內
+					break;
+				case LightType::Spot:
+					// 跟Point Light一樣
+					break;
+				default:
+					break;
+				}
+			}
+			
 			auto sceneView = scene->getRegistry().view<
 				TransformComponent,
 				MeshComponent,
 				MeshRendererComponent>();
-
 			for (auto [entity, transformCom, meshCom, meshRendererCom] : sceneView.each()) {
 				const auto& transform = transformCom.transform;
 				const auto& mesh = meshCom.mesh;
@@ -88,8 +110,9 @@ namespace PaperEngine {
 				PE_CORE_ASSERT(mesh->getSubMeshes().size() == meshRendererCom.materials.size(), "Wired mesh renderer materials doesn't match mesh submeshes");
 
 				// TODO shadowmap mesh processing & culling
+				// 使用culling後的light list cull各個light的mesh list
 
-					// Frustum culling for meshes
+				// Frustum culling for meshes
 				if (!cameraFrustum.isAABBInFrustum(meshCom.worldAABB))
 					continue;
 
@@ -113,9 +136,18 @@ namespace PaperEngine {
 		}
 
 #pragma endregion
+		// TODO split mesh renderer prepare render data to here
+		// TODO 使用meshRenderer prepare完的renderData render forward plus depth texture
+		// TODO compute light tiles using the filtered lights
 
+		// TODO render shadow maps that are visible in camera viewport
+		// 就是frustum culling
 
-		m_meshRenderer.renderScene(scenes, sceneData);
+		m_meshRenderer.renderScene(sceneData);
+
+		// TODO post processing
+
+		// TODO 2d stuff rendering
 	}
 
 	void SceneRenderer::onBackBufferResized() {

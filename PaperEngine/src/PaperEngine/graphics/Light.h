@@ -4,6 +4,12 @@
 
 namespace PaperEngine {
 
+	enum class LightType {
+		Directional,
+		Point,
+		Spot
+	};
+
 	struct Light {
 		glm::vec3 color;
 	};

@@ -21,7 +21,9 @@ namespace PaperEngine {
 	class IRenderer {
 	public:
 
-		virtual void renderScene(std::span<Ref<Scene>> scenes, const GlobalSceneData& globalData) = 0;
+		virtual void renderScene(const GlobalSceneData& globalData) = 0;
+
+		virtual void onBackBufferResized() {};
 
 	};
 
