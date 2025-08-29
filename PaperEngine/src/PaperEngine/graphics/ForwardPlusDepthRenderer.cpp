@@ -70,18 +70,6 @@ namespace PaperEngine {
 			.setFormat(nvrhi::Format::RGB32_FLOAT)
 			.setOffset(offsetof(PaperEngine::StaticVertex, position))
 			.setBufferIndex(0)
-			.setElementStride(sizeof(PaperEngine::StaticVertex)),
-			nvrhi::VertexAttributeDesc()
-			.setName("NORMAL")
-			.setFormat(nvrhi::Format::RGB32_FLOAT)
-			.setOffset(offsetof(PaperEngine::StaticVertex, normal))
-			.setBufferIndex(0)
-			.setElementStride(sizeof(PaperEngine::StaticVertex)),
-			nvrhi::VertexAttributeDesc()
-			.setName("TEXCOORD0")
-			.setFormat(nvrhi::Format::RG32_FLOAT)
-			.setOffset(offsetof(PaperEngine::StaticVertex, texcoord))
-			.setBufferIndex(0)
 			.setElementStride(sizeof(PaperEngine::StaticVertex))
 		};
 

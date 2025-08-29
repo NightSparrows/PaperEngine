@@ -1,4 +1,17 @@
 
+struct GlobalData
+{
+	float4x4 proj;
+	float4x4 view;
+	float4x4 viewProj;
+	float3 cameraPos;
+	float padding0;			// 怕padding問題
+	uint32_t directionalLightCount;
+	uint32_t pointLightCount;
+	uint32_t spotLightCount;
+	uint32_t padding1;
+};
+
 |- Scene Renderer
 	每個Camera都有一個自己的Scene Renderer
 	|- Size: Width, height

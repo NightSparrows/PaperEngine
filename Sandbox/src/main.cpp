@@ -30,6 +30,12 @@ public:
 
 		scene = PaperEngine::CreateRef<PaperEngine::Scene>();
 
+		auto lightEntity = scene->createEntity("Light");
+		auto& dirLightCom = lightEntity.addComponent<PaperEngine::LightComponent>();
+		dirLightCom.type = PaperEngine::LightType::Directional;
+		dirLightCom.light.directionalLight.direction = glm::vec3(0, -1, 0);
+		dirLightCom.light.directionalLight.color = glm::vec3(1);
+
 		textureLoader = PaperEngine::CreateRef<PaperEngine::TextureLoader>();
 
 #pragma region Test Graphics pipeline creation
@@ -138,10 +144,10 @@ public:
 			cmd->open();
 			auto mesh = PaperEngine::CreateRef<PaperEngine::Mesh>();
 			std::vector<PaperEngine::StaticVertex> vertices = {
-				{{-50.f, 50.f, 0}, {0, 1, 0}, {0, 0}},
-				{{-50.f, -50.f, 0}, {0, 1, 0}, {0, 1.0f}},
-				{{50.f, -50.f, 0}, {0, 1, 0}, {1.f, 1.f}},
-				{{50.f, 50.f, 0}, {0, 1, 0}, {1.f, 0}}
+				{{-50.f, 50.f, 0}, {0, 0, 1}, {0, 0}},
+				{{-50.f, -50.f, 0}, {0, 0, 1}, {0, 1.0f}},
+				{{50.f, -50.f, 0}, {0, 0, 1}, {1.f, 1.f}},
+				{{50.f, 50.f, 0}, {0, 0, 1}, {1.f, 0}}
 			};
 			std::vector<uint32_t> indices = {
 				0, 1, 3, 3, 1, 2

@@ -15,7 +15,7 @@ namespace PaperEngine {
 	};
 
 	struct DirectionalLight : public Light {
-
+		glm::vec3 direction;
 	};
 
 }

@@ -18,9 +18,11 @@ namespace PaperEngine {
 
 	SceneRenderer::SceneRenderer()
 	{
+		m_lightCullPass.init();
+
 		m_cmd = Application::GetNVRHIDevice()->createCommandList();
 
-		// 全域data
+		// 全域data (constantBuffer Slot 0 : set = 0)
 		nvrhi::BufferDesc globalDataBufferDesc;
 		globalDataBufferDesc
 			.setInitialState(nvrhi::ResourceStates::ConstantBuffer)
@@ -34,13 +36,15 @@ namespace PaperEngine {
 			.setRegisterSpace(0)			// set = 0
 			.setRegisterSpaceIsDescriptorSet(true)
 			.setVisibility(nvrhi::ShaderType::All)
-			.addItem(nvrhi::BindingLayoutItem::ConstantBuffer(0));
+			.addItem(nvrhi::BindingLayoutItem::ConstantBuffer(0))
+			.addItem(nvrhi::BindingLayoutItem::StructuredBuffer_SRV(0));		// directional Light buffer
 		m_globalLayout =
 			Application::GetResourceManager()->create<BindingLayout>("SceneRenderer_globalLayout",
 				Application::GetNVRHIDevice()->createBindingLayout(globalLayoutDesc));
 
 		nvrhi::BindingSetDesc globalSetDesc;
 		globalSetDesc.addItem(nvrhi::BindingSetItem::ConstantBuffer(0, m_globalDataBuffer));
+		globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(0, m_lightCullPass.getDirectionalLightBuffer()));
 		m_globalSet = Application::GetNVRHIDevice()->createBindingSet(globalSetDesc, m_globalLayout->handle);
 
 		m_forwardPlusDepthRenderer.init();
@@ -55,15 +59,6 @@ namespace PaperEngine {
 		globalData.viewMatrix = glm::inverse(transform->matrix());
 		globalData.projViewMatrix = globalData.projectionMatrix * globalData.viewMatrix;
 		globalData.cameraPosition = transform->getPosition();
-		m_cmd->open();
-
-		nvrhi::utils::ClearColorAttachment(m_cmd, fb, 0, nvrhi::Color(0.f));
-		nvrhi::utils::ClearDepthStencilAttachment(m_cmd, fb, 1.f, 0);
-
-		m_cmd->writeBuffer(m_globalDataBuffer, &globalData, sizeof(globalData));
-
-		m_cmd->close();
-		Application::GetNVRHIDevice()->executeCommandList(m_cmd);
 
 		GlobalSceneData sceneData;
 		sceneData.camera = camera;
@@ -84,20 +79,7 @@ namespace PaperEngine {
 			// process好後lightCount更新
 			auto lightView = scene->getRegistry().view<TransformComponent, LightComponent>();
 			for (auto [entity, transCom, lightCom] : lightView.each()) {
-				switch (lightCom.type)
-				{
-				case LightType::Directional:
-					// 無條件加入
-					break;
-				case LightType::Point:
-					// 看radius有沒有在camera內
-					break;
-				case LightType::Spot:
-					// 跟Point Light一樣
-					break;
-				default:
-					break;
-				}
+				m_lightCullPass.processLight(transCom.transform, lightCom);
 			}
 			
 			auto sceneView = scene->getRegistry().view<
@@ -118,35 +100,50 @@ namespace PaperEngine {
 				if (!cameraFrustum.isAABBInFrustum(meshCom.worldAABB))
 					continue;
 
-				if (mesh->getType() == MeshType::Static) {
-					
-					m_forwardPlusDepthRenderer.addEntity(mesh, transform);
+				if (mesh->getType() != MeshType::Static)
+					continue;
 
-					for (uint32_t subMeshIndex = 0; subMeshIndex < mesh->getSubMeshes().size(); subMeshIndex++) {
-						auto material = meshRendererCom.materials[subMeshIndex];
+				m_forwardPlusDepthRenderer.addEntity(mesh, transform);
 
-						if (!material || !material->getBindingSet())
-							continue;			// TODO: 改成null material之類的可以顯示
+				for (uint32_t subMeshIndex = 0; subMeshIndex < mesh->getSubMeshes().size(); subMeshIndex++) {
+					auto material = meshRendererCom.materials[subMeshIndex];
 
-						m_meshRenderer.addEntity(
-							material,
-							mesh,
-							subMeshIndex,
-							transform);
-					}
+					if (!material || !material->getBindingSet())
+						continue;			// TODO: 改成null material之類的可以顯示
+
+					m_meshRenderer.addEntity(
+						material,
+						mesh,
+						subMeshIndex,
+						transform);
 				}
-				// TODO process skinned meshes
 			}
+
+
+			// TODO process skinned meshes
 		}
 
 #pragma endregion
-		// TODO split mesh renderer prepare render data to here
+		globalData.directionalLightCount = m_lightCullPass.getDirectionalLightCount();
+
+		m_lightCullPass.calculatePass();
+
+		m_cmd->open();
+
+		nvrhi::utils::ClearColorAttachment(m_cmd, fb, 0, nvrhi::Color(0.f));
+		nvrhi::utils::ClearDepthStencilAttachment(m_cmd, fb, 1.f, 0);
+
+		m_cmd->writeBuffer(m_globalDataBuffer, &globalData, sizeof(globalData));
+
+		m_cmd->close();
+		Application::GetNVRHIDevice()->executeCommandList(m_cmd);
+
+		// Render PreDepth Pass
 		m_forwardPlusDepthRenderer.renderScene(sceneData);
-		// TODO 使用meshRenderer prepare完的renderData render forward plus depth texture
-		// TODO compute light tiles using the filtered lights
+
+		// TODO compute light tiles using the filtered lights and predepth texture
 
 		// TODO render shadow maps that are visible in camera viewport
-		// 就是frustum culling
 
 		m_meshRenderer.renderScene(sceneData);
 

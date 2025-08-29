@@ -1,4 +1,6 @@
-﻿
+﻿/**
+* 
+*/
 
 #ifndef NVRHI_HELPER_HLSLI
 #define NVRHI_HELPER_HLSLI

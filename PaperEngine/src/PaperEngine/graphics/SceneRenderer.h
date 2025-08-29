@@ -8,6 +8,7 @@
 
 #include <PaperEngine/graphics/MeshRenderer.h>
 #include "ForwardPlusDepthRenderer.h"
+#include "LightCullingPass.h"
 
 namespace PaperEngine {
 
@@ -17,6 +18,10 @@ namespace PaperEngine {
 		glm::mat4 projViewMatrix;
 		glm::vec3 cameraPosition;
 		float padding0;
+		uint32_t directionalLightCount = 0;
+		uint32_t pointLightCount = 0;
+		uint32_t spotLightCount = 0;
+		uint32_t _pad1;
 	};
 
 	/// <summary>
@@ -56,6 +61,7 @@ namespace PaperEngine {
 		// 先這樣
 		MeshRenderer m_meshRenderer;
 		ForwardPlusDepthRenderer m_forwardPlusDepthRenderer;
+		LightCullingPass m_lightCullPass;
 	};
 
 }
