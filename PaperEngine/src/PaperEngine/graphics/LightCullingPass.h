@@ -46,22 +46,27 @@ namespace PaperEngine {
 
 		uint32_t getDirectionalLightCount() const { return m_currentDirectionalLightCount; }
 
+		nvrhi::IBuffer* getPointLightBuffer() { return m_pointLightBuffer; }
+		uint32_t getPointLightCount() const { return m_currentPointLightCount; }
+
 	private:
 
 		Frustum m_currentCameraFrustum{};
 
 		// Directional Light Data
-		std::vector<DirectionalLightData> m_directionalLightCpuBuffer;
-
 		uint32_t m_maxDirectionalLight = 8;
 		// Current to input (in bytes)
 		uint32_t m_currentDirectionalLightCount = 0;
 		nvrhi::BufferHandle m_directionalLightBuffer;
 		void* m_directionalLightBufferPtr = nullptr;
 
-
+		// Point Light Data
+		uint32_t m_maxPointLight = 10000;
+		uint32_t m_currentPointLightCount = 0;
 		nvrhi::BufferHandle m_pointLightBuffer;
+		void* m_pointLightBufferptr = nullptr;
 
+		// command buffer
 		nvrhi::CommandListHandle m_cmd;
 
 	};

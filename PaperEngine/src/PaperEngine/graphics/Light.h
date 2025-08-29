@@ -18,4 +18,8 @@ namespace PaperEngine {
 		glm::vec3 direction;
 	};
 
+	struct PointLight : public Light {
+		float radius;
+	};
+
 }

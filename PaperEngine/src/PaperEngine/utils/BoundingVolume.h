@@ -21,6 +21,8 @@ namespace PaperEngine {
 
     struct BoundingSphere : public BoundingVolume
     {
+        BoundingSphere(const glm::vec3& pos, float r) :
+            position(pos), radius(r) { }
 
         PE_API bool isIntersect(const BoundingVolume&) override;
 

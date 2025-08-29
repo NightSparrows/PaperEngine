@@ -14,6 +14,7 @@ namespace PaperEngine {
 		union
 		{
 			DirectionalLight directionalLight;
+			PointLight pointLight;
 		}light;
 	};
 

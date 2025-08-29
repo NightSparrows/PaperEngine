@@ -3,6 +3,7 @@
 #include <entt/entt.hpp>
 
 #include <PaperEngine/core/Base.h>
+#include <PaperEngine/core/UUID.h>
 
 namespace PaperEngine {
 
@@ -13,6 +14,8 @@ namespace PaperEngine {
 		PE_API Scene() = default;
 
 		PE_API Entity createEntity(const std::string& name);
+
+		PE_API Entity createEntity(const std::string& name, UUID uuid);
 
 		entt::registry& getRegistry() { return m_registry; }
 

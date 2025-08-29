@@ -126,7 +126,7 @@ namespace PaperEngine {
 
 #pragma endregion
 		globalData.directionalLightCount = m_lightCullPass.getDirectionalLightCount();
-
+		globalData.pointLightCount = m_lightCullPass.getPointLightCount();
 		m_lightCullPass.calculatePass();
 
 		m_cmd->open();
