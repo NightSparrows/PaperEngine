@@ -6,7 +6,7 @@
 #include <PaperEngine/components/MeshComponent.h>
 #include <PaperEngine/components/MeshRendererComponent.h>
 
-#include <PaperEngine/utils/Frustum.h>
+#include <PaperEngine/utils/BoundingVolume.h>
 
 #include <PaperEngine/debug/Instrumentor.h>
 

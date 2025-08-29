@@ -17,6 +17,11 @@ namespace PaperEngine {
 		m_directionalLightBufferPtr = Application::GetNVRHIDevice()->mapBuffer(m_directionalLightBuffer, nvrhi::CpuAccessMode::Write);
 	}
 
+	void LightCullingPass::setCameraFrustum(const Frustum& frustum)
+	{
+		m_currentCameraFrustum = frustum;
+	}
+
 	LightCullingPass::LightCullingPass()
 	{
 	}

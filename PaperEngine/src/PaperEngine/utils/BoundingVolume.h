@@ -1,22 +1,49 @@
 ﻿#pragma once
 
+#include <PaperEngine/core/Application.h>
+
 #include <glm/glm.hpp>
 
 namespace PaperEngine {
 
-	class AABB {
-	public:
-		AABB() = default;
+	struct BoundingVolume
+	{
+		virtual bool isIntersect(const BoundingVolume&) = 0;
+	};
 
-		AABB(const glm::vec3& min, const glm::vec3& max) :
-			m_min(min), m_max(max)
-		{
-		}
+    struct Frustum : public BoundingVolume {
+        glm::vec4 planes[6];
+
+        static Frustum Extract(const glm::mat4& viewProj);
+
+        PE_API bool isIntersect(const BoundingVolume&);
+    };
+
+    struct BoundingSphere : public BoundingVolume
+    {
+
+        PE_API bool isIntersect(const BoundingVolume&) override;
+
+        glm::vec3 position;
+        float radius;
+    };
+
+    struct AABB : public BoundingVolume {
+        AABB() = default;
+
+        AABB(const glm::vec3& min, const glm::vec3& max) :
+            min(min), max(max)
+        {
+        }
+
+
+        PE_API bool isIntersect(const BoundingVolume&) override;
+
         AABB transformed(const glm::mat4& transform) const
         {
             // AABB center / half extents
-            glm::vec3 center = 0.5f * (m_min + m_max);
-            glm::vec3 halfExtents = 0.5f * (m_max - m_min);
+            glm::vec3 center = 0.5f * (min + max);
+            glm::vec3 halfExtents = 0.5f * (max - min);
 
             // 轉換中心
             glm::vec3 newCenter = glm::vec3(transform * glm::vec4(center, 1.0f));
@@ -41,19 +68,12 @@ namespace PaperEngine {
             newHalfExtents.y = glm::dot(absMat[1], halfExtents);
             newHalfExtents.z = glm::dot(absMat[2], halfExtents);
 
-            AABB result;
-            result.m_min = newCenter - newHalfExtents;
-            result.m_max = newCenter + newHalfExtents;
+            AABB result(newCenter - newHalfExtents, newCenter + newHalfExtents);
             return result;
         }
 
-		inline const glm::vec3& getMin() const { return m_min; }
-
-		inline const glm::vec3& getMax() const { return m_max; }
-
-	private:
-		glm::vec3 m_min;
-		glm::vec3 m_max;
-	};
+        glm::vec3 min;
+        glm::vec3 max;
+    };
 
 }

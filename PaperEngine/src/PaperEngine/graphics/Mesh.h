@@ -5,7 +5,7 @@
 #include <nvrhi/nvrhi.h>
 #include <glm/glm.hpp>
 
-#include <PaperEngine/utils/AABB.h>
+#include <PaperEngine/utils/BoundingVolume.h>
 
 namespace PaperEngine {
 

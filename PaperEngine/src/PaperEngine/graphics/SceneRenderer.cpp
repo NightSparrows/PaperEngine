@@ -8,7 +8,7 @@
 #include <PaperEngine/components/LightComponent.h>
 #include <PaperEngine/debug/Instrumentor.h>
 
-#include <PaperEngine/utils/Frustum.h>
+#include <PaperEngine/utils/BoundingVolume.h>
 
 #include <nvrhi/utils.h>
 
@@ -70,6 +70,7 @@ namespace PaperEngine {
 #pragma region Filter Renderable Meshes
 
 		Frustum cameraFrustum = Frustum::Extract(globalData.projViewMatrix);
+		m_lightCullPass.setCameraFrustum(cameraFrustum);
 
 		// process mesh
 		for (auto scene : scenes) {
@@ -97,7 +98,7 @@ namespace PaperEngine {
 				// 使用culling後的light list cull各個light的mesh list
 
 				// Frustum culling for meshes
-				if (!cameraFrustum.isAABBInFrustum(meshCom.worldAABB))
+				if (!cameraFrustum.isIntersect(meshCom.worldAABB))
 					continue;
 
 				if (mesh->getType() != MeshType::Static)

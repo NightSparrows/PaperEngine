@@ -2,6 +2,7 @@
 
 #include <PaperEngine/components/LightComponent.h>
 #include <PaperEngine/utils/Transform.h>
+#include <PaperEngine/utils/BoundingVolume.h>
 
 #include <nvrhi/nvrhi.h>
 
@@ -30,6 +31,13 @@ namespace PaperEngine {
 
 		void init();
 
+		void setCameraFrustum(const Frustum& frustum);
+
+		/// <summary>
+		/// 必須要先設定frustum
+		/// </summary>
+		/// <param name="transform"></param>
+		/// <param name="lightCom"></param>
 		void processLight(const Transform& transform, const LightComponent& lightCom);
 
 		void calculatePass();
@@ -40,6 +48,7 @@ namespace PaperEngine {
 
 	private:
 
+		Frustum m_currentCameraFrustum{};
 
 		// Directional Light Data
 		std::vector<DirectionalLightData> m_directionalLightCpuBuffer;
