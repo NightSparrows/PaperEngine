@@ -105,7 +105,7 @@ namespace PaperEngine {
 		void* m_directionalLightBufferPtr = nullptr;
 
 		// Point Light Data
-		uint32_t m_maxPointLight = 100000;
+		uint32_t m_maxPointLight = 10000;
 		uint32_t m_currentPointLightCount = 0;
 		nvrhi::BufferHandle m_pointLightBuffer;
 		void* m_pointLightBufferptr = nullptr;
