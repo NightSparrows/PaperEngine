@@ -66,6 +66,10 @@ namespace PaperEngine {
 	void SceneRenderer::renderScene(std::span<Ref<Scene>> scenes, const Camera* camera, const Transform* transform, nvrhi::IFramebuffer* fb)
 	{
 		PE_PROFILE_FUNCTION();
+
+		// prepare processing
+		m_lightCullPass.beginPass();
+
 		// 
 		GlobalDataI globalData{};
 		globalData.projectionMatrix = camera->getProjectionMatrix();

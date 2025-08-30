@@ -66,6 +66,11 @@ namespace PaperEngine {
 		void setCamera(const glm::mat4& projViewMatrix, const Frustum& frustum);
 
 		/// <summary>
+		/// 需要先Call這個才能process
+		/// </summary>
+		void beginPass();
+
+		/// <summary>
 		/// 必須要先設定frustum
 		/// </summary>
 		/// <param name="transform"></param>
@@ -94,6 +99,7 @@ namespace PaperEngine {
 		uint32_t m_numberOfXSlices = 16;
 		uint32_t m_numberOfYSlices = 16;
 		uint32_t m_numberOfZSlices = 16;
+		uint32_t m_maxPointLightPerCluster = 1024;
 
 		uint32_t m_numberOfProcessPointLights = 0;
 		// data

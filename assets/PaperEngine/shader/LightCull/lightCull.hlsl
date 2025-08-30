@@ -79,7 +79,7 @@ float LinearDepthToNDC(float zView, float nearPlane, float farPlane)
 // cluster 內的data （per threadGroup）
 groupshared AABB clusterAABB;
 groupshared uint lightCountInCluster;
-groupshared uint lightIndices[MAX_LIGHT_COUNT_IN_LIST];
+groupshared uint lightIndices[MAX_LIGHT_COUNT_IN_LIST + 4];
 
 [numthreads(GROUP_THREAD_SIZE_X, GROUP_THREAD_SIZE_Y, GROUP_THREAD_SIZE_Z)] // 每個threadGroup使用64個thread
 void main_cs(

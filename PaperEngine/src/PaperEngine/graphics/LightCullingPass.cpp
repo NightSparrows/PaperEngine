@@ -78,7 +78,11 @@ namespace PaperEngine {
 				bufferDesc
 					.setDebugName("Global Light Indices Buffer")
 					.setKeepInitialState(true)
-					.setByteSize(m_maxPointLight * sizeof(uint32_t) * 10)
+					.setByteSize(
+						m_numberOfXSlices *
+						m_numberOfYSlices *
+						m_numberOfZSlices *
+						m_maxPointLightPerCluster * sizeof(uint32_t))
 					.setStructStride(sizeof(uint32_t))
 					.setCanHaveUAVs(true)
 					.setCpuAccess(nvrhi::CpuAccessMode::None);
@@ -169,6 +173,13 @@ namespace PaperEngine {
 		m_currentCameraFrustum = frustum;
 	}
 
+	void LightCullingPass::beginPass()
+	{
+		// 重置
+		m_currentDirectionalLightCount = 0;
+		m_currentPointLightCount = 0;
+	}
+
 	LightCullingPass::LightCullingPass()
 	{
 	}
@@ -205,6 +216,8 @@ namespace PaperEngine {
 			break;
 		case LightType::Point:
 		{
+			if (m_currentPointLightCount >= m_maxPointLight)
+				break;
 			const PointLight& pointLight = lightCom.light.pointLight;
 			if (!BoundingSphere(transform.getPosition(), pointLight.radius)
 				.isIntersect(m_currentCameraFrustum))		// 不在畫面裡
@@ -243,6 +256,8 @@ namespace PaperEngine {
 		// TODO comput light tiles
 		m_cmd->open();
 
+		m_cmd->commitBarriers();
+
 		m_cmd->setEnableUavBarriersForBuffer(pointLightCullData.globalCounterBuffer, true);
 		m_cmd->setEnableUavBarriersForBuffer(pointLightCullData.globalLightIndicesBuffer, true);
 		m_cmd->setEnableUavBarriersForBuffer(pointLightCullData.clusterRangesBuffer, true);
@@ -256,9 +271,6 @@ namespace PaperEngine {
 		m_cmd->close();
 		Application::GetNVRHIDevice()->executeCommandList(m_cmd, nvrhi::CommandQueue::Compute);
 
-		// 重置
-		m_currentDirectionalLightCount = 0;
-		m_currentPointLightCount = 0;
 	}
 
 	std::vector<LightCullingPass::PointLightCullData>& LightCullingPass::getPointLightCullData()
