@@ -89,11 +89,11 @@ void main_cs(
 )
 {
 	// 已從外部設定g_globalCounter = 0
-	//if (globalThreadID.x == 0 && globalThreadID.y == 0 && globalThreadID.z == 0)
-	//{
-	//	// per run
-	//	g_globalCounter.Store(0, 0);
-	//}
+	if (globalThreadID.x == 0 && globalThreadID.y == 0 && globalThreadID.z == 0)
+	{
+		// per run
+		g_globalCounter.Store(0, 0);
+	}
 	
 	const uint numberOfThreadInGroup = GROUP_THREAD_SIZE_X * GROUP_THREAD_SIZE_Y * GROUP_THREAD_SIZE_Z;
 	

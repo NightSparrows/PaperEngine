@@ -51,6 +51,8 @@ namespace PaperEngine {
 
 		PE_API MeshRenderer* getMeshRenderer() { return &m_meshRenderer; }
 
+		PE_API LightCullingPass* getLightCullPass() { return &m_lightCullPass; }
+
 	private:
 		nvrhi::CommandListHandle m_cmd;
 

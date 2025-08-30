@@ -12,6 +12,7 @@ namespace PaperEngine {
 		{
 			nvrhi::BufferDesc bufferDesc;
 			bufferDesc
+				.setDebugName("Directional Light Buffer")
 				.setByteSize(m_maxDirectionalLight * sizeof(DirectionalLightData))
 				.setCpuAccess(nvrhi::CpuAccessMode::Write)
 				.setIsConstantBuffer(true)
@@ -25,6 +26,7 @@ namespace PaperEngine {
 		{
 			nvrhi::BufferDesc bufferDesc;
 			bufferDesc
+				.setDebugName("Point Light Buffer")
 				.setByteSize(m_maxPointLight * sizeof(PointLightData))
 				.setCpuAccess(nvrhi::CpuAccessMode::Write)
 				.setIsConstantBuffer(true)
@@ -60,6 +62,7 @@ namespace PaperEngine {
 			{
 				nvrhi::BufferDesc bufferDesc;
 				bufferDesc
+					.setDebugName("LightCullGlobalDataBuffer")
 					.setByteSize(sizeof(GlobalData))
 					.setCpuAccess(nvrhi::CpuAccessMode::Write)
 					.setIsConstantBuffer(true)
@@ -108,10 +111,8 @@ namespace PaperEngine {
 					.setKeepInitialState(true)
 					.setCanHaveUAVs(true)
 					.setCanHaveRawViews(true)
-					.setCpuAccess(nvrhi::CpuAccessMode::Write)
 					.setByteSize(sizeof(uint32_t));
 				pointLightCullData.globalCounterBuffer = Application::GetNVRHIDevice()->createBuffer(bufferDesc);
-				pointLightCullData.globalCounterBufferPtr = static_cast<uint32_t*>(Application::GetNVRHIDevice()->mapBuffer(pointLightCullData.globalCounterBuffer, nvrhi::CpuAccessMode::Write));
 			}
 #pragma endregion
 
@@ -178,8 +179,6 @@ namespace PaperEngine {
 		{
 			Application::GetNVRHIDevice()->unmapBuffer(pointLightCullData.globalDataBuffer);
 			pointLightCullData.globalDataBufferPtr = nullptr;
-			Application::GetNVRHIDevice()->unmapBuffer(pointLightCullData.globalCounterBuffer);
-			pointLightCullData.globalCounterBufferPtr = nullptr;
 		}
 
 		Application::GetNVRHIDevice()->unmapBuffer(m_directionalLightBuffer);
@@ -227,9 +226,11 @@ namespace PaperEngine {
 
 	void LightCullingPass::calculatePass()
 	{
+		m_numberOfProcessPointLights = m_currentPointLightCount;
+
 		auto& pointLightCullData = m_pointLightCullData[Application::Get()->getGraphicsContext()->getSwapchainIndex()];
 	
-		*pointLightCullData.globalCounterBufferPtr = 0;
+		//*pointLightCullData.globalCounterBufferPtr = 0;
 		
 		GlobalData* globalData = static_cast<GlobalData*>(pointLightCullData.globalDataBufferPtr);
 		globalData->numXSlices = m_numberOfXSlices;

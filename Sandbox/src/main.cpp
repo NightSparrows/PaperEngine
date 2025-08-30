@@ -336,6 +336,7 @@ public:
 		ImGui::Text("MeshRenderer");
 		ImGui::Text("instance: %u", m_sceneRenderer->getMeshRenderer()->getTotalInstanceCount());
 		ImGui::Text("drawcall: %u", m_sceneRenderer->getMeshRenderer()->getTotalDrawCallCount());
+		ImGui::Text("Process Point Lights: %u", m_sceneRenderer->getLightCullPass()->getNumberOfProcessPointLights());
 		ImGui::End();
 	}
 
