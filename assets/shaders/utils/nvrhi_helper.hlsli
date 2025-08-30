@@ -55,5 +55,7 @@
 // ty: 結構名稱
 // name: 這個變數名稱
 #define DECLARE_STRUCTURE_BUFFER_SRV(ty, name, reg, space) VK_BINDING_SHADER_RESOURCE(reg, space) StructuredBuffer<ty> name : REGISTER_SRV(reg, space)
+#define DECLARE_RW_STRUCTURE_BUFFER_UAV(ty, name, reg, space) VK_BINDING_UNORDERED_ACCESS(reg, space) RWStructuredBuffer<ty> name : REGISTER_UAV(reg, space)
+#define DECLARE_RW_BYTE_ADDRESS_BUFFER_UAV(name, reg, space) VK_BINDING_UNORDERED_ACCESS(reg, space) RWByteAddressBuffer name : REGISTER_UAV(reg, space)
 
 #endif

@@ -56,6 +56,10 @@ namespace PaperEngine {
 
 		virtual nvrhi::Format getSupportedDepthFormat() = 0;
 
+		virtual uint32_t getSwapchainSize() = 0;
+
+		virtual uint32_t getCurrentSwapchainIndex() = 0;
+
 	public:
 		static Ref<GraphicsContext> Create(Window* window);
 	};

@@ -19,7 +19,8 @@ namespace PaperEngine {
     PE_API Entity Scene::createEntity(const std::string& name, UUID uuid)
     {
         Entity entity = { m_registry.create(), this };
-        entity.addComponent<IDComponent>(uuid);
+        auto& idCom = entity.addComponent<IDComponent>();
+        idCom.id = uuid;
         entity.addComponent<TransformComponent>();
         entity.addComponent<TagComponent>().name = name.empty() ? "Entity" : name;
         return entity;

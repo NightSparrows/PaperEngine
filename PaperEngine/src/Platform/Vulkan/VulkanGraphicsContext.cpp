@@ -449,6 +449,16 @@ namespace PaperEngine {
 		return m_instance.depthFormat;
 	}
 
+	uint32_t VulkanGraphicsContext::getSwapchainSize()
+	{
+		return m_instance.vkbSwapchain.image_count;
+	}
+
+	uint32_t VulkanGraphicsContext::getCurrentSwapchainIndex()
+	{
+		return m_instance.swapchainIndex;
+	}
+
 	bool VulkanGraphicsContext::createSwapchain()
 	{
 		vkDeviceWaitIdle(m_instance.vkbDevice.device);

@@ -122,6 +122,10 @@ namespace PaperEngine {
 
 		nvrhi::Format getSupportedDepthFormat() override;
 
+		uint32_t getSwapchainSize() override;
+
+		uint32_t getCurrentSwapchainIndex() override;
+
 	private:
 		bool createSwapchain();
 

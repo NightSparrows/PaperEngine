@@ -56,12 +56,11 @@ namespace PaperEngine {
 			shaderDesc.shaderType = nvrhi::ShaderType::Vertex;
 			File file("assets/PaperEngine/shader/preDepthPass/shader.vert.spv");
 
-			size_t fileSize = 0;
-			void* shaderBinary = file.readFully(fileSize);
+			auto shaderBinary = file.readBinaryFully();
 			graphicsPipelineDesc.VS = Application::GetNVRHIDevice()->createShader(
 				shaderDesc,
-				shaderBinary,
-				fileSize);
+				shaderBinary->data,
+				shaderBinary->size);
 		}
 
 		nvrhi::VertexAttributeDesc attributes[] = {

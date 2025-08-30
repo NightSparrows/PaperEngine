@@ -13,25 +13,25 @@ namespace PaperEngine {
         m_path = filePath;
     }
 
-    void* File::readFully(size_t& size)
+    Ref<FileData> File::readBinaryFully()
     {
         std::ifstream file(m_path, std::ios::ate | std::ios::binary);
         if (!file.is_open()) {
             return nullptr;
         }
 
-        size_t fileSize = file.tellg();
+        auto fileData = CreateRef<FileData>();
+        fileData->size = file.tellg();
         
+
         file.seekg(0, std::ios::beg);
-        void* data = malloc(fileSize);
-        file.read(static_cast<char*>(data), fileSize);
+        fileData->data = malloc(fileData->size);
+        file.read(static_cast<char*>(fileData->data), fileData->size);
         if (!file.good()) {
-            free(data);
             return nullptr;
         }
-        size = fileSize;
 
-        return data;
+        return fileData;
     }
 
 }

@@ -12,6 +12,11 @@ struct GlobalData
 	uint32_t padding1;
 };
 
+forward Plus clustered
+1. 所有Point Light
+n. 根據cluster id找其light list
+
+
 |- Scene Renderer
 	每個Camera都有一個自己的Scene Renderer
 	|- Size: Width, height

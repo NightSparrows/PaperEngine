@@ -12,7 +12,9 @@ namespace PaperEngine {
 	{
 		glm::vec3 direction;
 		glm::vec3 color;
-		float _pad0, _pad1;// pad to 32 bytes
+		// 2025/08/30我發現不用padding
+		// 你如果在shader寫 float3才會被pad
+		//float _pad0, _pad1;// pad to 32 bytes
 	};
 
 	struct PointLightData
@@ -20,18 +22,48 @@ namespace PaperEngine {
 		glm::vec3 position;
 		glm::vec3 color;
 		float radius;
-		float _pad0;// pad to 32 bytes
 	};
 
 	class LightCullingPass
 	{
+	public:
+		struct PointLightCullData
+		{
+			nvrhi::BufferHandle globalDataBuffer;
+			void* globalDataBufferPtr = nullptr;
+			nvrhi::BufferHandle globalLightIndicesBuffer;
+			nvrhi::BufferHandle clusterRangesBuffer;
+			nvrhi::BufferHandle globalCounterBuffer;
+			nvrhi::BindingSetHandle lightCullBindingSet;
+		};
+
+		struct GlobalData
+		{
+			glm::mat4 projViewMatrix;
+
+			uint32_t numXSlices;
+			uint32_t numYSlices;
+			uint32_t numZSlices;
+
+			uint32_t pointLightCount;
+
+			float nearPlane;
+			float farPlane;
+		};
+
+		struct ClusterRange
+		{
+			uint32_t offset;
+			uint32_t count;
+		};
+
 	public:
 		LightCullingPass();
 		~LightCullingPass();
 
 		void init();
 
-		void setCameraFrustum(const Frustum& frustum);
+		void setCamera(const glm::mat4& projViewMatrix, const Frustum& frustum);
 
 		/// <summary>
 		/// 必須要先設定frustum
@@ -43,15 +75,26 @@ namespace PaperEngine {
 		void calculatePass();
 
 		nvrhi::IBuffer* getDirectionalLightBuffer() { return m_directionalLightBuffer; }
-
 		uint32_t getDirectionalLightCount() const { return m_currentDirectionalLightCount; }
 
 		nvrhi::IBuffer* getPointLightBuffer() { return m_pointLightBuffer; }
 		uint32_t getPointLightCount() const { return m_currentPointLightCount; }
 
-	private:
+		PointLightCullData* getPointLightCullData();
 
+	private:
 		Frustum m_currentCameraFrustum{};
+
+		//light culling compute shader
+		nvrhi::ComputePipelineHandle m_lightCullPipeline;
+		nvrhi::BindingLayoutHandle m_lightCullBindingLayout;
+
+		uint32_t m_numberOfXSlices = 16;
+		uint32_t m_numberOfYSlices = 16;
+		uint32_t m_numberOfZSlices = 16;
+
+		// data
+		PointLightCullData m_pointLightCullData;
 
 		// Directional Light Data
 		uint32_t m_maxDirectionalLight = 8;
@@ -68,7 +111,6 @@ namespace PaperEngine {
 
 		// command buffer
 		nvrhi::CommandListHandle m_cmd;
-
 	};
 
 }

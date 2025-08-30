@@ -37,7 +37,10 @@ namespace PaperEngine {
 			.setRegisterSpaceIsDescriptorSet(true)
 			.setVisibility(nvrhi::ShaderType::All)
 			.addItem(nvrhi::BindingLayoutItem::ConstantBuffer(0))
-			.addItem(nvrhi::BindingLayoutItem::StructuredBuffer_SRV(0));		// directional Light buffer
+			.addItem(nvrhi::BindingLayoutItem::StructuredBuffer_SRV(0))		// directional Light buffer
+			.addItem(nvrhi::BindingLayoutItem::StructuredBuffer_SRV(1))		// point Light buffer
+			.addItem(nvrhi::BindingLayoutItem::StructuredBuffer_SRV(2))		// light indices buffer
+			.addItem(nvrhi::BindingLayoutItem::StructuredBuffer_SRV(3));	// cluster ranges buffer
 		m_globalLayout =
 			Application::GetResourceManager()->create<BindingLayout>("SceneRenderer_globalLayout",
 				Application::GetNVRHIDevice()->createBindingLayout(globalLayoutDesc));
@@ -45,6 +48,9 @@ namespace PaperEngine {
 		nvrhi::BindingSetDesc globalSetDesc;
 		globalSetDesc.addItem(nvrhi::BindingSetItem::ConstantBuffer(0, m_globalDataBuffer));
 		globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(0, m_lightCullPass.getDirectionalLightBuffer()));
+		globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(1, m_lightCullPass.getPointLightBuffer()));
+		globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(2, m_lightCullPass.getPointLightCullData()->globalLightIndicesBuffer));
+		globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(3, m_lightCullPass.getPointLightCullData()->clusterRangesBuffer));
 		m_globalSet = Application::GetNVRHIDevice()->createBindingSet(globalSetDesc, m_globalLayout->handle);
 
 		m_forwardPlusDepthRenderer.init();
@@ -70,7 +76,7 @@ namespace PaperEngine {
 #pragma region Filter Renderable Meshes
 
 		Frustum cameraFrustum = Frustum::Extract(globalData.projViewMatrix);
-		m_lightCullPass.setCameraFrustum(cameraFrustum);
+		m_lightCullPass.setCamera(globalData.projViewMatrix, cameraFrustum);
 
 		// process mesh
 		for (auto scene : scenes) {
@@ -126,6 +132,7 @@ namespace PaperEngine {
 
 #pragma endregion
 		globalData.directionalLightCount = m_lightCullPass.getDirectionalLightCount();
+		// 不代表會全部Process
 		globalData.pointLightCount = m_lightCullPass.getPointLightCount();
 		m_lightCullPass.calculatePass();
 
