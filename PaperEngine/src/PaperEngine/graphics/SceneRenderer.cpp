@@ -45,13 +45,20 @@ namespace PaperEngine {
 			Application::GetResourceManager()->create<BindingLayout>("SceneRenderer_globalLayout",
 				Application::GetNVRHIDevice()->createBindingLayout(globalLayoutDesc));
 
-		nvrhi::BindingSetDesc globalSetDesc;
-		globalSetDesc.addItem(nvrhi::BindingSetItem::ConstantBuffer(0, m_globalDataBuffer));
-		globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(0, m_lightCullPass.getDirectionalLightBuffer()));
-		globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(1, m_lightCullPass.getPointLightBuffer()));
-		globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(2, m_lightCullPass.getPointLightCullData()->globalLightIndicesBuffer));
-		globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(3, m_lightCullPass.getPointLightCullData()->clusterRangesBuffer));
-		m_globalSet = Application::GetNVRHIDevice()->createBindingSet(globalSetDesc, m_globalLayout->handle);
+		m_globalSets.resize(Application::Get()->getGraphicsContext()->getSwapchainCount());
+		for (uint32_t i = 0; i < Application::Get()->getGraphicsContext()->getSwapchainCount(); i++)
+		{
+			nvrhi::BindingSetDesc globalSetDesc;
+			globalSetDesc.addItem(nvrhi::BindingSetItem::ConstantBuffer(0, m_globalDataBuffer));
+			globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(0, m_lightCullPass.getDirectionalLightBuffer()));
+			globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(1, m_lightCullPass.getPointLightBuffer()));
+			globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(2, m_lightCullPass.getPointLightCullData()[i].globalLightIndicesBuffer));
+			globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(3, m_lightCullPass.getPointLightCullData()[i].clusterRangesBuffer));
+			m_globalSets[i] = Application::GetNVRHIDevice()->createBindingSet(globalSetDesc, m_globalLayout->handle);
+
+		}
+		for (auto& set : m_globalSets) {
+		}
 
 		m_forwardPlusDepthRenderer.init();
 	}
@@ -70,7 +77,7 @@ namespace PaperEngine {
 		sceneData.camera = camera;
 		sceneData.cameraTransform = transform;
 		sceneData.fb = fb;
-		sceneData.globalSet = m_globalSet;
+		sceneData.globalSet = m_globalSets[Application::Get()->getGraphicsContext()->getSwapchainIndex()];
 		sceneData.projViewMatrix = globalData.projViewMatrix;
 
 #pragma region Filter Renderable Meshes

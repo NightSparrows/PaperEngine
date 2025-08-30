@@ -34,6 +34,7 @@ namespace PaperEngine {
 			nvrhi::BufferHandle globalLightIndicesBuffer;
 			nvrhi::BufferHandle clusterRangesBuffer;
 			nvrhi::BufferHandle globalCounterBuffer;
+			uint32_t* globalCounterBufferPtr = nullptr;
 			nvrhi::BindingSetHandle lightCullBindingSet;
 		};
 
@@ -80,7 +81,7 @@ namespace PaperEngine {
 		nvrhi::IBuffer* getPointLightBuffer() { return m_pointLightBuffer; }
 		uint32_t getPointLightCount() const { return m_currentPointLightCount; }
 
-		PointLightCullData* getPointLightCullData();
+		std::vector<PointLightCullData>& getPointLightCullData();
 
 	private:
 		Frustum m_currentCameraFrustum{};
@@ -94,7 +95,7 @@ namespace PaperEngine {
 		uint32_t m_numberOfZSlices = 16;
 
 		// data
-		PointLightCullData m_pointLightCullData;
+		std::vector<PointLightCullData> m_pointLightCullData;
 
 		// Directional Light Data
 		uint32_t m_maxDirectionalLight = 8;
@@ -104,7 +105,7 @@ namespace PaperEngine {
 		void* m_directionalLightBufferPtr = nullptr;
 
 		// Point Light Data
-		uint32_t m_maxPointLight = 10000;
+		uint32_t m_maxPointLight = 100000;
 		uint32_t m_currentPointLightCount = 0;
 		nvrhi::BufferHandle m_pointLightBuffer;
 		void* m_pointLightBufferptr = nullptr;

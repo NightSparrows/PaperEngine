@@ -56,6 +56,12 @@ struct AABB
 	float3 max;
 };
 
+float LinearDepthToNDC(float zView, float nearPlane, float farPlane)
+{
+    // DirectX NDC z ∈ [0,1]
+	return (farPlane / (farPlane - nearPlane)) * (1.0 - nearPlane / zView);
+}
+
 /**
 * Dispatch(X, Y, Z) 要dispatch幾個threadGroup
 * numthreads(x, y, z) threadGroup有多少thread
@@ -70,7 +76,6 @@ struct AABB
 #define GROUP_THREAD_SIZE_X 4
 #define GROUP_THREAD_SIZE_Y 4
 #define GROUP_THREAD_SIZE_Z 4
-
 // cluster 內的data （per threadGroup）
 groupshared AABB clusterAABB;
 groupshared uint lightCountInCluster;
@@ -83,11 +88,12 @@ void main_cs(
 	uint threadIdx : SV_GroupIndex				// 在threadGroup內個index (linear)
 )
 {
-	if (globalThreadID.x == 0 && globalThreadID.y == 0 && globalThreadID.z == 0)
-	{
-		// per run
-		g_globalCounter.Store(0, 0);
-	}
+	// 已從外部設定g_globalCounter = 0
+	//if (globalThreadID.x == 0 && globalThreadID.y == 0 && globalThreadID.z == 0)
+	//{
+	//	// per run
+	//	g_globalCounter.Store(0, 0);
+	//}
 	
 	const uint numberOfThreadInGroup = GROUP_THREAD_SIZE_X * GROUP_THREAD_SIZE_Y * GROUP_THREAD_SIZE_Z;
 	
@@ -104,20 +110,13 @@ void main_cs(
 		clusterAABB.min.y = -1.0 + float(groupID.y) * sliceHeight;
 		clusterAABB.max.x = -1.0 + float(groupID.x + 1) * sliceWidth;
 		clusterAABB.max.y = -1.0 + float(groupID.y + 1) * sliceHeight;
-
-		// 切成對數
-		float sliceNearZ =
-			g_globalData.nearPlane * pow(g_globalData.farPlane / g_globalData.nearPlane, groupID.z / float(g_globalData.numZSlices));
-		float sliceFarZ =
-			g_globalData.nearPlane * pow(g_globalData.farPlane / g_globalData.nearPlane, (groupID.z + 1) / float(g_globalData.numZSlices));
-		//float sliceNearZ = exp2(log2(g_globalData.nearPlane) + (log2(g_globalData.farPlane) - log2(g_globalData.nearPlane)) * (float(groupID.z) / float(g_globalData.numZSlices)));
-		//float sliceFarZ = exp2(log2(g_globalData.nearPlane) + (log2(g_globalData.farPlane) - log2(g_globalData.nearPlane)) * (float(groupID.z + 1) / float(g_globalData.numZSlices)));
 		
-		clusterAABB.min.z = sliceNearZ;
-		clusterAABB.max.z = sliceFarZ;
+		// 透視投影非線性 z 切片
+		float sliceNear = g_globalData.nearPlane * pow(g_globalData.farPlane / g_globalData.nearPlane, float(groupID.z) / float(g_globalData.numZSlices));
+		float sliceFar = g_globalData.nearPlane * pow(g_globalData.farPlane / g_globalData.nearPlane, float(groupID.z + 1) / float(g_globalData.numZSlices));
 
-		//clusterAABB.min.z = 0;
-		//clusterAABB.max.z = 1;
+		clusterAABB.min.z = LinearDepthToNDC(sliceNear, g_globalData.nearPlane, g_globalData.farPlane);
+		clusterAABB.max.z = LinearDepthToNDC(sliceFar, g_globalData.nearPlane, g_globalData.farPlane);
 
 		// 如果超出depthTexture的區間，則直接=0
 	}
@@ -162,31 +161,39 @@ void main_cs(
 			
 			if (insideX && insideY && insideZ)
 			{
-				uint localIndex;
-				InterlockedAdd(lightCountInCluster, 1, localIndex);
-				if (localIndex < MAX_LIGHT_COUNT_IN_LIST)
+				if (lightCountInCluster + 1 < MAX_LIGHT_COUNT_IN_LIST)
+				{
+					uint localIndex;
+					InterlockedAdd(lightCountInCluster, 1, localIndex);
 					lightIndices[localIndex] = i;
+				}
 
 			}
 		}
 	}
 	GroupMemoryBarrierWithGroupSync();
 
-	if (threadIdx == 0 && lightCountInCluster != 0)
+	if (threadIdx == 0)
 	{
-		uint offset;
-		g_globalCounter.InterlockedAdd(0, lightCountInCluster, offset);
-		for (uint i = 0; i < lightCountInCluster; i++)
-		{
-			g_globalLightIndices[offset + i] = lightIndices[i];
-		}
-		
 		ClusterRange clusterRange;
-		clusterRange.count = lightCountInCluster;
-		clusterRange.offset = offset;
+		if (lightCountInCluster != 0)
+		{
+			uint offset;
+			g_globalCounter.InterlockedAdd(0, lightCountInCluster, offset);
+			for (uint i = 0; i < lightCountInCluster; i++)
+			{
+				g_globalLightIndices[offset + i] = lightIndices[i];
+			}
+			clusterRange.count = lightCountInCluster;
+			clusterRange.offset = offset;
+		}
+		else
+		{
+			clusterRange.count = 0;
+			clusterRange.offset = 0;
+		}
 		g_clusterRanges[groupID.z * g_globalData.numYSlices * g_globalData.numXSlices +
 		                groupID.y * g_globalData.numXSlices +
 		                groupID.x] = clusterRange;
-
 	}
 }

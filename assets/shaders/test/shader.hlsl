@@ -131,22 +131,26 @@ PS_OUTPUT main_ps(PS_INPUT input)
 	const float c_farPlane = 1000.f;
 	
 	// --- Clustered point lights ---
-	float3 viewPos = mul(float4(input.worldPos, 1.0), g_globalData.view).xyz;
+	float4 clipPos = mul(float4(input.worldPos, 1.0), g_globalData.viewProj);	
+	float3 ndcPos = clipPos.xyz / clipPos.w;	
 	
-    // Compute cluster X/Y in view space near plane
-	float ndcX = input.pos.x;
-	float ndcY = input.pos.y;
-	
-	
-	uint clusterX = clamp(uint((ndcX + 1.0) * 0.5 * c_numXSlices), 0, c_numXSlices - 1);
-	uint clusterY = clamp(uint((ndcY + 1.0) * 0.5 * c_numYSlices), 0, c_numYSlices - 1);
+	uint clusterX = clamp(uint((ndcPos.x + 1.0) * 0.5 * c_numXSlices), 0, c_numXSlices - 1);
+	uint clusterY = clamp(uint((ndcPos.y + 1.0) * 0.5 * c_numYSlices), 0, c_numYSlices - 1);
 
-	//// point Light
-	//float3 ndc = input.pos.xyz / input.pos.w;
-	//uint clusterX = clamp(uint((ndc.x + 1.0) * 0.5 * 16), 0, 16 - 1);
-	//uint clusterY = clamp(uint((ndc.y + 1.0) * 0.5 * 16), 0, 16 - 1);
+	
+	// NDC z → view space depth (DirectX 0~1)
+	float viewZ = c_nearPlane * c_farPlane / (c_farPlane - ndcPos.z * (c_farPlane - c_nearPlane));
 
-	uint clusterZ = uint(log((abs(input.pos.z) / c_nearPlane) * c_numZSlices) / log(c_farPlane / c_nearPlane));
+	// 對數分割 z → clusterZ
+	float slice = log(viewZ / c_nearPlane) / log(c_farPlane / c_nearPlane);
+	uint clusterZ = min(uint(slice * c_numZSlices), c_numZSlices - 1);
+	
+	//float slice = log(ndcPos.z * (c_farPlane - c_ne67arPlane) + c_nearPlane)
+ //             / log(c_farPlane / c_nearPlane);
+	//uint clusterZ = min(uint(slice * c_numZSlices), c_numZSlices - 1);
+
+	//uint clusterZ = clamp(uint(input.pos.z) * c_numZSlices, 0, c_numZSlices - 1);
+	//uint clusterZ = uint(log((abs(viewPos.z) / c_nearPlane) * c_numZSlices) / log(c_farPlane / c_nearPlane));
 	//uint clusterZ = 0;
 	//float viewZ = -viewPos.z; // view space depth
 	//float logNear = log2(c_nearPlane);
@@ -169,7 +173,7 @@ PS_OUTPUT main_ps(PS_INPUT input)
 		toLightVector /= dist;
 		
 		float NDotL = max(dot(input.normal, toLightVector), 0.0);
-		float attenuation = 1.0 - dist / light.radius;
+		float attenuation = (1.0 / max(1, dist * dist)) * (1 - pow(dist / light.radius, 4));
 		float3 diffuse = NDotL * attenuation * float3(light.r, light.g, light.b);
 		
 		totalDiffuse += diffuse;

@@ -34,15 +34,15 @@ public:
 
 		// 測試Point Light
 		{
-			static std::uniform_real_distribution<float> dist(-1000.0f, 1000.0f);
+			static std::uniform_real_distribution<float> dist(-500.0f, 500.0f);
 			static std::uniform_real_distribution<float> colorDist(0, 1.0f);
-			for (uint32_t i = 0; i < 1000; i++) {
+			for (uint32_t i = 0; i < 50000; i++) {
 				auto pointLightEntity = scene->createEntity("PointLight");
 				auto& transCom = pointLightEntity.getComponent<PaperEngine::TransformComponent>();
 				transCom.transform.setPosition(glm::vec3(dist(gen), dist(gen), dist(gen)));
 				auto& pointLightCom = pointLightEntity.addComponent<PaperEngine::LightComponent>();
 				pointLightCom.type = PaperEngine::LightType::Point;
-				pointLightCom.light.pointLight.color = glm::vec3(colorDist(gen), colorDist(gen), colorDist(gen));
+				pointLightCom.light.pointLight.color = glm::vec3(colorDist(gen) * 2, colorDist(gen) * 2, colorDist(gen) * 2);
 				pointLightCom.light.pointLight.radius = colorDist(gen) * 100.f;
 			}
 		}
@@ -50,7 +50,7 @@ public:
 		auto& dirLightCom = lightEntity.addComponent<PaperEngine::LightComponent>();
 		dirLightCom.type = PaperEngine::LightType::Directional;
 		dirLightCom.light.directionalLight.direction = glm::vec3(0, -1, 0);
-		dirLightCom.light.directionalLight.color = glm::vec3(1, 1, 1);
+		dirLightCom.light.directionalLight.color = glm::vec3(0.2, 0.2, 0.2);
 
 		//{
 		//	auto lightEntity = scene->createEntity("Light2");

@@ -55,7 +55,7 @@ namespace PaperEngine {
 		nvrhi::CommandListHandle m_cmd;
 
 		BindingLayoutHandle m_globalLayout;
-		nvrhi::BindingSetHandle m_globalSet;
+		std::vector<nvrhi::BindingSetHandle> m_globalSets;
 		nvrhi::BufferHandle m_globalDataBuffer;
 
 		// 先這樣
