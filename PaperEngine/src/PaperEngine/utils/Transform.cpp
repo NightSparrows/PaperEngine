@@ -34,19 +34,19 @@ namespace PaperEngine {
     PE_API glm::vec3 Transform::getForward() const
     {
         update();
-        return m_rotation * glm::vec3(0, 0, -1);
+        return glm::normalize(m_rotation * glm::vec3(0, 0, -1));
     }
 
     PE_API glm::vec3 Transform::getRight() const
     {
         update();
-        return m_rotation * glm::vec3(1, 0, 0);
+        return glm::normalize(m_rotation * glm::vec3(1, 0, 0));
     }
 
     PE_API glm::vec3 Transform::getUp() const
     {
         update();
-        return m_rotation * glm::vec3(0, 1, 0);
+        return glm::normalize(m_rotation * glm::vec3(0, 1, 0));
     }
 
     PE_API const glm::mat4& Transform::matrix() const

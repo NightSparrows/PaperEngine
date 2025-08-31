@@ -54,87 +54,82 @@ namespace PaperEngine {
 		m_lightCullBindingLayout = Application::GetNVRHIDevice()->createBindingLayout(lightCullBindingLayoutDesc);
 #pragma endregion
 
-		m_pointLightCullData.resize(Application::Get()->getGraphicsContext()->getSwapchainCount());
-		for (auto& pointLightCullData : m_pointLightCullData)
-		{
-
 #pragma region Global data GPU Buffer
-			{
-				nvrhi::BufferDesc bufferDesc;
-				bufferDesc
-					.setDebugName("LightCullGlobalDataBuffer")
-					.setByteSize(sizeof(GlobalData))
-					.setCpuAccess(nvrhi::CpuAccessMode::Write)
-					.setIsConstantBuffer(true)
-					.setKeepInitialState(true);
-				pointLightCullData.globalDataBuffer = Application::GetNVRHIDevice()->createBuffer(bufferDesc);
-				pointLightCullData.globalDataBufferPtr = Application::GetNVRHIDevice()->mapBuffer(pointLightCullData.globalDataBuffer, nvrhi::CpuAccessMode::Write);
-			}
+		{
+			nvrhi::BufferDesc bufferDesc;
+			bufferDesc
+				.setDebugName("LightCullGlobalDataBuffer")
+				.setByteSize(sizeof(GlobalData))
+				.setCpuAccess(nvrhi::CpuAccessMode::Write)
+				.setIsConstantBuffer(true)
+				.setKeepInitialState(true);
+			m_pointLightCullData.globalDataBuffer = Application::GetNVRHIDevice()->createBuffer(bufferDesc);
+			m_pointLightCullData.globalDataBufferPtr = Application::GetNVRHIDevice()->mapBuffer(m_pointLightCullData.globalDataBuffer, nvrhi::CpuAccessMode::Write);
+		}
 #pragma endregion
 
 #pragma region Global Light Indices Buffer Creation
-			{
-				nvrhi::BufferDesc bufferDesc;
-				bufferDesc
-					.setDebugName("Global Light Indices Buffer")
-					.setKeepInitialState(true)
-					.setByteSize(
-						m_numberOfXSlices *
-						m_numberOfYSlices *
-						m_numberOfZSlices *
-						m_maxPointLightPerCluster * sizeof(uint32_t))
-					.setStructStride(sizeof(uint32_t))
-					.setCanHaveUAVs(true)
-					.setCpuAccess(nvrhi::CpuAccessMode::None);
-				pointLightCullData.globalLightIndicesBuffer = Application::GetNVRHIDevice()->createBuffer(bufferDesc);
-			}
+		{
+			nvrhi::BufferDesc bufferDesc;
+			bufferDesc
+				.setDebugName("Global Light Indices Buffer")
+				.setKeepInitialState(true)
+				.setByteSize(
+					m_numberOfXSlices *
+					m_numberOfYSlices *
+					m_numberOfZSlices *
+					m_maxPointLightPerCluster * sizeof(uint32_t))
+				.setStructStride(sizeof(uint32_t))
+				.setCanHaveUAVs(true)
+				.setCpuAccess(nvrhi::CpuAccessMode::None);
+			m_pointLightCullData.globalLightIndicesBuffer = Application::GetNVRHIDevice()->createBuffer(bufferDesc);
+		}
 #pragma endregion
 
 #pragma region Cluster Ranges Buffer Creation
-			{
-				nvrhi::BufferDesc bufferDesc;
-				bufferDesc
-					.setDebugName("Cluster Ranges Buffer")
-					.setKeepInitialState(true)
-					.setByteSize(
-						m_numberOfXSlices *
-						m_numberOfYSlices *
-						m_numberOfZSlices *
-						sizeof(uint32_t) * 2)
-					.setCanHaveUAVs(true)
-					.setStructStride(sizeof(ClusterRange));
-				pointLightCullData.clusterRangesBuffer = Application::GetNVRHIDevice()->createBuffer(bufferDesc);
-			}
+		{
+			nvrhi::BufferDesc bufferDesc;
+			bufferDesc
+				.setDebugName("Cluster Ranges Buffer")
+				.setKeepInitialState(true)
+				.setByteSize(
+					m_numberOfXSlices *
+					m_numberOfYSlices *
+					m_numberOfZSlices *
+					sizeof(ClusterRange))
+				.setCanHaveUAVs(true)
+				.setStructStride(sizeof(ClusterRange));
+			m_pointLightCullData.clusterRangesBuffer = Application::GetNVRHIDevice()->createBuffer(bufferDesc);
+		}
 #pragma endregion
 
 #pragma region Global Counter Buffer
-			{
-				nvrhi::BufferDesc bufferDesc;
-				bufferDesc
-					.setDebugName("Global Counter Buffer")
-					.setKeepInitialState(true)
-					.setCanHaveUAVs(true)
-					.setCanHaveRawViews(true)
-					.setByteSize(sizeof(uint32_t));
-				pointLightCullData.globalCounterBuffer = Application::GetNVRHIDevice()->createBuffer(bufferDesc);
-			}
+		{
+			nvrhi::BufferDesc bufferDesc;
+			bufferDesc
+				.setDebugName("Global Counter Buffer")
+				.setKeepInitialState(true)
+				.setCanHaveUAVs(true)
+				.setCanHaveRawViews(true)
+				.setByteSize(sizeof(uint32_t));
+			m_pointLightCullData.globalCounterBuffer = Application::GetNVRHIDevice()->createBuffer(bufferDesc);
+		}
 #pragma endregion
 
 #pragma region Binding Set Creation
-			{
-				nvrhi::BindingSetDesc bindingSetDesc;
-				bindingSetDesc
-					.addItem(nvrhi::BindingSetItem::ConstantBuffer(0, pointLightCullData.globalDataBuffer))
-					.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(0, m_pointLightBuffer))
-					.addItem(nvrhi::BindingSetItem::StructuredBuffer_UAV(0, pointLightCullData.globalLightIndicesBuffer))
-					.addItem(nvrhi::BindingSetItem::StructuredBuffer_UAV(1, pointLightCullData.clusterRangesBuffer))
-					.addItem(nvrhi::BindingSetItem::RawBuffer_UAV(2, pointLightCullData.globalCounterBuffer));
-				pointLightCullData.lightCullBindingSet = Application::GetNVRHIDevice()->createBindingSet(
-					bindingSetDesc,
-					m_lightCullBindingLayout);
-			}
-#pragma endregion
+		{
+			nvrhi::BindingSetDesc bindingSetDesc;
+			bindingSetDesc
+				.addItem(nvrhi::BindingSetItem::ConstantBuffer(0, m_pointLightCullData.globalDataBuffer))
+				.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(0, m_pointLightBuffer))
+				.addItem(nvrhi::BindingSetItem::StructuredBuffer_UAV(0, m_pointLightCullData.globalLightIndicesBuffer))
+				.addItem(nvrhi::BindingSetItem::StructuredBuffer_UAV(1, m_pointLightCullData.clusterRangesBuffer))
+				.addItem(nvrhi::BindingSetItem::RawBuffer_UAV(2, m_pointLightCullData.globalCounterBuffer));
+			m_pointLightCullData.lightCullBindingSet = Application::GetNVRHIDevice()->createBindingSet(
+				bindingSetDesc,
+				m_lightCullBindingLayout);
 		}
+#pragma endregion
 
 #pragma region Light Culling Compute pipeline Initialization
 		{
@@ -167,7 +162,7 @@ namespace PaperEngine {
 
 	void LightCullingPass::setCamera(const glm::mat4& projViewMatrix, const Frustum& frustum)
 	{
-		GlobalData* globalData = static_cast<GlobalData*>(m_pointLightCullData[Application::Get()->getGraphicsContext()->getSwapchainIndex()].globalDataBufferPtr);
+		GlobalData* globalData = static_cast<GlobalData*>(m_pointLightCullData.globalDataBufferPtr);
 
 		globalData->projViewMatrix = projViewMatrix;
 		m_currentCameraFrustum = frustum;
@@ -186,11 +181,8 @@ namespace PaperEngine {
 
 	LightCullingPass::~LightCullingPass()
 	{
-		for (auto& pointLightCullData : m_pointLightCullData)
-		{
-			Application::GetNVRHIDevice()->unmapBuffer(pointLightCullData.globalDataBuffer);
-			pointLightCullData.globalDataBufferPtr = nullptr;
-		}
+		Application::GetNVRHIDevice()->unmapBuffer(m_pointLightCullData.globalDataBuffer);
+		m_pointLightCullData.globalDataBufferPtr = nullptr;
 
 		Application::GetNVRHIDevice()->unmapBuffer(m_directionalLightBuffer);
 		m_directionalLightBufferPtr = nullptr;
@@ -241,7 +233,7 @@ namespace PaperEngine {
 	{
 		m_numberOfProcessPointLights = m_currentPointLightCount;
 
-		auto& pointLightCullData = m_pointLightCullData[Application::Get()->getGraphicsContext()->getSwapchainIndex()];
+		auto& pointLightCullData = m_pointLightCullData;
 	
 		//*pointLightCullData.globalCounterBufferPtr = 0;
 		
@@ -273,7 +265,7 @@ namespace PaperEngine {
 
 	}
 
-	std::vector<LightCullingPass::PointLightCullData>& LightCullingPass::getPointLightCullData()
+	LightCullingPass::PointLightCullData& LightCullingPass::getPointLightCullData()
 	{
 		return m_pointLightCullData;
 	}

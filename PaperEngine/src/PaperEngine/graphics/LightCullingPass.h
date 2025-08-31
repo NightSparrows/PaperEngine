@@ -85,7 +85,7 @@ namespace PaperEngine {
 		nvrhi::IBuffer* getPointLightBuffer() { return m_pointLightBuffer; }
 		uint32_t getPointLightCount() const { return m_currentPointLightCount; }
 
-		std::vector<PointLightCullData>& getPointLightCullData();
+		PointLightCullData& getPointLightCullData();
 
 		uint32_t getNumberOfProcessPointLights() const { return m_numberOfProcessPointLights; }
 
@@ -99,11 +99,11 @@ namespace PaperEngine {
 		uint32_t m_numberOfXSlices = 16;
 		uint32_t m_numberOfYSlices = 16;
 		uint32_t m_numberOfZSlices = 16;
-		uint32_t m_maxPointLightPerCluster = 1024;
+		uint32_t m_maxPointLightPerCluster = 2048;
 
 		uint32_t m_numberOfProcessPointLights = 0;
 		// data
-		std::vector<PointLightCullData> m_pointLightCullData;
+		PointLightCullData m_pointLightCullData;
 
 		// Directional Light Data
 		uint32_t m_maxDirectionalLight = 8;

@@ -117,7 +117,7 @@ PS_OUTPUT main_ps(PS_INPUT input)
 		float3 unitLightVector = normalize(toLightVector);
 		
 		float nDotl = dot(unitNormal, unitLightVector);
-		float brightness = max(0.2, nDotl);
+		float brightness = max(0, nDotl);
 		float3 diffuse = brightness * float3(lightData.r, lightData.g, lightData.b);
 		
 		totalDiffuse += diffuse;
@@ -181,6 +181,16 @@ PS_OUTPUT main_ps(PS_INPUT input)
 	/// End Light calculation
 	
 	output.col = float4(totalDiffuse, 1.0) * texture0.Sample(sampler0, input.uv);
+	
+	// test
+	float4 clusterColor = float4(0, 0, float(range.count) / 32, 1.0);
+	if (range.count >= 20)
+	{
+		clusterColor.r = 0.5f;
+	}
+	
+	output.col = lerp(output.col, clusterColor, 0.5);
+	/// end test
 	
 	return output;
 }

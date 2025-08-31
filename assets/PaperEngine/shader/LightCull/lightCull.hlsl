@@ -72,7 +72,7 @@ float LinearDepthToNDC(float zView, float nearPlane, float farPlane)
 * 
 */
 
-#define MAX_LIGHT_COUNT_IN_LIST 1024
+#define MAX_LIGHT_COUNT_IN_LIST 2048
 
 #define GROUP_THREAD_SIZE_X 4
 #define GROUP_THREAD_SIZE_Y 4

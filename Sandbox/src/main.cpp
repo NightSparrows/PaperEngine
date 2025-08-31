@@ -36,7 +36,7 @@ public:
 		{
 			static std::uniform_real_distribution<float> dist(-250.0f, 250.0f);
 			static std::uniform_real_distribution<float> colorDist(0, 1.0f);
-			for (uint32_t i = 0; i < 5000; i++) {
+			for (uint32_t i = 0; i < 500; i++) {
 				auto pointLightEntity = scene->createEntity("PointLight");
 				auto& transCom = pointLightEntity.getComponent<PaperEngine::TransformComponent>();
 				transCom.transform.setPosition(glm::vec3(dist(gen), dist(gen), dist(gen)));
@@ -316,12 +316,25 @@ public:
 				//PE_CORE_INFO("Camera position: {0} {1} {2}", m_transform.get_position().x, m_transform.get_position().y, m_transform.get_position().z);
 			}
 
+			static float pitch = 0;
+			static float yaw = 0;
+
 			glm::vec2 mouseDelta = PaperEngine::Mouse::GetDeltaPosition();
 			if (mouseDelta.x != 0 || mouseDelta.y != 0) {
-				float yaw = mouseDelta.x * LOOK_SENSITIVITY * dt.toSeconds();
-				float pitch = mouseDelta.y * LOOK_SENSITIVITY * dt.toSeconds();
-				cameraTransform.rotate(glm::vec3(0, 1, 0), -yaw);
-				cameraTransform.rotate(cameraTransform.getRight(), -pitch); // invert pitch to match typical camera controls
+				yaw -= mouseDelta.x * LOOK_SENSITIVITY * dt.toSeconds();
+				pitch -= mouseDelta.y * LOOK_SENSITIVITY * dt.toSeconds();
+
+				// 限制 pitch 避免翻轉
+				pitch = glm::clamp(pitch, -89.0f, 89.0f);
+
+				// 重建 rotation：yaw 繞世界 Y，pitch 繞相機 X
+				glm::quat qYaw = glm::angleAxis(glm::radians(yaw), glm::vec3(0, 1, 0));
+				glm::quat qPitch = glm::angleAxis(glm::radians(pitch), glm::vec3(1, 0, 0));
+				cameraTransform.setRotation(qYaw * qPitch);
+				//float yaw = mouseDelta.x * LOOK_SENSITIVITY * dt.toSeconds();
+				//float pitch = mouseDelta.y * LOOK_SENSITIVITY * dt.toSeconds();
+				//cameraTransform.rotate(glm::vec3(0, 1, 0), -yaw);
+				//cameraTransform.rotate(cameraTransform.getRight(), -pitch); // invert pitch to match typical camera controls
 			}
 
 		}
@@ -333,10 +346,11 @@ public:
 
 	void onImGuiRender() {
 		ImGui::Begin("Debug");
+		ImGui::Text("Light Culling Pass");
+		ImGui::Text("    Process Point Lights: %u", m_sceneRenderer->getLightCullPass()->getNumberOfProcessPointLights());
 		ImGui::Text("MeshRenderer");
-		ImGui::Text("instance: %u", m_sceneRenderer->getMeshRenderer()->getTotalInstanceCount());
-		ImGui::Text("drawcall: %u", m_sceneRenderer->getMeshRenderer()->getTotalDrawCallCount());
-		ImGui::Text("Process Point Lights: %u", m_sceneRenderer->getLightCullPass()->getNumberOfProcessPointLights());
+		ImGui::Text("    instance: %u", m_sceneRenderer->getMeshRenderer()->getTotalInstanceCount());
+		ImGui::Text("    drawcall: %u", m_sceneRenderer->getMeshRenderer()->getTotalDrawCallCount());
 		ImGui::End();
 	}
 
