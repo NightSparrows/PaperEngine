@@ -96,9 +96,9 @@ namespace PaperEngine {
 		nvrhi::ComputePipelineHandle m_lightCullPipeline;
 		nvrhi::BindingLayoutHandle m_lightCullBindingLayout;
 
-		uint32_t m_numberOfXSlices = 16;
-		uint32_t m_numberOfYSlices = 16;
-		uint32_t m_numberOfZSlices = 16;
+		uint32_t m_numberOfXSlices = 32;
+		uint32_t m_numberOfYSlices = 32;
+		uint32_t m_numberOfZSlices = 32;
 		uint32_t m_maxPointLightPerCluster = 2048;
 
 		uint32_t m_numberOfProcessPointLights = 0;

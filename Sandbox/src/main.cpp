@@ -35,7 +35,7 @@ public:
 		// 測試Point Light
 		{
 			static std::uniform_real_distribution<float> dist(-250.0f, 250.0f);
-			static std::uniform_real_distribution<float> colorDist(0, 1.0f);
+			static std::uniform_real_distribution<float> colorDist(0.5f, 1.0f);
 			for (uint32_t i = 0; i < 500; i++) {
 				auto pointLightEntity = scene->createEntity("PointLight");
 				auto& transCom = pointLightEntity.getComponent<PaperEngine::TransformComponent>();

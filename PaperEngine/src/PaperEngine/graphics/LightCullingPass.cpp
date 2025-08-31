@@ -258,7 +258,13 @@ namespace PaperEngine {
 		computeState.bindings = { pointLightCullData.lightCullBindingSet };
 		computeState.pipeline = m_lightCullPipeline;
 		m_cmd->setComputeState(computeState);
+		m_cmd->setBufferState(pointLightCullData.globalCounterBuffer, nvrhi::ResourceStates::UnorderedAccess);
+		m_cmd->setBufferState(pointLightCullData.globalLightIndicesBuffer, nvrhi::ResourceStates::UnorderedAccess);
+		m_cmd->setBufferState(pointLightCullData.clusterRangesBuffer, nvrhi::ResourceStates::UnorderedAccess);
+		m_cmd->commitBarriers();
 		m_cmd->dispatch(m_numberOfXSlices, m_numberOfYSlices, m_numberOfZSlices);
+		m_cmd->setBufferState(pointLightCullData.globalLightIndicesBuffer, nvrhi::ResourceStates::ShaderResource);
+		m_cmd->setBufferState(pointLightCullData.clusterRangesBuffer, nvrhi::ResourceStates::ShaderResource);
 		m_cmd->commitBarriers();
 		m_cmd->close();
 		Application::GetNVRHIDevice()->executeCommandList(m_cmd, nvrhi::CommandQueue::Compute);

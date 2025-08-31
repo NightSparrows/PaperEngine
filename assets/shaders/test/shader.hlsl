@@ -80,6 +80,7 @@ struct PS_INPUT
 	float2 uv : TEXCOORD0;
 	float3 normal : NORMAL;
 	float3 worldPos : WORLD_POSITION;
+	float3 viewPos : VIEW_POSITION;
 };
 
 struct PS_OUTPUT
@@ -92,10 +93,12 @@ PS_INPUT main_vs(VS_INPUT input)
 	PS_INPUT output;
 	EntityData entityData = g_entityData[input.instanceID];
 	float4 worldPosition = mul(float4(input.pos, 1.0f), entityData.trans);
+	float4 viewPosition = mul(worldPosition, g_globalData.view);
 	output.pos = mul(worldPosition, g_globalData.viewProj);
 	output.uv = input.uv;
 	output.normal = mul(float4(input.normal, 0.0), entityData.trans).xyz;
 	output.worldPos = worldPosition.xyz;
+	output.viewPos = viewPosition.xyz;
 	return output;
 }
 
@@ -124,40 +127,27 @@ PS_OUTPUT main_ps(PS_INPUT input)
 
 	}
 	
-	const uint c_numXSlices = 16;
-	const uint c_numYSlices = 16;
-	const uint c_numZSlices = 16;
+	const uint c_numXSlices = 32;
+	const uint c_numYSlices = 32;
+	const uint c_numZSlices = 32;
 	const float c_nearPlane = 0.1f;
 	const float c_farPlane = 1000.f;
 	
 	// --- Clustered point lights ---
-	float4 clipPos = mul(float4(input.worldPos, 1.0), g_globalData.viewProj);	
+	float4 clipPos = mul(float4(input.worldPos, 1.0), g_globalData.viewProj);
+	//float4 viewPos = mul(float4(input.worldPos, 1.0), g_globalData.view);
 	float3 ndcPos = clipPos.xyz / clipPos.w;	
 	
-	uint clusterX = clamp(uint((ndcPos.x + 1.0) * 0.5 * c_numXSlices), 0, c_numXSlices - 1);
-	uint clusterY = clamp(uint((ndcPos.y + 1.0) * 0.5 * c_numYSlices), 0, c_numYSlices - 1);
-
+	uint clusterX = clamp(uint(floor((ndcPos.x + 1.0) * 0.5 * c_numXSlices)), 0, c_numXSlices - 1);
+	uint clusterY = clamp(uint(floor((ndcPos.y + 1.0) * 0.5 * c_numYSlices)), 
+	0, c_numYSlices - 1);
 	
 	// NDC z → view space depth (DirectX 0~1)
 	float viewZ = c_nearPlane * c_farPlane / (c_farPlane - ndcPos.z * (c_farPlane - c_nearPlane));
-
 	// 對數分割 z → clusterZ
 	float slice = log(viewZ / c_nearPlane) / log(c_farPlane / c_nearPlane);
-	uint clusterZ = min(uint(slice * c_numZSlices), c_numZSlices - 1);
-	
-	//float slice = log(ndcPos.z * (c_farPlane - c_ne67arPlane) + c_nearPlane)
- //             / log(c_farPlane / c_nearPlane);
-	//uint clusterZ = min(uint(slice * c_numZSlices), c_numZSlices - 1);
+	uint clusterZ = min(uint(floor(slice * c_numZSlices - 1e-4)), c_numZSlices - 1);
 
-	//uint clusterZ = clamp(uint(input.pos.z) * c_numZSlices, 0, c_numZSlices - 1);
-	//uint clusterZ = uint(log((abs(viewPos.z) / c_nearPlane) * c_numZSlices) / log(c_farPlane / c_nearPlane));
-	//uint clusterZ = 0;
-	//float viewZ = -viewPos.z; // view space depth
-	//float logNear = log2(c_nearPlane);
-	//float logFar = log2(c_farPlane);
-	//float logDepth = log2(viewZ);
-	//uint clusterZ = clamp(uint(c_numZSlices * (logDepth - logNear) / (logFar - logNear)), 0, c_numZSlices - 1);
-	
 	uint clusterIndex = clusterX + clusterY * c_numXSlices + clusterZ * c_numXSlices * c_numYSlices;
 	ClusterRange range = g_clusterRanges[clusterIndex];
 	for (uint clusterLightIndex = 0; clusterLightIndex < range.count; clusterLightIndex++)
@@ -183,13 +173,13 @@ PS_OUTPUT main_ps(PS_INPUT input)
 	output.col = float4(totalDiffuse, 1.0) * texture0.Sample(sampler0, input.uv);
 	
 	// test
-	float4 clusterColor = float4(0, 0, float(range.count) / 32, 1.0);
-	if (range.count >= 20)
-	{
-		clusterColor.r = 0.5f;
-	}
+	//float4 clusterColor = float4(0, 0, float(range.count) / 32, 0.0);
+	//if (range.count >= 20)
+	//{
+	//	clusterColor.r = 0.5f;
+	//}
 	
-	output.col = lerp(output.col, clusterColor, 0.5);
+	//output.col = output.col + clusterColor;
 	/// end test
 	
 	return output;

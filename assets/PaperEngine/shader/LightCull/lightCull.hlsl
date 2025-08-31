@@ -137,7 +137,7 @@ void main_cs(
 			float4 lightPosInClipSpace = mul(float4(light.x, light.y, light.z, 1.0), g_globalData.projViewMatrix);
 			float3 ndcCenter = lightPosInClipSpace.xyz / lightPosInClipSpace.w;
 			
-			// ---- clip space radius 近似 ----
+			// ---- ndc space radius 近似 ----
 			// 用三個偏移方向估計半徑在 clip 空間的投影範圍
 			float3 ndcExtent = 0;
 
@@ -155,7 +155,7 @@ void main_cs(
 			float3 lightMin = ndcCenter - ndcExtent;
 			float3 lightMax = ndcCenter + ndcExtent;
 
-			// ---- cluster AABB 已經在 clip space ----
+			// ---- cluster AABB 已經在 ndc space ----
 			bool insideX = (lightMax.x >= clusterAABB.min.x) && (lightMin.x <= clusterAABB.max.x);
 			bool insideY = (lightMax.y >= clusterAABB.min.y) && (lightMin.y <= clusterAABB.max.y);
 			bool insideZ = (lightMax.z >= clusterAABB.min.z) && (lightMin.z <= clusterAABB.max.z);
