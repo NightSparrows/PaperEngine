@@ -1,5 +1,5 @@
 ﻿
-#include "../../../shaders/utils/nvrhi_helper.hlsli"
+#include "../utils/nvrhi_helper.hlsli"
 
 #pragma pack_matrix(row_major)
 
@@ -15,6 +15,7 @@ struct GlobalData
 	
 	float nearPlane;
 	float farPlane;
+
 };
 DECLARE_CONSTANT_BUFFER(GlobalData, g_globalData, 0, 0);
 
