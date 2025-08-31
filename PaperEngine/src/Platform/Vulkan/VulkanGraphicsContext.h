@@ -38,9 +38,11 @@ public:
 			break;
 		case nvrhi::MessageSeverity::Error:
 			PE_CORE_ERROR("[NVRHI] {}", messageText);
+			PE_DEBUGBREAK();
 			break;
 		case nvrhi::MessageSeverity::Fatal:
 			PE_CORE_CRITICAL("[NVRHI] {}", messageText);
+			PE_DEBUGBREAK();
 			break;
 		default:
 			break;

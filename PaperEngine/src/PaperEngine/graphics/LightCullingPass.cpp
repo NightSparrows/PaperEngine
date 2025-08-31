@@ -2,6 +2,8 @@
 #include <PaperEngine/core/Application.h>
 #include <PaperEngine/utils/File.h>
 
+#include <PaperEngine/debug/Instrumentor.h>
+
 namespace PaperEngine {
 
 	void LightCullingPass::init() {
@@ -235,6 +237,7 @@ namespace PaperEngine {
 
 	void LightCullingPass::calculatePass()
 	{
+		PE_PROFILE_FUNCTION();
 		m_numberOfProcessPointLights = m_currentPointLightCount;
 
 		auto& pointLightCullData = m_pointLightCullData;
@@ -252,31 +255,22 @@ namespace PaperEngine {
 		// TODO comput light tiles
 		m_cmd->open();
 
-		m_cmd->commitBarriers();
-
-		//m_cmd->setEnableUavBarriersForBuffer(pointLightCullData.globalCounterBuffer, true);
-		//m_cmd->setEnableUavBarriersForBuffer(pointLightCullData.globalLightIndicesBuffer, true);
-		//m_cmd->setEnableUavBarriersForBuffer(pointLightCullData.clusterRangesBuffer, true);
-
 		nvrhi::ComputeState computeState;
 		computeState.bindings = { pointLightCullData.lightCullBindingSet };
 		computeState.pipeline = m_lightCullPipeline;
 		m_cmd->setComputeState(computeState);
-		m_cmd->setBufferState(m_pointLightBuffer, nvrhi::ResourceStates::ShaderResource);
-		m_cmd->setBufferState(pointLightCullData.globalDataBuffer, nvrhi::ResourceStates::ShaderResource);
+
+		// reset
 		static const uint32_t zeroInt = 0;
 		m_cmd->writeBuffer(pointLightCullData.globalCounterBuffer, &zeroInt, sizeof(uint32_t));
 		m_cmd->clearBufferUInt(pointLightCullData.globalLightIndicesBuffer, 0);
-		m_cmd->setBufferState(pointLightCullData.globalCounterBuffer, nvrhi::ResourceStates::UnorderedAccess);
-		m_cmd->setBufferState(pointLightCullData.globalLightIndicesBuffer, nvrhi::ResourceStates::UnorderedAccess);
-		m_cmd->setBufferState(pointLightCullData.clusterRangesBuffer, nvrhi::ResourceStates::UnorderedAccess);
-		m_cmd->commitBarriers();
+		
 		m_cmd->dispatch(m_numberOfXSlices, m_numberOfYSlices, m_numberOfZSlices);
-		m_cmd->setBufferState(pointLightCullData.globalLightIndicesBuffer, nvrhi::ResourceStates::ShaderResource);
-		m_cmd->setBufferState(pointLightCullData.clusterRangesBuffer, nvrhi::ResourceStates::ShaderResource);
-		m_cmd->commitBarriers();
+
 		m_cmd->close();
 		Application::GetNVRHIDevice()->executeCommandList(m_cmd, nvrhi::CommandQueue::Compute);
+		
+		// 暫時先這樣，他的問題是沒有一個同步機制餵給MeshRenderer，導致噪點發生（Buffer沒有準備好，compute shader還沒執行完，graphics shader就先畫）
 		Application::GetNVRHIDevice()->waitForIdle();
 	}
 

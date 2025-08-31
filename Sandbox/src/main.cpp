@@ -34,9 +34,9 @@ public:
 
 		// 測試Point Light
 		{
-			static std::uniform_real_distribution<float> dist(-250.0f, 250.0f);
+			static std::uniform_real_distribution<float> dist(-500.0f, 500.0f);
 			static std::uniform_real_distribution<float> colorDist(0.5f, 1.0f);
-			for (uint32_t i = 0; i < 500; i++) {
+			for (uint32_t i = 0; i < 5000; i++) {
 				auto pointLightEntity = scene->createEntity("PointLight");
 				auto& transCom = pointLightEntity.getComponent<PaperEngine::TransformComponent>();
 				transCom.transform.setPosition(glm::vec3(dist(gen), dist(gen), dist(gen)));
