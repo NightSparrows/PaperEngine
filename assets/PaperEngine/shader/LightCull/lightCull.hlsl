@@ -6,6 +6,7 @@
 struct GlobalData
 {
 	float4x4 projViewMatrix;
+	float4x4 viewMatrix;
 
 	uint numXSlices;
 	uint numYSlices;

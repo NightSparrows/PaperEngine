@@ -160,11 +160,12 @@ namespace PaperEngine {
 
 	}
 
-	void LightCullingPass::setCamera(const glm::mat4& projViewMatrix, const Frustum& frustum)
+	void LightCullingPass::setCamera(const Camera& camera, const glm::mat4& viewMatrix, const Frustum& frustum)
 	{
 		GlobalData* globalData = static_cast<GlobalData*>(m_pointLightCullData.globalDataBufferPtr);
 
-		globalData->projViewMatrix = projViewMatrix;
+		globalData->projViewMatrix = camera.getProjectionMatrix();
+		globalData->viewMatrix = viewMatrix;
 		m_currentCameraFrustum = frustum;
 	}
 

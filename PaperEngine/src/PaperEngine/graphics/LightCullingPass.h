@@ -3,6 +3,7 @@
 #include <PaperEngine/components/LightComponent.h>
 #include <PaperEngine/utils/Transform.h>
 #include <PaperEngine/utils/BoundingVolume.h>
+#include <PaperEngine/graphics/Camera.h>
 
 #include <nvrhi/nvrhi.h>
 
@@ -40,6 +41,7 @@ namespace PaperEngine {
 		struct GlobalData
 		{
 			glm::mat4 projViewMatrix;
+			glm::mat4 viewMatrix;
 
 			uint32_t numXSlices;
 			uint32_t numYSlices;
@@ -63,7 +65,7 @@ namespace PaperEngine {
 
 		void init();
 
-		void setCamera(const glm::mat4& projViewMatrix, const Frustum& frustum);
+		void setCamera(const Camera& camera, const glm::mat4& viewMatrix, const Frustum& frustum);
 
 		/// <summary>
 		/// 需要先Call這個才能process

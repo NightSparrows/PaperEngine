@@ -80,7 +80,7 @@ namespace PaperEngine {
 #pragma region Filter Renderable Meshes
 
 		Frustum cameraFrustum = Frustum::Extract(globalData.projViewMatrix);
-		m_lightCullPass.setCamera(globalData.projViewMatrix, cameraFrustum);
+		m_lightCullPass.setCamera(*camera, globalData.viewMatrix, cameraFrustum);
 
 		// process mesh
 		for (auto scene : scenes) {
