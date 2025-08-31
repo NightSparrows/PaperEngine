@@ -163,7 +163,8 @@ PS_OUTPUT main_ps(PS_INPUT input)
 		toLightVector /= dist;
 		
 		float NDotL = max(dot(input.normal, toLightVector), 0.0);
-		float attenuation = (1.0 / max(1, dist * dist)) * (1 - pow(dist / light.radius, 4));
+		//float attenuation = (1.0 / max(1, dist * dist)) * (1 - pow(dist / light.radius, 4));
+		float attenuation = 1;
 		float3 diffuse = NDotL * attenuation * float3(light.r, light.g, light.b);
 		
 		totalDiffuse += diffuse;

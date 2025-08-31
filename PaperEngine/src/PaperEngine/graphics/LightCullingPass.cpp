@@ -259,6 +259,7 @@ namespace PaperEngine {
 		computeState.bindings = { pointLightCullData.lightCullBindingSet };
 		computeState.pipeline = m_lightCullPipeline;
 		m_cmd->setComputeState(computeState);
+		m_cmd->setBufferState(m_pointLightBuffer, nvrhi::ResourceStates::ShaderResource);
 		m_cmd->setBufferState(pointLightCullData.globalCounterBuffer, nvrhi::ResourceStates::UnorderedAccess);
 		m_cmd->setBufferState(pointLightCullData.globalLightIndicesBuffer, nvrhi::ResourceStates::UnorderedAccess);
 		m_cmd->setBufferState(pointLightCullData.clusterRangesBuffer, nvrhi::ResourceStates::UnorderedAccess);
