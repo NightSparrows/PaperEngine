@@ -42,6 +42,7 @@ namespace PaperEngine {
 		{
 			glm::mat4 projViewMatrix;
 			glm::mat4 viewMatrix;
+			glm::mat4 inverseProjMatrix;
 
 			uint32_t numXSlices;
 			uint32_t numYSlices;
@@ -51,6 +52,9 @@ namespace PaperEngine {
 
 			float nearPlane;
 			float farPlane;
+
+			uint32_t screenWidth;
+			uint32_t screenHeight;
 		};
 
 		struct ClusterRange

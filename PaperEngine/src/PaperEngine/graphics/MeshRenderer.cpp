@@ -119,6 +119,7 @@ namespace PaperEngine {
 		}
 		m_cmd->close();
 		Application::GetNVRHIDevice()->executeCommandList(m_cmd);
+		Application::GetNVRHIDevice()->waitForIdle();
 
 		m_renderData.clear();
 		m_totalInstanceCount = m_tempInstanceCount;

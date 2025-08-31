@@ -164,8 +164,11 @@ namespace PaperEngine {
 	{
 		GlobalData* globalData = static_cast<GlobalData*>(m_pointLightCullData.globalDataBufferPtr);
 
-		globalData->projViewMatrix = camera.getProjectionMatrix();
+		globalData->projViewMatrix = camera.getProjectionMatrix() * viewMatrix;
 		globalData->viewMatrix = viewMatrix;
+		globalData->inverseProjMatrix = glm::inverse(camera.getProjectionMatrix());
+		globalData->screenWidth = camera.getWidth();
+		globalData->screenHeight = camera.getHeight();
 		m_currentCameraFrustum = frustum;
 	}
 
@@ -235,9 +238,9 @@ namespace PaperEngine {
 		m_numberOfProcessPointLights = m_currentPointLightCount;
 
 		auto& pointLightCullData = m_pointLightCullData;
-	
+
 		//*pointLightCullData.globalCounterBufferPtr = 0;
-		
+
 		GlobalData* globalData = static_cast<GlobalData*>(pointLightCullData.globalDataBufferPtr);
 		globalData->numXSlices = m_numberOfXSlices;
 		globalData->numYSlices = m_numberOfYSlices;
@@ -251,15 +254,19 @@ namespace PaperEngine {
 
 		m_cmd->commitBarriers();
 
-		m_cmd->setEnableUavBarriersForBuffer(pointLightCullData.globalCounterBuffer, true);
-		m_cmd->setEnableUavBarriersForBuffer(pointLightCullData.globalLightIndicesBuffer, true);
-		m_cmd->setEnableUavBarriersForBuffer(pointLightCullData.clusterRangesBuffer, true);
+		//m_cmd->setEnableUavBarriersForBuffer(pointLightCullData.globalCounterBuffer, true);
+		//m_cmd->setEnableUavBarriersForBuffer(pointLightCullData.globalLightIndicesBuffer, true);
+		//m_cmd->setEnableUavBarriersForBuffer(pointLightCullData.clusterRangesBuffer, true);
 
 		nvrhi::ComputeState computeState;
 		computeState.bindings = { pointLightCullData.lightCullBindingSet };
 		computeState.pipeline = m_lightCullPipeline;
 		m_cmd->setComputeState(computeState);
 		m_cmd->setBufferState(m_pointLightBuffer, nvrhi::ResourceStates::ShaderResource);
+		m_cmd->setBufferState(pointLightCullData.globalDataBuffer, nvrhi::ResourceStates::ShaderResource);
+		static const uint32_t zeroInt = 0;
+		m_cmd->writeBuffer(pointLightCullData.globalCounterBuffer, &zeroInt, sizeof(uint32_t));
+		m_cmd->clearBufferUInt(pointLightCullData.globalLightIndicesBuffer, 0);
 		m_cmd->setBufferState(pointLightCullData.globalCounterBuffer, nvrhi::ResourceStates::UnorderedAccess);
 		m_cmd->setBufferState(pointLightCullData.globalLightIndicesBuffer, nvrhi::ResourceStates::UnorderedAccess);
 		m_cmd->setBufferState(pointLightCullData.clusterRangesBuffer, nvrhi::ResourceStates::UnorderedAccess);
@@ -270,7 +277,7 @@ namespace PaperEngine {
 		m_cmd->commitBarriers();
 		m_cmd->close();
 		Application::GetNVRHIDevice()->executeCommandList(m_cmd, nvrhi::CommandQueue::Compute);
-
+		Application::GetNVRHIDevice()->waitForIdle();
 	}
 
 	LightCullingPass::PointLightCullData& LightCullingPass::getPointLightCullData()

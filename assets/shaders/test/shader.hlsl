@@ -11,7 +11,7 @@ struct GlobalData
 	float4x4 view;
 	float4x4 viewProj;
 	float3 cameraPos;
-	float padding0;
+	float padding0;			// 一定要pad
 	uint directionalLightCount;
 	uint pointLightCount;
 	uint spotLightCount;
@@ -145,9 +145,11 @@ PS_OUTPUT main_ps(PS_INPUT input)
 	// NDC z → view space depth (DirectX 0~1)
 	float viewZ = c_nearPlane * c_farPlane / (c_farPlane - ndcPos.z * (c_farPlane - c_nearPlane));
 	// 對數分割 z → clusterZ
-	float slice = log(viewZ / c_nearPlane) / log(c_farPlane / c_nearPlane);
-	uint clusterZ = min(uint(floor(slice * c_numZSlices - 1e-4)), c_numZSlices - 1);
-
+	float slice = log(abs(input.viewPos.z) / c_nearPlane) / log(c_farPlane / c_nearPlane);
+	uint clusterZ = min(uint(floor(slice * c_numZSlices)), c_numZSlices - 1);
+	clusterZ = clamp(clusterZ, 0, c_numZSlices - 1);
+	//uint clusterZ = 0;
+	
 	uint clusterIndex = clusterX + clusterY * c_numXSlices + clusterZ * c_numXSlices * c_numYSlices;
 	ClusterRange range = g_clusterRanges[clusterIndex];
 	for (uint clusterLightIndex = 0; clusterLightIndex < range.count; clusterLightIndex++)
@@ -156,31 +158,36 @@ PS_OUTPUT main_ps(PS_INPUT input)
 		PointLightData light = g_pointLightData[lightIdx];
 		
 		float3 toLightVector = float3(light.x, light.y, light.z) - input.worldPos;
-		float dist = length(toLightVector);
-		if (dist > light.radius)
-			continue;
+		float dist = max(length(toLightVector), 0.0001f);
+
+		float3 lightDir = toLightVector / dist; // let it unit
 		
-		toLightVector /= dist;
-		
-		float NDotL = max(dot(input.normal, toLightVector), 0.0);
+		float NDotL = max(dot(normalize(input.normal), lightDir), 0.0);
 		//float attenuation = (1.0 / max(1, dist * dist)) * (1 - pow(dist / light.radius, 4));
-		float attenuation = 1;
+		float attenuation = saturate(1.0f - (dist / light.radius)); // 線性衰減 0~1
+		attenuation *= attenuation; // 可選二次衰減效果
+		//float attenuation = 1;
 		float3 diffuse = NDotL * attenuation * float3(light.r, light.g, light.b);
 		
 		totalDiffuse += diffuse;
 	}
 	/// End Light calculation
-	
 	output.col = float4(totalDiffuse, 1.0) * texture0.Sample(sampler0, input.uv);
 	
+	
+	// debug
+	//output.col = float4(float(clusterX) / c_numXSlices, float(clusterY) / c_numYSlices, float(clusterZ) / c_numZSlices, 1.0);
+	//float zColor = float(clusterZ) / float(c_numZSlices - 1); // 0~1
+	//output.col = float4(zColor, 0, 1 - zColor, 1.0); // 從藍到紅
+
 	// test
-	//float4 clusterColor = float4(0, 0, float(range.count) / 32, 0.0);
+	//float4 clusterColor = float4(0, 0, float(range.count) * 0.5, 1.0);
 	//if (range.count >= 20)
 	//{
 	//	clusterColor.r = 0.5f;
 	//}
 	
-	//output.col = output.col + clusterColor;
+	//output.col = clusterColor;
 	/// end test
 	
 	return output;
