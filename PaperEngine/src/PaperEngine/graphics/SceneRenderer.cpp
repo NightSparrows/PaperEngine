@@ -87,56 +87,59 @@ namespace PaperEngine {
 		Frustum cameraFrustum = Frustum::Extract(globalData.projViewMatrix);
 		m_lightCullPass.setCamera(*camera, globalData.viewMatrix, cameraFrustum);
 
-		// process mesh
-		for (auto scene : scenes) {
-			
-			// TODO: Light processing
-			// 就是frustum culling point light不在場景裡的不會process
-			// process好後lightCount更新
-			auto lightView = scene->getRegistry().view<TransformComponent, LightComponent>();
-			for (auto [entity, transCom, lightCom] : lightView.each()) {
-				m_lightCullPass.processLight(transCom.transform, lightCom);
-			}
-			
-			auto sceneView = scene->getRegistry().view<
-				TransformComponent,
-				MeshComponent,
-				MeshRendererComponent>();
-			for (auto [entity, transformCom, meshCom, meshRendererCom] : sceneView.each()) {
-				const auto& transform = transformCom.transform;
-				const auto& mesh = meshCom.mesh;
+		{
+			PE_PROFILE_SCOPE("Process scene to renderer");
 
-				// meshRenderer的materials跟subMesh是一對一的
-				PE_CORE_ASSERT(mesh->getSubMeshes().size() == meshRendererCom.materials.size(), "Wired mesh renderer materials doesn't match mesh submeshes");
+			for (auto scene : scenes) {
 
-				// TODO shadowmap mesh processing & culling
-				// 使用culling後的light list cull各個light的mesh list
-
-				// Frustum culling for meshes
-				if (!cameraFrustum.isIntersect(meshCom.worldAABB))
-					continue;
-
-				if (mesh->getType() != MeshType::Static)
-					continue;
-
-				m_forwardPlusDepthRenderer.addEntity(mesh, transform);
-
-				for (uint32_t subMeshIndex = 0; subMeshIndex < mesh->getSubMeshes().size(); subMeshIndex++) {
-					auto material = meshRendererCom.materials[subMeshIndex];
-
-					if (!material || !material->getBindingSet())
-						continue;			// TODO: 改成null material之類的可以顯示
-
-					m_meshRenderer.addEntity(
-						material,
-						mesh,
-						subMeshIndex,
-						transform);
+				// TODO: Light processing
+				// 就是frustum culling point light不在場景裡的不會process
+				// process好後lightCount更新
+				auto lightView = scene->getRegistry().view<TransformComponent, LightComponent>();
+				for (auto [entity, transCom, lightCom] : lightView.each()) {
+					m_lightCullPass.processLight(transCom.transform, lightCom);
 				}
+
+				auto sceneView = scene->getRegistry().view<
+					TransformComponent,
+					MeshComponent,
+					MeshRendererComponent>();
+				for (auto [entity, transformCom, meshCom, meshRendererCom] : sceneView.each()) {
+					const auto& transform = transformCom.transform;
+					const auto& mesh = meshCom.mesh;
+
+					// meshRenderer的materials跟subMesh是一對一的
+					PE_CORE_ASSERT(mesh->getSubMeshes().size() == meshRendererCom.materials.size(), "Wired mesh renderer materials doesn't match mesh submeshes");
+
+					// TODO shadowmap mesh processing & culling
+					// 使用culling後的light list cull各個light的mesh list
+
+					// Frustum culling for meshes
+					if (!cameraFrustum.isIntersect(meshCom.worldAABB))
+						continue;
+
+					if (mesh->getType() != MeshType::Static)
+						continue;
+
+					m_forwardPlusDepthRenderer.addEntity(mesh, transform);
+
+					for (uint32_t subMeshIndex = 0; subMeshIndex < mesh->getSubMeshes().size(); subMeshIndex++) {
+						auto material = meshRendererCom.materials[subMeshIndex];
+
+						if (!material || !material->getBindingSet())
+							continue;			// TODO: 改成null material之類的可以顯示
+
+						m_meshRenderer.addEntity(
+							material,
+							mesh,
+							subMeshIndex,
+							transform);
+					}
+				}
+
+
+				// TODO process skinned meshes
 			}
-
-
-			// TODO process skinned meshes
 		}
 
 #pragma endregion
