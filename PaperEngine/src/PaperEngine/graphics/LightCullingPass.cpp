@@ -172,6 +172,8 @@ namespace PaperEngine {
 		globalData->screenWidth = camera.getWidth();
 		globalData->screenHeight = camera.getHeight();
 		m_currentCameraFrustum = frustum;
+		globalData->nearPlane = camera.getNearPlane();
+		globalData->farPlane = camera.getFarPlane();
 	}
 
 	void LightCullingPass::beginPass()
@@ -238,34 +240,35 @@ namespace PaperEngine {
 	void LightCullingPass::calculatePass()
 	{
 		PE_PROFILE_FUNCTION();
+		// 紀錄一下會compute多少個Point Light
 		m_numberOfProcessPointLights = m_currentPointLightCount;
 
 		auto& pointLightCullData = m_pointLightCullData;
-
-		//*pointLightCullData.globalCounterBufferPtr = 0;
 
 		GlobalData* globalData = static_cast<GlobalData*>(pointLightCullData.globalDataBufferPtr);
 		globalData->numXSlices = m_numberOfXSlices;
 		globalData->numYSlices = m_numberOfYSlices;
 		globalData->numZSlices = m_numberOfZSlices;
 		globalData->pointLightCount = m_currentPointLightCount;
-		globalData->nearPlane = 0.1f;
-		globalData->farPlane = 1000.f;
 
-		// TODO comput light tiles
 		m_cmd->open();
 
 		nvrhi::ComputeState computeState;
+
+		// TODO: calculate Depth min max in each tiles
+
+		// Compute Light Clusters
+#pragma region Compute Light Clusters
 		computeState.bindings = { pointLightCullData.lightCullBindingSet };
 		computeState.pipeline = m_lightCullPipeline;
 		m_cmd->setComputeState(computeState);
 
-		// reset
-		static const uint32_t zeroInt = 0;
-		m_cmd->writeBuffer(pointLightCullData.globalCounterBuffer, &zeroInt, sizeof(uint32_t));
+		// 重置Buffers
+		m_cmd->clearBufferUInt(pointLightCullData.globalCounterBuffer, 0);
 		m_cmd->clearBufferUInt(pointLightCullData.globalLightIndicesBuffer, 0);
-		
+
 		m_cmd->dispatch(m_numberOfXSlices, m_numberOfYSlices, m_numberOfZSlices);
+#pragma endregion
 
 		m_cmd->close();
 		Application::GetNVRHIDevice()->executeCommandList(m_cmd, nvrhi::CommandQueue::Compute);

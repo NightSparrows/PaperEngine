@@ -63,12 +63,17 @@ namespace PaperEngine {
 		// prepare processing
 		m_lightCullPass.beginPass();
 
-		// 
+		// Global Data in GPU Buffer
 		GlobalDataI globalData{};
 		globalData.projectionMatrix = camera->getProjectionMatrix();
 		globalData.viewMatrix = glm::inverse(transform->matrix());
 		globalData.projViewMatrix = globalData.projectionMatrix * globalData.viewMatrix;
 		globalData.cameraPosition = transform->getPosition();
+		globalData.numXSlices = m_lightCullPass.getNumberOfXSlices();
+		globalData.numYSlices = m_lightCullPass.getNumberOfYSlices();
+		globalData.numZSlices = m_lightCullPass.getNumberOfZSlices();
+		globalData.nearPlane = camera->getNearPlane();
+		globalData.farPlane = camera->getFarPlane();
 
 		GlobalSceneData sceneData;
 		sceneData.camera = camera;

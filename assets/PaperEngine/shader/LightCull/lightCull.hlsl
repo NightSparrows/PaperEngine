@@ -115,8 +115,8 @@ void main_cs(
 
 	const uint numberOfThreadInGroup = GROUP_THREAD_SIZE_X * GROUP_THREAD_SIZE_Y * GROUP_THREAD_SIZE_Z;
 	
-	// TODO: 計算這個Cluster的Depth min max值
-	
+	// TODO: 計算這個Cluster的Depth min max值，移到別的compute shader好了
+
 	if (threadIdx == 0) // per cluster
 	{
 		lightCountInCluster = 0;

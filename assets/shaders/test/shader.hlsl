@@ -4,7 +4,9 @@
 
 #pragma pack_matrix(row_major)
 
-
+////////////////////////////////////////////////////////////////////////////////////////////
+/// Begin Global Data (Scene Renderer prepare)
+////////////////////////////////////////////////////////////////////////////////////////////
 struct GlobalData
 {
 	float4x4 proj;
@@ -15,7 +17,11 @@ struct GlobalData
 	uint directionalLightCount;
 	uint pointLightCount;
 	uint spotLightCount;
-	uint _pad1;
+	uint numXSlices;
+	uint numYSlices;
+	uint numZSlices;
+	float nearPlane;
+	float farPlane;
 };
 
 DECLARE_CONSTANT_BUFFER(GlobalData, g_globalData, 0, 0);
@@ -46,8 +52,13 @@ struct ClusterRange
 };
 DECLARE_STRUCTURE_BUFFER_SRV(ClusterRange, g_clusterRanges, 3, 0);
 
+////////////////////////////////////////////////////////////////////////////////////////////
+/// End Global Data
+////////////////////////////////////////////////////////////////////////////////////////////
 
-
+////////////////////////////////////////////////////////////////////////////////////////////
+/// Begin Static Mesh Renderer Data
+////////////////////////////////////////////////////////////////////////////////////////////
 struct EntityData
 {
 	float4x4 trans;
@@ -59,12 +70,19 @@ struct EntityData
 //};
 
 DECLARE_STRUCTURE_BUFFER_SRV(EntityData, g_entityData, 0, 1);
+////////////////////////////////////////////////////////////////////////////////////////////
+/// End Static Mesh Renderer Data
+////////////////////////////////////////////////////////////////////////////////////////////
 
-// 如果是animated
-//DECLARE_STRUCTURE_BUFFER_SRV(BoneTransformation, g_boneTrans, 1, 1);
 
+////////////////////////////////////////////////////////////////////////////////////////////
+/// 你自己Material的data
+////////////////////////////////////////////////////////////////////////////////////////////
 DECLARE_SAMPLER(sampler0, 0, 2);
 DECLARE_TEXTURE2D_SRV(texture0, 0, 2);
+////////////////////////////////////////////////////////////////////////////////////////////
+/// End Custum Shader Data
+////////////////////////////////////////////////////////////////////////////////////////////
 
 struct VS_INPUT
 {
@@ -76,11 +94,13 @@ struct VS_INPUT
 
 struct PS_INPUT
 {
+	// Pixel Shader 的 SV_Position input 為 Screen space
 	float4 pos : SV_Position;
 	float2 uv : TEXCOORD0;
 	float3 normal : NORMAL;
 	float3 worldPos : WORLD_POSITION;
 	float3 viewPos : VIEW_POSITION;
+	float4 clipPos : CLIP_POSITION;
 };
 
 struct PS_OUTPUT
@@ -99,6 +119,7 @@ PS_INPUT main_vs(VS_INPUT input)
 	output.normal = mul(float4(input.normal, 0.0), entityData.trans).xyz;
 	output.worldPos = worldPosition.xyz;
 	output.viewPos = viewPosition.xyz;
+	output.clipPos = output.pos;
 	return output;
 }
 
@@ -126,31 +147,23 @@ PS_OUTPUT main_ps(PS_INPUT input)
 		totalDiffuse += diffuse;
 
 	}
-	
-	const uint c_numXSlices = 32;
-	const uint c_numYSlices = 32;
-	const uint c_numZSlices = 32;
-	const float c_nearPlane = 0.1f;
-	const float c_farPlane = 1000.f;
-	
+
 	// --- Clustered point lights ---
-	float4 clipPos = mul(float4(input.worldPos, 1.0), g_globalData.viewProj);
-	//float4 viewPos = mul(float4(input.worldPos, 1.0), g_globalData.view);
+	float4 clipPos = input.clipPos;
 	float3 ndcPos = clipPos.xyz / clipPos.w;	
 	
-	uint clusterX = clamp(uint(floor((ndcPos.x + 1.0) * 0.5 * c_numXSlices)), 0, c_numXSlices - 1);
-	uint clusterY = clamp(uint(floor((ndcPos.y + 1.0) * 0.5 * c_numYSlices)), 
-	0, c_numYSlices - 1);
+	uint clusterX = clamp(uint(floor((ndcPos.x + 1.0) * 0.5 * g_globalData.numXSlices)), 0, g_globalData.numXSlices - 1);
+	uint clusterY = clamp(uint(floor((ndcPos.y + 1.0) * 0.5 * g_globalData.numYSlices)), 0, g_globalData.numYSlices - 1);
 	
 	// NDC z → view space depth (DirectX 0~1)
-	float viewZ = c_nearPlane * c_farPlane / (c_farPlane - ndcPos.z * (c_farPlane - c_nearPlane));
+	float viewZ = g_globalData.nearPlane * g_globalData.farPlane / (g_globalData.farPlane - ndcPos.z * (g_globalData.farPlane - g_globalData.nearPlane));
 	// 對數分割 z → clusterZ
-	float slice = log(abs(input.viewPos.z) / c_nearPlane) / log(c_farPlane / c_nearPlane);
-	uint clusterZ = min(uint(floor(slice * c_numZSlices)), c_numZSlices - 1);
-	clusterZ = clamp(clusterZ, 0, c_numZSlices - 1);
+	float slice = log(abs(input.viewPos.z) / g_globalData.nearPlane) / log(g_globalData.farPlane / g_globalData.nearPlane);
+	uint clusterZ = min(uint(floor(slice * g_globalData.numZSlices)), g_globalData.numZSlices - 1);
+	clusterZ = clamp(clusterZ, 0, g_globalData.numZSlices - 1);
 	//uint clusterZ = 0;
 	
-	uint clusterIndex = clusterX + clusterY * c_numXSlices + clusterZ * c_numXSlices * c_numYSlices;
+	uint clusterIndex = clusterX + clusterY * g_globalData.numXSlices + clusterZ * g_globalData.numXSlices * g_globalData.numYSlices;
 	ClusterRange range = g_clusterRanges[clusterIndex];
 	for (uint clusterLightIndex = 0; clusterLightIndex < range.count; clusterLightIndex++)
 	{
@@ -173,22 +186,6 @@ PS_OUTPUT main_ps(PS_INPUT input)
 	}
 	/// End Light calculation
 	output.col = float4(totalDiffuse, 1.0) * texture0.Sample(sampler0, input.uv);
-	
-	
-	// debug
-	//output.col = float4(float(clusterX) / c_numXSlices, float(clusterY) / c_numYSlices, float(clusterZ) / c_numZSlices, 1.0);
-	//float zColor = float(clusterZ) / float(c_numZSlices - 1); // 0~1
-	//output.col = float4(zColor, 0, 1 - zColor, 1.0); // 從藍到紅
-
-	// test
-	//float4 clusterColor = float4(0, 0, float(range.count) * 0.5, 1.0);
-	//if (range.count >= 20)
-	//{
-	//	clusterColor.r = 0.5f;
-	//}
-	
-	//output.col = clusterColor;
-	/// end test
-	
+		
 	return output;
 }

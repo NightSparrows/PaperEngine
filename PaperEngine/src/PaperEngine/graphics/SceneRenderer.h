@@ -21,7 +21,11 @@ namespace PaperEngine {
 		uint32_t directionalLightCount = 0;
 		uint32_t pointLightCount = 0;
 		uint32_t spotLightCount = 0;
-		uint32_t _pad1;
+		uint32_t numXSlices;
+		uint32_t numYSlices;
+		uint32_t numZSlices;
+		float nearPlane;
+		float farPlane;
 	};
 
 	/// <summary>

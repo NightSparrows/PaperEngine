@@ -95,6 +95,10 @@ namespace PaperEngine {
 
 		uint32_t getNumberOfProcessPointLights() const { return m_numberOfProcessPointLights; }
 
+		uint32_t getNumberOfXSlices() const { return m_numberOfXSlices; }
+		uint32_t getNumberOfYSlices() const { return m_numberOfYSlices; }
+		uint32_t getNumberOfZSlices() const { return m_numberOfZSlices; }
+
 	private:
 		Frustum m_currentCameraFrustum{};
 
