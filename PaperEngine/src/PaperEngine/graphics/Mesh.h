@@ -2,10 +2,12 @@
 
 #include <vector>
 
+#include <PaperEngine/core/Base.h>
+#include <PaperEngine/utils/BoundingVolume.h>
+
+
 #include <nvrhi/nvrhi.h>
 #include <glm/glm.hpp>
-
-#include <PaperEngine/utils/BoundingVolume.h>
 
 namespace PaperEngine {
 
@@ -107,5 +109,7 @@ namespace PaperEngine {
 		std::vector<SubMeshInfo> m_subMeshes;
 		MeshType m_type = MeshType::Static;
 	};
+
+	typedef Ref<Mesh> MeshHandle;
 
 }

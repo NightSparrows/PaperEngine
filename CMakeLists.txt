@@ -18,3 +18,4 @@ add_subdirectory(vendor)
 
 add_subdirectory(PaperEngine)
 add_subdirectory(Sandbox)
+add_subdirectory(PaperLoader)

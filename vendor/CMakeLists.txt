@@ -71,3 +71,12 @@ if (NOT TARGET stb)
     set_target_properties(stb PROPERTIES FOLDER ${3rdParty_folder}/stb)
 	
 endif()
+
+if (NOT TARGET assimp)
+    option(ASSIMP_BUILD_TESTS "" OFF)
+    option(ASSIMP_INSTALL "" OFF)
+    option(ASSIMP_INSTALL_PDB "" OFF)
+	add_subdirectory(assimp)
+	set_target_properties(assimp PROPERTIES FOLDER ${3rdParty_folder}/assimp)
+	set_target_properties(zlibstatic PROPERTIES FOLDER ${3rdParty_folder}/assimp)
+endif()
