@@ -12,6 +12,9 @@
 #include <PaperEngine/core/Keyboard.h>
 #include <PaperEngine/events/ApplicationEvent.h>
 
+
+#include <PaperLoader/ModelLoader.h>
+
 #include <PaperEngine/loader/TextureLoader.h>
 
 class TestLayer : public PaperEngine::Layer {
@@ -163,27 +166,30 @@ public:
 
 #pragma region Test Entity
 		{
+			auto modelData = PaperEngine::ModelLoader::LoadFromAssimp("assets/test/stall.obj");
+			//auto mesh = PaperEngine::CreateRef<PaperEngine::Mesh>();
+			auto mesh = modelData->mesh;
+
 
 			cmd->open();
-			auto mesh = PaperEngine::CreateRef<PaperEngine::Mesh>();
-			std::vector<PaperEngine::StaticVertex> vertices = {
-				{{-50.f, 50.f, 0}, {0, 0, 1}, {0, 0}},
-				{{-50.f, -50.f, 0}, {0, 0, 1}, {0, 1.0f}},
-				{{50.f, -50.f, 0}, {0, 0, 1}, {1.f, 1.f}},
-				{{50.f, 50.f, 0}, {0, 0, 1}, {1.f, 0}}
-			};
-			std::vector<uint32_t> indices = {
-				0, 1, 3, 3, 1, 2
-			};
-			mesh->loadStaticMesh(cmd, vertices);
-			mesh->loadIndexBuffer(cmd, indices.data(), indices.size());
-			mesh->getSubMeshes().resize(1);
-			mesh->getSubMeshes()[0] = { 0, 6 };
+			//std::vector<PaperEngine::StaticVertex> vertices = {
+			//	{{-50.f, 50.f, 0}, {0, 0, 1}, {0, 0}},
+			//	{{-50.f, -50.f, 0}, {0, 0, 1}, {0, 1.0f}},
+			//	{{50.f, -50.f, 0}, {0, 0, 1}, {1.f, 1.f}},
+			//	{{50.f, 50.f, 0}, {0, 0, 1}, {1.f, 0}}
+			//};
+			//std::vector<uint32_t> indices = {
+			//	0, 1, 3, 3, 1, 2
+			//};
+			//mesh->loadStaticMesh(cmd, vertices);
+			//mesh->loadIndexBuffer(cmd, indices.data(), indices.size());
+			//mesh->getSubMeshes().resize(1);
+			//mesh->getSubMeshes()[0] = { 0, 6 };
 
 			PaperEngine::TextureHandle texture = nullptr;
 #pragma region Load test image
 			{
-				std::ifstream file("assets/test/test.png", std::ios::ate | std::ios::binary);
+				std::ifstream file("assets/test/stallTexture.png", std::ios::ate | std::ios::binary);
 
 				if (file.is_open()) {
 

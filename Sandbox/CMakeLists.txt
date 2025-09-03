@@ -13,6 +13,7 @@ if (MSVC)
 endif()
 
 target_link_libraries(Sandbox PRIVATE PaperEngine)
+target_link_libraries(Sandbox PRIVATE PaperLoader)
 
 # Group the files in Visual Studio based on folder structure
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SANDBOX_SOURCES})

@@ -18,8 +18,8 @@ namespace PaperEngine {
 	};
 
 	struct SkeletalVertexInfo {
-		glm::ivec4 boneIndices; // ivec4 boneIndices
-		glm::vec4 boneWeights; // vec4 boneWeights
+		glm::ivec4 boneIndices = glm::ivec4(0); // ivec4 boneIndices
+		glm::vec4 boneWeights = glm::vec4(0); // vec4 boneWeights
 	};
 
 	enum class MeshType {
@@ -51,6 +51,7 @@ namespace PaperEngine {
 		struct SubMeshInfo {
 			uint32_t indicesOffset = 0;
 			uint32_t indicesCount = 0;
+			uint32_t materialIndex = 0;			// 這個subMesh使用什麼material
 		};
 
 		// 編輯Mesh的Submesh

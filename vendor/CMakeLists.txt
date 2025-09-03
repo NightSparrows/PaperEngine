@@ -34,6 +34,7 @@ if (NOT TARGET glm)
 endif()
 
 if (NOT TARGET vk-bootstrap)
+    option(VK_BOOTSTRAP_INSTALL "" OFF)
 		
 	add_subdirectory(vk-bootstrap)
 	set_target_properties(vk-bootstrap PROPERTIES FOLDER ${3rdParty_folder}/vk-bootstrap)

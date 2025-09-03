@@ -8,3 +8,7 @@ A loader that load models or other stuff, transfer it to the engine format
 <p align="center"> 
     <img src="picture/previewImage.png" alt="Preview Image">
 </p>
+
+# Requirements
+Vulkan SDK
+CMake

@@ -46,6 +46,12 @@ namespace PaperEngine {
 	public:
 		PE_API Material(Ref<GraphicsPipeline> graphicsPipeline);
 
+		/// <summary>
+		/// 設定一個參數在Variable buffer的offset
+		/// </summary>
+		/// <param name="name"></param>
+		/// <param name="offset"></param>
+		/// <returns></returns>
 		PE_API void setOffset(const std::string& name, uint32_t offset);
 
 		PE_API void setSlot(const std::string& name, uint32_t slotIndex);

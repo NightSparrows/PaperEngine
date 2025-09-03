@@ -186,6 +186,7 @@ PS_OUTPUT main_ps(PS_INPUT input)
 	}
 	/// End Light calculation
 	output.col = float4(totalDiffuse, 1.0) * texture0.Sample(sampler0, input.uv);
+	//output.col = float4(totalDiffuse, 1.0) * float4(1, 1, 0, 1);
 		
 	return output;
 }

@@ -13,6 +13,8 @@ if (MSVC)
 endif()
 
 add_library(PaperLoader STATIC ${PAPER_LOADER_SOURCES})
+target_include_directories(PaperLoader PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
 
 set_target_properties(PaperLoader PROPERTIES FOLDER PaperEngine)
 # Group the files in Visual Studio based on folder structure
