@@ -59,6 +59,9 @@ namespace PaperEngine {
 
 		PE_CORE_ASSERT(m_handle, "Failed to create GLFW window!");
 
+		// get actual size
+		glfwGetWindowSize(m_handle, (int*)&m_data.width, (int*)&m_data.height);
+
 #ifdef PE_PLATFORM_WINDOWS
 		//SetWindowLongPtr(glfwGetWin32Window(m_handle), GWL_STYLE, GetWindowLongPtrA(glfwGetWin32Window(m_handle), GWL_STYLE) & ~(WS_MAXIMIZEBOX | WS_MINIMIZEBOX));
 		auto style = GetWindowLongPtrA(glfwGetWin32Window(m_handle), GWL_STYLE);
