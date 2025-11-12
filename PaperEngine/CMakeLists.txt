@@ -45,8 +45,13 @@ target_include_directories(PaperEngine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(PaperEngine PRIVATE ${Vulkan_LIBRARY})
 
 # include glfw
-target_link_libraries(PaperEngine PRIVATE glfw)
-target_include_directories(PaperEngine PRIVATE ${glfw_SOURCE_DIR}/include)
+if (PAPER_ENGINE_WINDOW_VENDOR STREQUAL "GLFW")
+	target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
+	target_include_directories(${PROJECT_NAME} PRIVATE ${glfw_SOURCE_DIR}/include)
+endif()
+
+# include sdl
+target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
 
 # include spdlog
 target_link_libraries(PaperEngine PUBLIC spdlog::spdlog)
@@ -100,11 +105,11 @@ endif()
 
 
 # copying dll to project
-if (PAPER_ENGINE_BUILD_SHARED)
-	add_custom_command(TARGET PaperEngine POST_BUILD
-	  COMMAND ${CMAKE_COMMAND} -E copy_if_different
-	  $<TARGET_RUNTIME_DLLS:Sandbox> 
-	  $<TARGET_FILE_DIR:Sandbox>
-	  COMMAND_EXPAND_LISTS
-	  )
-endif()
+# if (PAPER_ENGINE_BUILD_SHARED)
+	# add_custom_command(TARGET PaperEngine POST_BUILD
+	  # COMMAND ${CMAKE_COMMAND} -E copy_if_different
+	  # $<TARGET_RUNTIME_DLLS:Sandbox> 
+	  # $<TARGET_FILE_DIR:Sandbox>
+	  # COMMAND_EXPAND_LISTS
+	  # )
+# endif()

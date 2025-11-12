@@ -88,7 +88,8 @@ namespace PaperEngine {
 
 	void VulkanGraphicsContext::init()
 	{
-		PE_CORE_ASSERT(glfwVulkanSupported(), "GLFW is not support vulkan");
+		//PE_CORE_ASSERT(glfwVulkanSupported(), "GLFW is not support vulkan");
+
 
 		std::vector<const char*> instanceExtensions = {
 			VK_KHR_SURFACE_EXTENSION_NAME,
