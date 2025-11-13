@@ -130,6 +130,8 @@ namespace PaperEngine {
 
 		// command buffer
 		nvrhi::CommandListHandle m_cmd;
+
+		nvrhi::EventQueryHandle m_computeQuery;
 	};
 
 }

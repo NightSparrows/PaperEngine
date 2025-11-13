@@ -11,6 +11,8 @@ namespace PaperEngine {
 		cmdParams.setQueueType(nvrhi::CommandQueue::Compute);
 		m_cmd = Application::GetNVRHIDevice()->createCommandList(cmdParams);
 
+		m_computeQuery = Application::GetNVRHIDevice()->createEventQuery();
+
 		{
 			nvrhi::BufferDesc bufferDesc;
 			bufferDesc
@@ -271,10 +273,13 @@ namespace PaperEngine {
 #pragma endregion
 
 		m_cmd->close();
+		Application::GetNVRHIDevice()->resetEventQuery(m_computeQuery);
 		Application::GetNVRHIDevice()->executeCommandList(m_cmd, nvrhi::CommandQueue::Compute);
-		
-		// 暫時先這樣，他的問題是沒有一個同步機制餵給MeshRenderer，導致噪點發生（Buffer沒有準備好，compute shader還沒執行完，graphics shader就先畫）
-		Application::GetNVRHIDevice()->waitForIdle();
+
+#pragma region 同步機制，確保這個compute執行完畢
+		Application::GetNVRHIDevice()->setEventQuery(m_computeQuery, nvrhi::CommandQueue::Compute);
+		Application::GetNVRHIDevice()->waitEventQuery(m_computeQuery);
+#pragma endregion
 	}
 
 	LightCullingPass::PointLightCullData& LightCullingPass::getPointLightCullData()
