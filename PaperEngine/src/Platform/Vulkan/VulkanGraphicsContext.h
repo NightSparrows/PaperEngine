@@ -60,13 +60,13 @@ namespace PaperEngine {
 		vkb::Swapchain vkbSwapchain;
 
 		VkQueue graphicsQueue = VK_NULL_HANDLE;
-		uint32_t graphicsQueueIndex = -1;
+		uint32_t graphicsQueueIndex = UINT32_MAX;
 
 		VkQueue computeQueue = VK_NULL_HANDLE;
-		uint32_t computeQueueIndex = -1;
+		uint32_t computeQueueIndex = UINT32_MAX;
 
 		VkQueue transferQueue = VK_NULL_HANDLE;
-		uint32_t transferQueueIndex = -1;
+		uint32_t transferQueueIndex = UINT32_MAX;
 
 		nvrhi::DeviceHandle device;
 #ifdef PE_DEBUG

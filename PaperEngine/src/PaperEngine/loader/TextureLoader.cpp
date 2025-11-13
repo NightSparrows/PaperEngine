@@ -16,7 +16,7 @@ namespace PaperEngine {
 
         if (stbi_info_from_memory(
             static_cast<const stbi_uc*>(data), 
-            size, 
+            static_cast<int>(size), 
             &width, 
             &height, 
             &originalChannels) == 0) {

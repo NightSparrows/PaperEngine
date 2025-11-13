@@ -43,7 +43,7 @@ static VKAPI_ATTR VkBool32 VulkanDebugCallback(
 	VkDebugUtilsMessageSeverityFlagBitsEXT severity,
 	VkDebugUtilsMessageTypeFlagsEXT type,
 	const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-	void* pUserData
+	void* /*pUserData*/
 ) {
 	switch (severity)
 	{
@@ -450,7 +450,7 @@ namespace PaperEngine {
 		vkDeviceWaitIdle(m_instance.vkbDevice.device);
 
 		if (!m_instance.imageAvailableFences.empty()) {
-			vkResetFences(m_instance.vkbDevice, m_instance.imageAvailableFences.size(), m_instance.imageAvailableFences.data());
+			vkResetFences(m_instance.vkbDevice, static_cast<uint32_t>(m_instance.imageAvailableFences.size()), m_instance.imageAvailableFences.data());
 		}
 
 		m_instance.swapchainTextures.clear();

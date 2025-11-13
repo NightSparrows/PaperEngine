@@ -9,40 +9,41 @@ file(GLOB_RECURSE PAPER_ENGINE_SOURCES src/*.cpp src/*.h)
 
 if (MSVC)
 	# parallel compiling
-    add_compile_options(/MP)
-	
+    add_compile_options(/MP /W4 /permissive- /Zc:preprocessor /bigobj)
+else()
+    add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 endif()
 # target
 if (PAPER_ENGINE_BUILD_SHARED)
-    add_library(PaperEngine SHARED ${PAPER_ENGINE_SOURCES})
-    target_compile_definitions(PaperEngine PRIVATE PE_BUILD_SHARED)
+    add_library(${PROJECT_NAME} SHARED ${PAPER_ENGINE_SOURCES})
+    target_compile_definitions(${PROJECT_NAME} PRIVATE PE_BUILD_SHARED)
 else()
-    add_library(PaperEngine STATIC ${PAPER_ENGINE_SOURCES})
-    target_compile_definitions(PaperEngine PUBLIC PE_BUILD_STATIC)
+    add_library(${PROJECT_NAME} STATIC ${PAPER_ENGINE_SOURCES})
+    target_compile_definitions(${PROJECT_NAME} PUBLIC PE_BUILD_STATIC)
 endif()
 
 
-set_target_properties(PaperEngine PROPERTIES FOLDER PaperEngine)
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER PaperEngine)
 
 # enable profiling or not
 if (PAPER_ENGINE_PROFILING)
-	target_compile_definitions(PaperEngine PUBLIC PE_PROFILE)
+	target_compile_definitions(${PROJECT_NAME} PUBLIC PE_PROFILE)
 endif()
 
 # define for engine building
-target_compile_definitions(PaperEngine PRIVATE PE_BUILD_ITSELF)
+target_compile_definitions(${PROJECT_NAME} PRIVATE PE_BUILD_ITSELF)
 
 # define debug
-target_compile_definitions(PaperEngine PRIVATE "$<$<CONFIG:Debug>:PE_DEBUG>")
-target_compile_definitions(PaperEngine PRIVATE "$<$<CONFIG:Release>:PE_DIST>")
+target_compile_definitions(${PROJECT_NAME} PRIVATE "$<$<CONFIG:Debug>:PE_DEBUG>")
+target_compile_definitions(${PROJECT_NAME} PRIVATE "$<$<CONFIG:Release>:PE_DIST>")
 
 # Group the files in Visual Studio based on folder structure
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${PAPER_ENGINE_SOURCES})
 
-target_include_directories(PaperEngine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # include vulkan
-target_link_libraries(PaperEngine PRIVATE ${Vulkan_LIBRARY})
+target_link_libraries(${PROJECT_NAME} PRIVATE ${Vulkan_LIBRARY})
 
 # include glfw
 if (PAPER_ENGINE_WINDOW_VENDOR STREQUAL "GLFW")
@@ -54,14 +55,13 @@ endif()
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
 
 # include spdlog
-target_link_libraries(PaperEngine PUBLIC spdlog::spdlog)
+target_link_libraries(${PROJECT_NAME} PUBLIC spdlog::spdlog_header_only)
 
 # include glm
-target_link_libraries(PaperEngine PUBLIC glm::glm)
+target_link_libraries(${PROJECT_NAME} PUBLIC glm::glm-header-only)
 
 # include imgui
-target_link_libraries(PaperEngine PUBLIC imgui)
-#target_include_directories(PaperEngine PUBLIC ${imgui_SOURCE_DIR})
+target_link_libraries(${PROJECT_NAME} PUBLIC imgui)
 
 # include imguizmo
 # set(IMGUIZMO_SRC_DIR vendor/ImGuizmo)
@@ -69,18 +69,18 @@ target_link_libraries(PaperEngine PUBLIC imgui)
 
 # include entt
 # target_include_directories(PaperEngine PUBLIC ${entt_SOURCE_DIR}/src)
-target_link_libraries(PaperEngine PUBLIC EnTT)
+target_link_libraries(${PROJECT_NAME} PUBLIC EnTT)
 
 # include nvrhi
-target_link_libraries(PaperEngine PUBLIC nvrhi)
-target_link_libraries(PaperEngine PUBLIC nvrhi_vk)
-target_include_directories(PaperEngine PUBLIC ${nvrhi_SOURCE_DIR}/include)
+target_link_libraries(${PROJECT_NAME} PUBLIC nvrhi)
+target_link_libraries(${PROJECT_NAME} PUBLIC nvrhi_vk)
+target_include_directories(${PROJECT_NAME} PUBLIC ${nvrhi_SOURCE_DIR}/include)
 
 # include vk-bootstrap
-target_link_libraries(PaperEngine PUBLIC vk-bootstrap::vk-bootstrap)
+target_link_libraries(${PROJECT_NAME} PUBLIC vk-bootstrap::vk-bootstrap)
 
 # include stb
-target_link_libraries(PaperEngine PUBLIC stb)
+target_link_libraries(${PROJECT_NAME} PUBLIC stb)
 
 
 # include yaml
@@ -97,10 +97,10 @@ target_link_libraries(PaperEngine PUBLIC stb)
 #)
 
 if (WIN32)
-	target_link_libraries(PaperEngine PRIVATE "Ws2_32.lib")
-	target_link_libraries(PaperEngine PRIVATE "Winmm.lib")
-	target_link_libraries(PaperEngine PRIVATE "Version.lib")
-	target_link_libraries(PaperEngine PRIVATE "Bcrypt.lib")
+	target_link_libraries(${PROJECT_NAME} PRIVATE "Ws2_32.lib")
+	target_link_libraries(${PROJECT_NAME} PRIVATE "Winmm.lib")
+	target_link_libraries(${PROJECT_NAME} PRIVATE "Version.lib")
+	target_link_libraries(${PROJECT_NAME} PRIVATE "Bcrypt.lib")
 endif()
 
 

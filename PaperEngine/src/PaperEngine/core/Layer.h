@@ -20,7 +20,7 @@ namespace PaperEngine {
 		/// Logic update, not rendering.
 		/// </summary>
 		/// <param name="deltaTime"></param>
-		virtual void onUpdate(Timestep deltaTime) {}
+		virtual void onUpdate(Timestep) {}
 
 		/// <summary>
 		/// 用於可以直接在該frame渲染的東西
@@ -33,7 +33,7 @@ namespace PaperEngine {
 		/// 可以寫入swapchainImage的渲染。
 		/// 其framebuffer只有swapchain image和一個depth buffer
 		/// </summary>
-		virtual void onFinalRender(nvrhi::IFramebuffer* framebuffer) {}
+		virtual void onFinalRender(nvrhi::IFramebuffer*) {}
 
 		/// <summary>
 		/// I/O等事件處理。
