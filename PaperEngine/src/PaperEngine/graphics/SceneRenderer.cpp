@@ -90,9 +90,10 @@ namespace PaperEngine {
 		{
 			PE_PROFILE_SCOPE("Process scene to renderer");
 
+			// Process every scene
 			for (auto scene : scenes) {
 
-				// TODO: Light processing
+				// Light processing
 				// 就是frustum culling point light不在場景裡的不會process
 				// process好後lightCount更新
 				auto lightView = scene->getRegistry().view<TransformComponent, LightComponent>();
@@ -159,9 +160,9 @@ namespace PaperEngine {
 
 		// Render PreDepth Pass
 		m_forwardPlusDepthRenderer.renderScene(sceneData);
+		// compute light tiles using the filtered lights and (TODO predepth texture)
 		m_lightCullPass.calculatePass();
 
-		// TODO compute light tiles using the filtered lights and predepth texture
 
 		// TODO render shadow maps that are visible in camera viewport
 
@@ -169,7 +170,11 @@ namespace PaperEngine {
 
 		// TODO post processing
 
+		// TODO wait for 3d finish rendering (becuase NVRHI doesn't have the command buffer hazal between command buffers
+		// in GPU sides only having the cpu-gpu block api
+
 		// TODO 2d stuff rendering
+		//Application::GetNVRHIDevice()->waitForIdle();
 	}
 
 	void SceneRenderer::onBackBufferResized() {
