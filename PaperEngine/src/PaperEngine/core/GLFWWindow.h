@@ -40,6 +40,18 @@ namespace PaperEngine {
 
 		void* getNativeWindow() override { return static_cast<void*>(m_handle); }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="instance_ptr">
+        /// VkInstance
+        /// </param>
+        /// <param name="surface_ptr">
+        /// VkSurfaceKHR*
+        /// </param>
+        /// <returns></returns>
+        bool createSurface(void* instance_ptr, void* surface_ptr) override;
+
     private:
 		static uint32_t s_windowCount;
 

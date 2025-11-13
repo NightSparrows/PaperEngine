@@ -130,11 +130,8 @@ namespace PaperEngine {
 
 #pragma region Surface Creation
 		{
-			if (glfwCreateWindowSurface(
-				m_instance.vkbInstance.instance, 
-				static_cast<GLFWwindow*>(m_window->getNativeWindow()),
-				nullptr, 
-				&m_instance.surface) != VK_SUCCESS) {
+			if (!m_window->createSurface(m_instance.vkbInstance.instance, &m_instance.surface))
+			{
 				// TODO FATAL
 				PE_CORE_ERROR("[Vulkan] Failed to create window surface");
 				return;

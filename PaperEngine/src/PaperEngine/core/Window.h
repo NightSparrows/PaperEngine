@@ -49,6 +49,8 @@ namespace PaperEngine {
 
 		virtual void* getNativeWindow() = 0;
 
+		virtual bool createSurface(void* instance_ptr, void* surface_ptr) = 0;
+
 		virtual uint32_t getWidth() const = 0;
 		virtual uint32_t getHeight() const = 0;
 

@@ -249,4 +249,9 @@ namespace PaperEngine {
 		m_data.eventCallback = callback;
 	}
 
+	bool GLFWWindow::createSurface(void* instance_ptr, void* surface_ptr)
+	{
+		return glfwCreateWindowSurface(static_cast<VkInstance>(instance_ptr), m_handle, nullptr, static_cast<VkSurfaceKHR*>(surface_ptr)) == VK_SUCCESS;
+	}
+
 }
