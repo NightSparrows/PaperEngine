@@ -32,6 +32,21 @@ namespace PaperEngine {
 	/// 基本上用在場景裡的Camera
 	/// 也能用在editor的虛擬Camera
 	/// 使用Forward Plus Renderer
+	/// 
+	/// Process scenes (Not rendering)
+	///		culling and process the light for the light culling pass
+	///		culling and process the scene entities
+	/// 
+	/// rendering start
+	/// clearing framebuffers
+	/// 
+	/// rendering preDepth pass
+	/// 
+	/// calculate lights culling pass
+	/// 
+	/// renderers that use the light culling data for rendering
+	/// 
+	/// 
 	/// </summary>
 	class SceneRenderer {
 	public:

@@ -170,6 +170,8 @@ PS_OUTPUT main_ps(PS_INPUT input)
 		uint lightIdx = g_globalLightIndices[range.offset + clusterLightIndex];
 		PointLightData light = g_pointLightData[lightIdx];
 		
+		// -----------------------------------------------------------------------------
+		/// Modify this section for custom point light Lighting calculation
 		float3 toLightVector = float3(light.x, light.y, light.z) - input.worldPos;
 		float dist = max(length(toLightVector), 0.0001f);
 
@@ -183,6 +185,9 @@ PS_OUTPUT main_ps(PS_INPUT input)
 		float3 diffuse = NDotL * attenuation * float3(light.r, light.g, light.b);
 		
 		totalDiffuse += diffuse;
+		
+		/// End Lighting calculation
+		// -----------------------------------------------------------------------------
 	}
 	/// End Light calculation
 	output.col = float4(totalDiffuse, 1.0) * texture0.Sample(sampler0, input.uv);
