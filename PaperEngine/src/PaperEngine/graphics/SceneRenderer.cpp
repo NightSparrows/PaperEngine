@@ -20,6 +20,7 @@ namespace PaperEngine {
 	{
 		m_lightCullPass.init();
 
+		m_sceneRenderQuery = Application::GetNVRHIDevice()->createEventQuery();
 		m_cmd = Application::GetNVRHIDevice()->createCommandList();
 
 		// 全域data (constantBuffer Slot 0 : set = 0)
@@ -163,7 +164,7 @@ namespace PaperEngine {
 		// compute light tiles using the filtered lights and (TODO predepth texture)
 		m_lightCullPass.calculatePass();
 
-
+		Application::GetNVRHIDevice()->resetEventQuery(m_sceneRenderQuery);
 		// TODO render shadow maps that are visible in camera viewport
 
 		m_meshRenderer.renderScene(sceneData);
@@ -172,8 +173,11 @@ namespace PaperEngine {
 
 		// TODO wait for 3d finish rendering (becuase NVRHI doesn't have the command buffer hazal between command buffers
 		// in GPU sides only having the cpu-gpu block api
+		Application::GetNVRHIDevice()->setEventQuery(m_sceneRenderQuery, nvrhi::CommandQueue::Graphics);
+		Application::GetNVRHIDevice()->waitEventQuery(m_sceneRenderQuery);
 
 		// TODO 2d stuff rendering
+		
 		//Application::GetNVRHIDevice()->waitForIdle();
 	}
 

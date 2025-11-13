@@ -83,6 +83,9 @@ namespace PaperEngine {
 		MeshRenderer m_meshRenderer;
 		ForwardPlusDepthRenderer m_forwardPlusDepthRenderer;
 		LightCullingPass m_lightCullPass;
+
+		// 等待整個場景render完的sync
+		nvrhi::EventQueryHandle m_sceneRenderQuery;
 	};
 
 }
