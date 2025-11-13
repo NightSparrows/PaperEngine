@@ -90,7 +90,6 @@ namespace PaperEngine {
 	{
 		//PE_CORE_ASSERT(glfwVulkanSupported(), "GLFW is not support vulkan");
 
-
 		std::vector<const char*> instanceExtensions = {
 			VK_KHR_SURFACE_EXTENSION_NAME,
 #if defined (_WIN32)
@@ -99,8 +98,7 @@ namespace PaperEngine {
 			"VK_KHR_xcb_surface",
 #endif
 #ifdef PE_DEBUG
-			VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
-			VK_EXT_DEBUG_REPORT_EXTENSION_NAME
+			VK_EXT_DEBUG_UTILS_EXTENSION_NAME
 #endif
 		};
 
