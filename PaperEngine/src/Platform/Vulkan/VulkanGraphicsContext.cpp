@@ -5,8 +5,6 @@
 #include <PaperEngine/core/Assert.h>
 #include <PaperEngine/core/Logger.h>
 
-#include <PaperEngine/core/GLFWWindow.h>
-
 #include "VulkanGraphicsContext.h"
 
 #ifdef PE_DEBUG
