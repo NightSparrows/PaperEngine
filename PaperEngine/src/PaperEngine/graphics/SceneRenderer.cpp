@@ -16,7 +16,8 @@
 
 namespace PaperEngine {
 
-	SceneRenderer::SceneRenderer()
+	SceneRenderer::SceneRenderer() :
+		m_threadPool(8)
 	{
 		m_lightCullPass.init();
 
@@ -168,7 +169,7 @@ namespace PaperEngine {
 					{
 						// single thread processing (for reference)
 
-						scene_group.each([&](auto, auto& transformCom, auto& meshCom, auto& meshRendererCom)
+						scene_group.each([&](auto, auto& meshCom, auto& transformCom, auto& meshRendererCom)
 							{
 								const auto mesh = meshCom.mesh;
 								const auto& transform = transformCom.transform;
