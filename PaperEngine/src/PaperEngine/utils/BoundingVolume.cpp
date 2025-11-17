@@ -60,7 +60,7 @@ namespace PaperEngine
         return true;
     }
 
-    bool Frustum::isIntersect(const BoundingVolume& other)
+    bool Frustum::isIntersect(const BoundingVolume& other) const
     {
         if (auto o = dynamic_cast<const AABB*>(&other))
             return Intersect(*this, *o);
@@ -69,12 +69,12 @@ namespace PaperEngine
     }
 
 
-    bool AABB::isIntersect(const BoundingVolume&)
+    bool AABB::isIntersect(const BoundingVolume&)  const
     {
         return false;
     }
 
-    bool BoundingSphere::isIntersect(const BoundingVolume& other)
+    bool BoundingSphere::isIntersect(const BoundingVolume& other)  const
     {
         if (auto o = dynamic_cast<const Frustum*>(&other))
             return Intersect(*o, *this);

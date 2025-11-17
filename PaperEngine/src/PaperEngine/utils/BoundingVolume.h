@@ -8,7 +8,7 @@ namespace PaperEngine {
 
 	struct BoundingVolume
 	{
-		virtual bool isIntersect(const BoundingVolume&) = 0;
+		virtual bool isIntersect(const BoundingVolume&) const = 0;
 	};
 
     struct Frustum : public BoundingVolume {
@@ -16,7 +16,7 @@ namespace PaperEngine {
 
         static Frustum Extract(const glm::mat4& viewProj);
 
-        PE_API bool isIntersect(const BoundingVolume&);
+        PE_API bool isIntersect(const BoundingVolume&) const;
     };
 
     struct BoundingSphere : public BoundingVolume
@@ -24,7 +24,7 @@ namespace PaperEngine {
         BoundingSphere(const glm::vec3& pos, float r) :
             position(pos), radius(r) { }
 
-        PE_API bool isIntersect(const BoundingVolume&) override;
+        PE_API bool isIntersect(const BoundingVolume&) const override;
 
         glm::vec3 position;
         float radius;
@@ -39,7 +39,7 @@ namespace PaperEngine {
         }
 
 
-        PE_API bool isIntersect(const BoundingVolume&) override;
+        PE_API bool isIntersect(const BoundingVolume&) const override;
 
         AABB transformed(const glm::mat4& transform) const
         {

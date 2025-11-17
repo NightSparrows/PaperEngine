@@ -56,7 +56,7 @@ namespace PaperEngine {
 			uint32_t subMeshIndex,
 			const Transform& transform);
 
-		void processScene(Ref<Scene> scene) override;
+		void processScene(Ref<Scene> scene, const Frustum& frustum) override;
 
 		// 不對 應該改成process mesh entity之類的
 		// 因為需要先使用scene renderer做 culling，不用畫的不會被process

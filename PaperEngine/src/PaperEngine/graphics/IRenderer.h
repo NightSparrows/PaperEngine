@@ -6,6 +6,7 @@
 
 #include <PaperEngine/scene/Scene.h>
 #include <PaperEngine/graphics/Camera.h>
+#include <PaperEngine/utils/BoundingVolume.h>
 #include <PaperEngine/utils/Transform.h>
 
 namespace PaperEngine {
@@ -21,7 +22,7 @@ namespace PaperEngine {
 	class IRenderer {
 	public:
 
-		virtual void processScene(Ref<Scene> scene) {};
+		virtual void processScene(Ref<Scene> scene, const Frustum& frustum) {};
 
 		virtual void renderScene(const GlobalSceneData& globalData) = 0;
 

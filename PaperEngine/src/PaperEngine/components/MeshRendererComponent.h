@@ -11,6 +11,7 @@ namespace PaperEngine {
 	/// </summary>
 	struct MeshRendererComponent {
 		bool visible = true;
+		bool renderStatic = true;
 		std::vector<Ref<Material>> materials;
 	};
 
