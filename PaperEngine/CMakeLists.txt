@@ -9,7 +9,7 @@ file(GLOB_RECURSE PAPER_ENGINE_SOURCES src/*.cpp src/*.h)
 
 if (MSVC)
 	# parallel compiling
-    add_compile_options(/MP /W4 /permissive- /Zc:preprocessor /bigobj)
+    add_compile_options(/MP)
 else()
     add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 endif()
