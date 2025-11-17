@@ -18,7 +18,7 @@ namespace PaperEngine {
 
 		nvrhi::BufferDesc instanceBufferDesc;
 		instanceBufferDesc
-			.setByteSize(sizeof(InstanceData) * 10000)
+			.setByteSize(sizeof(InstanceData) * 100000)
 			.setIsConstantBuffer(true)
 			.setKeepInitialState(true)
 			.setStructStride(sizeof(InstanceData))
@@ -50,6 +50,7 @@ namespace PaperEngine {
 
 	void MeshRenderer::addEntity(Ref<Material> material, Ref<Mesh> mesh, uint32_t subMeshIndex, const Transform& transform)
 	{
+		std::lock_guard<std::mutex> lock(m_add_entity_mutex);
 		auto& materialList = m_renderData[material->getGraphicsPipeline()].materialList;
 		auto& meshList = materialList[material].meshList;
 		auto& subMeshList = meshList[mesh].subMeshList;

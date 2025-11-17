@@ -82,6 +82,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC vk-bootstrap::vk-bootstrap)
 # include stb
 target_link_libraries(${PROJECT_NAME} PUBLIC stb)
 
+target_link_libraries(${PROJECT_NAME} PUBLIC dp::thread-pool)
 
 # include yaml
 # target_link_libraries(PaperEngine PRIVATE yaml-cpp)

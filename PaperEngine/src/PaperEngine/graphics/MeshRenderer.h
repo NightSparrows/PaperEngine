@@ -72,6 +72,7 @@ namespace PaperEngine {
 
 	private:
 
+		std::mutex m_add_entity_mutex;
 		std::unordered_map<Ref<GraphicsPipeline>, ShaderData> m_renderData;
 
 		// 紀錄renderer 的renderer情況

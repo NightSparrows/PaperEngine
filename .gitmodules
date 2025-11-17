@@ -25,3 +25,9 @@
 [submodule "vendor/assimp"]
 	path = vendor/assimp
 	url = https://github.com/assimp/assimp
+[submodule "vendor/thread-pool"]
+	path = vendor/thread-pool
+	url = https://github.com/DeveloperPaul123/thread-pool
+[submodule "vendor/SDL"]
+	path = vendor/SDL
+	url = https://github.com/libsdl-org/SDL

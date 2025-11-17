@@ -102,43 +102,107 @@ namespace PaperEngine {
 					m_lightCullPass.processLight(transCom.transform, lightCom);
 				}
 
-				auto sceneView = scene->getRegistry().view<
-					TransformComponent,
-					MeshComponent,
-					MeshRendererComponent>();
-				for (auto [entity, transformCom, meshCom, meshRendererCom] : sceneView.each()) {
-					const auto& transform = transformCom.transform;
-					const auto& mesh = meshCom.mesh;
+				{
+					PE_PROFILE_SCOPE("Mesh renderer processing");
 
-					// meshRenderer的materials跟subMesh是一對一的
-					PE_CORE_ASSERT(mesh->getSubMeshes().size() == meshRendererCom.materials.size(), "Wired mesh renderer materials doesn't match mesh submeshes");
+					const auto scene_group = scene->getRegistry().group<MeshComponent>(entt::get<TransformComponent, MeshRendererComponent>);
+#define SCENE_RENDERER_USE_MULTITHREADING
+#ifdef SCENE_RENDERER_USE_MULTITHREADING
 
-					// TODO shadowmap mesh processing & culling
-					// 使用culling後的light list cull各個light的mesh list
+					{
+						// Multithreaded processing
+						auto group_start = scene_group.begin();
+						auto group_end = scene_group.end();
 
-					// Frustum culling for meshes
-					if (!cameraFrustum.isIntersect(meshCom.worldAABB))
-						continue;
+						size_t thread_count = std::thread::hardware_concurrency();
+						size_t chunk_size = (scene_group.size() + thread_count) / thread_count;
+						//PE_CORE_TRACE("Process chunk size: {}", chunk_size);	
 
-					if (mesh->getType() != MeshType::Static)
-						continue;
+						std::vector<std::future<void>> futures(thread_count);
 
-					m_forwardPlusDepthRenderer.addEntity(mesh, transform);
+						for (size_t i = 0; i < thread_count; i++)
+						{
+							PE_PROFILE_SCOPE("Worker thread dispatcher for loop.");
+							auto start_it = group_start;
+							std::advance(group_start, chunk_size);
+							futures[i] = m_threadPool.enqueue([&, group_start, group_end, thread_count, start_it, i]()
+								{
+									PE_PROFILE_SCOPE("Worker thread process mesh renderers");
+									auto end_it = (i == thread_count - 1) ? group_end : group_start;
+									for (auto it = start_it; it != end_it; ++it)
+									{
+										auto entity = *it;
+										const auto& meshCom = scene_group.get<MeshComponent>(entity);
+										const auto& meshRendererCom = scene_group.get<MeshRendererComponent>(entity);
+										const auto mesh = meshCom.mesh;
+										const auto& transform = scene_group.get<TransformComponent>(entity).transform;
+										// Frustum culling for meshes
+										if (!cameraFrustum.isIntersect(meshCom.worldAABB))
+											continue;
+										if (mesh->getType() != MeshType::Static)
+											continue;
+										// meshRenderer的materials跟subMesh是一對一的
+										PE_CORE_ASSERT(mesh->getSubMeshes().size() == meshRendererCom.materials.size(), "Wired mesh renderer materials doesn't match mesh submeshes");
+										m_forwardPlusDepthRenderer.addEntity(mesh, transform);
+										for (uint32_t subMeshIndex = 0; subMeshIndex < mesh->getSubMeshes().size(); subMeshIndex++) {
+											auto material = meshRendererCom.materials[subMeshIndex];
+											if (!material || !material->getBindingSet())
+												continue;			// TODO: 改成null material之類的可以顯示
+											m_meshRenderer.addEntity(
+												material,
+												mesh,
+												subMeshIndex,
+												transform);
+										}
+									}
+								});
+						}
 
-					for (uint32_t subMeshIndex = 0; subMeshIndex < mesh->getSubMeshes().size(); subMeshIndex++) {
-						auto material = meshRendererCom.materials[subMeshIndex];
-
-						if (!material || !material->getBindingSet())
-							continue;			// TODO: 改成null material之類的可以顯示
-
-						m_meshRenderer.addEntity(
-							material,
-							mesh,
-							subMeshIndex,
-							transform);
+						for (auto& future : futures)
+						{
+							future.get();
+						}
 					}
-				}
+#else
 
+					{
+						// single thread processing (for reference)
+
+						scene_group.each([&](auto, auto& transformCom, auto& meshCom, auto& meshRendererCom)
+							{
+								const auto mesh = meshCom.mesh;
+								const auto& transform = transformCom.transform;
+
+								// Frustum culling for meshes
+								if (!cameraFrustum.isIntersect(meshCom.worldAABB))
+									return;
+
+								if (mesh->getType() != MeshType::Static)
+									return;
+
+								// meshRenderer的materials跟subMesh是一對一的
+								PE_CORE_ASSERT(mesh->getSubMeshes().size() == meshRendererCom.materials.size(), "Wired mesh renderer materials doesn't match mesh submeshes");
+
+								m_forwardPlusDepthRenderer.addEntity(mesh, transform);
+
+								for (uint32_t subMeshIndex = 0; subMeshIndex < mesh->getSubMeshes().size(); subMeshIndex++) {
+									auto material = meshRendererCom.materials[subMeshIndex];
+
+									if (!material || !material->getBindingSet())
+										continue;			// TODO: 改成null material之類的可以顯示
+
+									m_meshRenderer.addEntity(
+										material,
+										mesh,
+										subMeshIndex,
+										transform);
+								}
+							});
+					}
+
+#endif // SCENE_RENDERER_USE_MULTITHREADING
+
+				}
 
 				// TODO process skinned meshes
 			}

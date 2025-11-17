@@ -1,4 +1,5 @@
 set(3rdParty_folder "3rdParty")
+option(BUILD_SHARED_LIBS ON)
 
 find_package(Vulkan REQUIRED)
 if (NOT Vulkan_FOUND)
@@ -90,3 +91,10 @@ if (NOT TARGET assimp)
 	set_target_properties(assimp PROPERTIES FOLDER ${3rdParty_folder}/assimp)
 	set_target_properties(zlibstatic PROPERTIES FOLDER ${3rdParty_folder}/assimp)
 endif()
+
+# thread pool
+option(TP_BUILD_TESTS OFF)
+option(TP_BUILD_EXAMPLES OFF)
+option(TP_BUILD_BENCHMARKS OFF)
+add_subdirectory(thread-pool)
+set_target_properties(thread-pool PROPERTIES FOLDER ${3rdParty_folder}/dp-thread-pool)

@@ -29,6 +29,11 @@ namespace PaperEngine {
 
 		void init();
 
+		/// <summary>
+		/// Thread safe
+		/// </summary>
+		/// <param name="mesh"></param>
+		/// <param name="transform"></param>
 		void addEntity(
 			Ref<Mesh> mesh,
 			const Transform& transform);
@@ -62,6 +67,8 @@ namespace PaperEngine {
 		void* m_instanceBufferCpuPtr = nullptr;
 
 		uint32_t m_width{ 0 }, m_height{ 0 };
+
+		std::mutex m_add_entity_mutex;
 	};
 
 }

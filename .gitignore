@@ -11,7 +11,7 @@ CTestTestfile.cmake
 _deps
 CMakeUserPresets.json
 build/*
-vendor/
+#vendor/
 
 imgui.ini
 PaperEngine.log

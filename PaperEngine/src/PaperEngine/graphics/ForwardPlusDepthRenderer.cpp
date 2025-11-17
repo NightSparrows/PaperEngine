@@ -15,7 +15,7 @@ namespace PaperEngine {
 
 		nvrhi::BufferDesc instanceBufferDesc;
 		instanceBufferDesc
-			.setByteSize(sizeof(glm::mat4) * 10000)
+			.setByteSize(sizeof(glm::mat4) * 100000)
 			.setIsConstantBuffer(true)
 			.setKeepInitialState(true)
 			.setStructStride(sizeof(glm::mat4))
@@ -94,6 +94,7 @@ namespace PaperEngine {
 
 	void ForwardPlusDepthRenderer::addEntity(Ref<Mesh> mesh, const Transform& transform)
 	{
+		std::lock_guard<std::mutex> lock(m_add_entity_mutex);
 		auto& instanceData = m_renderData[mesh].instanceData;
 		instanceData.emplace_back(transform);
 	}

@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <nvrhi/nvrhi.h>
+#include <thread_pool/thread_pool.h>
 
 #include <PaperEngine/scene/Scene.h>
 #include <PaperEngine/graphics/Camera.h>
@@ -86,6 +87,8 @@ namespace PaperEngine {
 
 		// 等待整個場景render完的sync
 		nvrhi::EventQueryHandle m_sceneRenderQuery;
+
+		dp::thread_pool<> m_threadPool;
 	};
 
 }
