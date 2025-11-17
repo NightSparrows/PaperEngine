@@ -1,4 +1,7 @@
 ﻿#pragma once
+#pragma warning(push)
+#pragma warning(disable : 4100)
+
 
 #include <span>
 
@@ -31,3 +34,5 @@ namespace PaperEngine {
 	};
 
 }
+
+#pragma warning(pop)
