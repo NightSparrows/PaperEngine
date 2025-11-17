@@ -10,6 +10,7 @@ namespace PaperEngine {
 	/// 一定要有Mesh component
 	/// </summary>
 	struct MeshRendererComponent {
+		bool visible = true;
 		std::vector<Ref<Material>> materials;
 	};
 

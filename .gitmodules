@@ -31,3 +31,6 @@
 [submodule "vendor/SDL"]
 	path = vendor/SDL
 	url = https://github.com/libsdl-org/SDL
+[submodule "vendor/bs-thread-pool"]
+	path = vendor/bs-thread-pool
+	url = https://github.com/bshoshany/thread-pool

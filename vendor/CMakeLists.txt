@@ -98,3 +98,8 @@ option(TP_BUILD_EXAMPLES OFF)
 option(TP_BUILD_BENCHMARKS OFF)
 add_subdirectory(thread-pool)
 set_target_properties(thread-pool PROPERTIES FOLDER ${3rdParty_folder}/dp-thread-pool)
+
+# BS thread pool
+add_library(BS_thread_pool INTERFACE)
+target_include_directories(BS_thread_pool INTERFACE bs-thread-pool/include)
+set_target_properties(BS_thread_pool PROPERTIES FOLDER ${3rdParty_folder}/BSThreadPool)

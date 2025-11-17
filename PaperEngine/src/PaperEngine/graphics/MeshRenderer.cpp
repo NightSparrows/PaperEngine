@@ -60,6 +60,13 @@ namespace PaperEngine {
 		m_tempInstanceCount++;
 	}
 
+	void MeshRenderer::processScene(Ref<Scene> scene)
+	{
+		const auto scene_group = scene->getRegistry().group<MeshComponent>(entt::get<TransformComponent, MeshRendererComponent>);
+
+
+	}
+
 	void MeshRenderer::renderScene(const GlobalSceneData& globalData)
 	{
 		PE_PROFILE_FUNCTION();

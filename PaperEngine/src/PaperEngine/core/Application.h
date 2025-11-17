@@ -8,6 +8,8 @@
 #include <PaperEngine/core/LayerManager.h>
 #include <PaperEngine/resourceManager/ResourceManager.h>
 
+#define BS_THREAD_POOL_NATIVE_EXTENSIONS
+#include <BS_thread_pool.hpp>
 
 //純測試，TODO加到cmake
 #define PE_ENABLE_IMGUI
@@ -52,6 +54,8 @@ namespace PaperEngine {
 
 		PE_API Ref<GraphicsContext> getGraphicsContext() { return m_graphicsContext; }
 
+		PE_API Ref<BS::thread_pool<>> getThreadPool() { return m_thread_pool; }
+
 		PE_API Window* getWindow() { return m_window.get(); }
 
 		inline PE_API RenderAPI getRenderAPI() const { return m_renderAPI; }
@@ -66,6 +70,8 @@ namespace PaperEngine {
 
 		PE_API static nvrhi::IDevice* GetNVRHIDevice();
 
+		PE_API static Ref<BS::thread_pool<>> GetThreadPool();
+
 		PE_API static void Shutdown();
 
 		PE_API static ResourceManager* GetResourceManager();
@@ -77,11 +83,15 @@ namespace PaperEngine {
 
 		void onBackBufferResized();
 
+		void initThreadPool();
+
 	private:
 		bool m_running = false;
 
 		Scope<Window> m_window;
 		Ref<GraphicsContext> m_graphicsContext;
+
+		Ref<BS::thread_pool<>> m_thread_pool;
 
 		Scope<ResourceManager> m_resourceManager;
 

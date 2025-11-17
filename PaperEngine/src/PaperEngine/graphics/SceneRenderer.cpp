@@ -16,8 +16,7 @@
 
 namespace PaperEngine {
 
-	SceneRenderer::SceneRenderer() :
-		m_threadPool(8)
+	SceneRenderer::SceneRenderer()
 	{
 		m_lightCullPass.init();
 
@@ -115,7 +114,7 @@ namespace PaperEngine {
 						auto group_start = scene_group.begin();
 						auto group_end = scene_group.end();
 
-						size_t thread_count = std::thread::hardware_concurrency();
+						size_t thread_count = Application::GetThreadPool()->get_thread_count();
 						size_t chunk_size = (scene_group.size() + thread_count) / thread_count;
 						//PE_CORE_TRACE("Process chunk size: {}", chunk_size);	
 
@@ -126,7 +125,7 @@ namespace PaperEngine {
 							PE_PROFILE_SCOPE("Worker thread dispatcher for loop.");
 							auto start_it = group_start;
 							std::advance(group_start, chunk_size);
-							futures[i] = m_threadPool.enqueue([&, group_start, group_end, thread_count, start_it, i]()
+							futures[i] = Application::GetThreadPool()->submit_task([&, group_start, group_end, thread_count, start_it, i]()
 								{
 									PE_PROFILE_SCOPE("Worker thread process mesh renderers");
 									auto end_it = (i == thread_count - 1) ? group_end : group_start;
@@ -137,6 +136,10 @@ namespace PaperEngine {
 										const auto& meshRendererCom = scene_group.get<MeshRendererComponent>(entity);
 										const auto mesh = meshCom.mesh;
 										const auto& transform = scene_group.get<TransformComponent>(entity).transform;
+
+										if (!meshRendererCom.visible)
+											continue;
+
 										// Frustum culling for meshes
 										if (!cameraFrustum.isIntersect(meshCom.worldAABB))
 											continue;

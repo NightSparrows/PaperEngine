@@ -20,6 +20,8 @@ namespace PaperEngine {
 		PE_CORE_ASSERT(!s_instance, "Application already created.");
 		s_instance = this;
 
+		initThreadPool();
+
 		m_window = Window::Create(WindowProps(props.name, props.width, props.height));
 		m_window->init();
 		m_window->setEventCallback(PE_BIND_EVENT_FN(Application::onEvent));
@@ -143,6 +145,12 @@ namespace PaperEngine {
 		return s_instance->m_graphicsContext->getNVRhiDevice();
 	}
 
+	PE_API Ref<BS::thread_pool<>> Application::GetThreadPool()
+	{
+		PE_CORE_ASSERT(s_instance, "Application instance is null, cannot get Thread pool.");
+		return s_instance->m_thread_pool;
+	}
+
 	void Application::Shutdown()
 	{
 		PE_CORE_ASSERT(s_instance, "Application instance is null, cannot shutdown.");
@@ -183,6 +191,80 @@ namespace PaperEngine {
 		for (auto layer : m_layerManager) {
 			layer->onBackBufferResized();
 		}
+	}
+
+	void Application::initThreadPool()
+	{
+		uint32_t core_count = std::thread::hardware_concurrency();
+#ifdef _WIN32
+
+
+		std::vector<bool> affinity(std::thread::hardware_concurrency(), false);
+
+		struct CoreInfo {
+			DWORD id;
+			DWORD efficiency;
+			BYTE coreIndex;
+			BYTE schedulingClass;
+		};
+
+		DWORD len = 0;
+		GetSystemCpuSetInformation(nullptr, 0, &len, GetCurrentProcess(), 0);
+
+		std::vector<char> buffer(len);
+		if (!GetSystemCpuSetInformation((SYSTEM_CPU_SET_INFORMATION*)buffer.data(), len, &len, GetCurrentProcess(), 0)) {
+			PE_CORE_ERROR("GetSystemCpuSetInformation failed");
+		}
+
+		std::vector<CoreInfo> pcs, ecs;
+
+		size_t offset = 0;
+		while (offset < len) {
+			auto* info = (SYSTEM_CPU_SET_INFORMATION*)((char*)buffer.data() + offset);
+
+			if (info->Type == CpuSetInformation) {
+				const auto& s = info->CpuSet;
+				std::cout << "Core Id: " << s.Id << " logical processor index: " << (uint32_t)s.LogicalProcessorIndex << " EfficiencyClass: " << (uint32_t)s.EfficiencyClass
+					<< " CoreIndex: " << (uint32_t)s.CoreIndex << " SchedulingClass: " << (uint32_t)s.SchedulingClass << "\n";
+				// 0: E-core, 1: P-core
+				if (s.EfficiencyClass == 1) {
+					pcs.emplace_back(s.Id, s.EfficiencyClass, s.CoreIndex, s.SchedulingClass);
+					affinity[s.CoreIndex] = true;
+				}
+				else
+					ecs.emplace_back(s.Id, s.EfficiencyClass, s.CoreIndex, s.SchedulingClass);
+			}
+
+			offset += info->Size;
+		}
+
+		std::stringstream ss;
+		ss << "[";
+		for (size_t i = 0; i < affinity.size(); ++i) {
+			ss << (affinity[i] ? "1" : "0");
+			if (i + 1 != affinity.size()) ss << ", ";
+		}
+		ss << "]";
+
+		PE_CORE_TRACE("Affinity content: {}", ss.str());
+		std::cout << "P-cores:\n";
+		for (auto& c : pcs) std::cout << "    class: " << c.efficiency << " index: " << (uint32_t)c.coreIndex << " sch class: " << (uint32_t)c.schedulingClass  << "\n";
+		std::cout << "\nE-cores:\n";
+		for (auto& c : ecs) std::cout << "    class: " << c.efficiency << " index: " << (uint32_t)c.coreIndex << " sch class: " << (uint32_t)c.schedulingClass << "\n";
+		std::cout << "\n";
+
+		// 只使用P-cores
+		core_count = static_cast<uint32_t>(pcs.size());
+		PE_CORE_TRACE("Using {} P-cores for Thread Pool", core_count);
+
+#endif // _WIN32
+
+		m_thread_pool = std::make_shared<BS::thread_pool<>>(core_count, [core_count, affinity](std::size_t idx) {
+			PE_CORE_TRACE("ThreadPoolWorker header {}", idx);
+
+			BS::this_thread::set_os_thread_affinity(affinity);
+			});
+
 	}
 
 }

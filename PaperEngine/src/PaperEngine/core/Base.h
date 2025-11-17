@@ -4,6 +4,12 @@
 
 #include "PlatformDetection.h"
 
+#ifdef _WIN32
+#define NOMINMAX
+#include <Windows.h>
+#endif // _WIN32
+
+
 #ifdef PE_PLATFORM_WINDOWS
 	#ifdef PE_BUILD_SHARED
 		#define PE_API __declspec(dllexport)

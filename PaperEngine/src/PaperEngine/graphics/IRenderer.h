@@ -21,6 +21,8 @@ namespace PaperEngine {
 	class IRenderer {
 	public:
 
+		virtual void processScene(Ref<Scene> scene) {};
+
 		virtual void renderScene(const GlobalSceneData& globalData) = 0;
 
 		virtual void onViewportResized(uint32_t width, uint32_t height) {}

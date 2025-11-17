@@ -84,6 +84,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC stb)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC dp::thread-pool)
 
+target_link_libraries(${PROJECT_NAME} PUBLIC BS_thread_pool)
 # include yaml
 # target_link_libraries(PaperEngine PRIVATE yaml-cpp)
 

@@ -87,8 +87,6 @@ namespace PaperEngine {
 
 		// 等待整個場景render完的sync
 		nvrhi::EventQueryHandle m_sceneRenderQuery;
-
-		dp::thread_pool<> m_threadPool;
 	};
 
 }
