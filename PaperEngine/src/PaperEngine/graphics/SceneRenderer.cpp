@@ -150,9 +150,12 @@ namespace PaperEngine {
 		Application::GetNVRHIDevice()->executeCommandList(m_cmd);
 
 		// 等待GPU處理完
-		Application::Application::GetNVRHIDevice()->resetEventQuery(m_sceneRenderQuery);
-		Application::GetNVRHIDevice()->setEventQuery(m_sceneRenderQuery, nvrhi::CommandQueue::Graphics);
-		Application::GetNVRHIDevice()->waitEventQuery(m_sceneRenderQuery);
+		{
+			PE_PROFILE_SCOPE("Wait GPU Scene Render Finish");
+			Application::Application::GetNVRHIDevice()->resetEventQuery(m_sceneRenderQuery);
+			Application::GetNVRHIDevice()->setEventQuery(m_sceneRenderQuery, nvrhi::CommandQueue::Graphics);
+			Application::GetNVRHIDevice()->waitEventQuery(m_sceneRenderQuery);
+		}
 
 		// 清除process data
 		m_meshRenderer.endFrame();
