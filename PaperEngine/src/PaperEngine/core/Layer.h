@@ -32,6 +32,8 @@ namespace PaperEngine {
 		/// <summary>
 		/// 可以寫入swapchainImage的渲染。
 		/// 其framebuffer只有swapchain image和一個depth buffer
+		/// 不能在這個thread open command buffer
+		/// 可以使用graphics_context->getcurrentMainCommandBuffer來record draw command
 		/// </summary>
 		virtual void onFinalRender(nvrhi::IFramebuffer*) {}
 

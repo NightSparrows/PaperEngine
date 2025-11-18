@@ -19,7 +19,11 @@ namespace PaperEngine
 			/// 每個Frame都會streaming更新
 			/// 自動map
 			/// </summary>
-			FrameStreaming
+			FrameStreaming,
+			/// <summary>
+			/// 在GPU裡面計算的
+			/// </summary>
+			FrameStatic
 		};
 
 	public:

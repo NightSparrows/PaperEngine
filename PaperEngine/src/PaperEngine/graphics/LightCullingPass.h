@@ -7,6 +7,9 @@
 
 #include <nvrhi/nvrhi.h>
 
+#include "GPUBuffer.h"
+#include "BindingSet.h"
+
 namespace PaperEngine {
 
 	struct DirectionalLightData
@@ -30,12 +33,11 @@ namespace PaperEngine {
 	public:
 		struct PointLightCullData
 		{
-			nvrhi::BufferHandle globalDataBuffer;
-			void* globalDataBufferPtr = nullptr;
-			nvrhi::BufferHandle globalLightIndicesBuffer;
-			nvrhi::BufferHandle clusterRangesBuffer;
-			nvrhi::BufferHandle globalCounterBuffer;
-			nvrhi::BindingSetHandle lightCullBindingSet;
+			GPUBufferHandle globalDataBuffer;
+			GPUBufferHandle globalLightIndicesBuffer;
+			GPUBufferHandle clusterRangesBuffer;
+			GPUBufferHandle globalCounterBuffer;
+			BindingSetHandle lightCullBindingSet;
 		};
 
 		struct GlobalData
@@ -85,10 +87,10 @@ namespace PaperEngine {
 
 		void calculatePass(nvrhi::ICommandList* cmd);
 
-		nvrhi::IBuffer* getDirectionalLightBuffer() { return m_directionalLightBuffer; }
+		GPUBufferHandle getDirectionalLightBuffer() { return m_directionalLightBuffer; }
 		uint32_t getDirectionalLightCount() const { return m_currentDirectionalLightCount; }
 
-		nvrhi::IBuffer* getPointLightBuffer() { return m_pointLightBuffer; }
+		GPUBufferHandle getPointLightBuffer() { return m_pointLightBuffer; }
 		uint32_t getPointLightCount() const { return m_currentPointLightCount; }
 
 		PointLightCullData& getPointLightCullData();
@@ -119,14 +121,12 @@ namespace PaperEngine {
 		uint32_t m_maxDirectionalLight = 8;
 		// Current to input (in bytes)
 		uint32_t m_currentDirectionalLightCount = 0;
-		nvrhi::BufferHandle m_directionalLightBuffer;
-		void* m_directionalLightBufferPtr = nullptr;
+		GPUBufferHandle m_directionalLightBuffer;
 
 		// Point Light Data
 		uint32_t m_maxPointLight = 10000;
 		uint32_t m_currentPointLightCount = 0;
-		nvrhi::BufferHandle m_pointLightBuffer;
-		void* m_pointLightBufferptr = nullptr;
+		GPUBufferHandle m_pointLightBuffer;
 
 		// command buffer
 		nvrhi::CommandListHandle m_cmd;
