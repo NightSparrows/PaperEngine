@@ -140,8 +140,7 @@ namespace PaperEngine {
 		Application::GetNVRHIDevice()->waitEventQuery(m_sceneRenderQuery);
 
 		// TODO 2d stuff rendering
-		
-		//Application::GetNVRHIDevice()->waitForIdle();
+
 	}
 
 	void SceneRenderer::onBackBufferResized() {

@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <memory>
+#include <assert.h>
 
 #include "PlatformDetection.h"
 
@@ -62,7 +63,14 @@ namespace PaperEngine {
 
 	template<typename T, typename U>
 	Ref<T> CastRef(const Ref<U>& input) {
-		return std::dynamic_pointer_cast<T>(input); // 可改 static_pointer_cast
+#ifdef PE_DEBUG
+		if (!input) return nullptr;
+		Ref<T> t = std::dynamic_pointer_cast<T>(input);
+		if (!t) assert(!"Invalid type cast");
+		return t;
+#else
+		return std::static_pointer_cast<T>(input);
+#endif // PE_DEBUG
 	}
 
 }
