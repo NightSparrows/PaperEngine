@@ -77,6 +77,7 @@ namespace PaperEngine {
         }
 
         nvrhi::TextureDesc desc;
+        desc.setDebugName("TextureLoader_load_shader_resource");
         desc.format = imageFormat;
         desc.width = width;
         desc.height = height;
@@ -84,7 +85,8 @@ namespace PaperEngine {
         desc.arraySize = 1;
         desc.dimension = nvrhi::TextureDimension::Texture2D;
         desc.mipLevels = config.generateMipMaps ? GetMipLevels(width, height) : 1;
-        desc.isRenderTarget = true;
+        desc.initialState = nvrhi::ResourceStates::ShaderResource;
+		desc.keepInitialState = true;       // static image
         desc.isUAV = true;
         TextureHandle texture = CreateRef<Texture>(desc);
 

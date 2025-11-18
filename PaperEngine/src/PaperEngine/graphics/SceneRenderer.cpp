@@ -113,34 +113,43 @@ namespace PaperEngine {
 		globalData.pointLightCount = m_lightCullPass.getPointLightCount();
 
 		m_cmd->open();
+		auto swapchin_texture = fb->getDesc().colorAttachments[0].texture;
+		auto depth_texture = fb->getDesc().depthAttachment.texture;
+		m_cmd->beginTrackingTextureState(swapchin_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::RenderTarget);
+		m_cmd->beginTrackingTextureState(depth_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::DepthWrite);
 
-		nvrhi::utils::ClearColorAttachment(m_cmd, fb, 0, nvrhi::Color(0));
-		nvrhi::utils::ClearDepthStencilAttachment(m_cmd, fb, 1.f, 0);
+		m_cmd->commitBarriers();
+
+		m_cmd->clearTextureFloat(swapchin_texture, nvrhi::AllSubresources, nvrhi::Color(0.f, 0.f, 0.f, 0.f));
+		m_cmd->clearDepthStencilTexture(depth_texture, nvrhi::AllSubresources, true, 1.f, false, 0);
 
 		m_cmd->writeBuffer(m_globalDataBuffer, &globalData, sizeof(globalData));
 
-		m_cmd->close();
-		Application::GetNVRHIDevice()->executeCommandList(m_cmd);
-
 		// Render PreDepth Pass
-		m_forwardPlusDepthRenderer.renderScene(sceneData);
+		//m_forwardPlusDepthRenderer.renderScene(sceneData);
 		// compute light tiles using the filtered lights and (TODO predepth texture)
-		m_lightCullPass.calculatePass();
+		m_lightCullPass.calculatePass(m_cmd);
 
-		Application::GetNVRHIDevice()->resetEventQuery(m_sceneRenderQuery);
 		// TODO render shadow maps that are visible in camera viewport
 
-		m_meshRenderer.renderScene(sceneData);
+		m_meshRenderer.renderScene(m_cmd, sceneData);
 
 		// TODO post processing
 
 		// TODO wait for 3d finish rendering (becuase NVRHI doesn't have the command buffer hazal between command buffers
 		// in GPU sides only having the cpu-gpu block api
+		// TODO 2d stuff rendering
+
+		m_cmd->close();
+		Application::GetNVRHIDevice()->executeCommandList(m_cmd);
+
+		// 等待GPU處理完
+		Application::Application::GetNVRHIDevice()->resetEventQuery(m_sceneRenderQuery);
 		Application::GetNVRHIDevice()->setEventQuery(m_sceneRenderQuery, nvrhi::CommandQueue::Graphics);
 		Application::GetNVRHIDevice()->waitEventQuery(m_sceneRenderQuery);
 
-		// TODO 2d stuff rendering
-
+		// 清除process data
+		m_meshRenderer.endFrame();
 	}
 
 	void SceneRenderer::onBackBufferResized() {

@@ -38,7 +38,7 @@ namespace PaperEngine {
 			Ref<Mesh> mesh,
 			const Transform& transform);
 
-		void renderScene(const GlobalSceneData& globalData) override;
+		void renderScene(nvrhi::ICommandList* cmd, const GlobalSceneData& globalData) override;
 
 		void onViewportResized(uint32_t width, uint32_t height) override;
 

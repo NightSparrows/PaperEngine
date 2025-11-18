@@ -268,6 +268,11 @@ namespace PaperEngine {
 			return;
 		}
 
+		m_commandList->beginTrackingTextureState(fb->getDesc().colorAttachments[0].texture, nvrhi::TextureSubresourceSet(), nvrhi::ResourceStates::RenderTarget);
+		m_commandList->beginTrackingTextureState(fb->getDesc().depthAttachment.texture, nvrhi::TextureSubresourceSet(), nvrhi::ResourceStates::DepthWrite);
+
+		m_commandList->commitBarriers();
+
 		drawData->ScaleClipRects(io.DisplayFramebufferScale);
 
 		float invDisplaySize[2] = {

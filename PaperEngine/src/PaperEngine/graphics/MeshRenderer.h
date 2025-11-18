@@ -63,8 +63,10 @@ namespace PaperEngine {
 		// 由於是整個scene作process，所以mesh renderer保留process mesh entity的function
 		// 然後在自己做static batching之類的
 		// 另外skinned mesh (有動畫) 跟這個分開好了，比較不複雜
-		void renderScene(const GlobalSceneData& globalData) override;
-	
+		void renderScene(nvrhi::ICommandList* cmd, const GlobalSceneData& globalData) override;
+
+		void endFrame() override;
+		
 		void onViewportResized(uint32_t width, uint32_t height) override;
 
 
@@ -83,8 +85,6 @@ namespace PaperEngine {
 
 		uint32_t m_tempDrawCallCount{ 0 };
 		uint32_t m_totalDrawCallCount{ 0 };
-
-		nvrhi::CommandListHandle m_cmd;
 
 		BindingLayoutHandle m_instanceBufBindingLayout;
 		nvrhi::BindingSetHandle m_instanceBufferSet;

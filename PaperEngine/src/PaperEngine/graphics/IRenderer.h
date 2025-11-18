@@ -27,7 +27,10 @@ namespace PaperEngine {
 
 		virtual void processScene(Ref<Scene> scene, const Frustum& frustum) {};
 
-		virtual void renderScene(const GlobalSceneData& globalData) = 0;
+		virtual void renderScene(nvrhi::ICommandList* cmd, const GlobalSceneData& globalData) = 0;
+
+		// 將process的資料清空，準備下一frame使用
+		virtual void endFrame() {}
 
 		virtual void onViewportResized(uint32_t width, uint32_t height) {}
 

@@ -56,6 +56,7 @@ static VKAPI_ATTR VkBool32 VulkanDebugCallback(
 		break;
 	case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
 		PE_CORE_ERROR("[VULKAN] {}: {}", Vulkan_get_debug_type(type), pCallbackData->pMessage);
+		//PE_DEBUGBREAK();
 		break;
 	default:
 		break;
@@ -143,6 +144,7 @@ namespace PaperEngine {
 		VkPhysicalDeviceVulkan13Features vulkan13Features{
 			.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
 			.synchronization2 = VK_TRUE, // enable synchronization2
+			.dynamicRendering = VK_TRUE, // enable dynamic rendering
 		};
 
 #pragma region GPU Selection

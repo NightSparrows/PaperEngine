@@ -239,7 +239,7 @@ namespace PaperEngine {
 		}
 	}
 
-	void LightCullingPass::calculatePass()
+	void LightCullingPass::calculatePass(nvrhi::ICommandList* cmd)
 	{
 		PE_PROFILE_FUNCTION();
 		// 紀錄一下會compute多少個Point Light
@@ -253,8 +253,6 @@ namespace PaperEngine {
 		globalData->numZSlices = m_numberOfZSlices;
 		globalData->pointLightCount = m_currentPointLightCount;
 
-		m_cmd->open();
-
 		nvrhi::ComputeState computeState;
 
 		// TODO: calculate Depth min max in each tiles
@@ -263,23 +261,30 @@ namespace PaperEngine {
 #pragma region Compute Light Clusters
 		computeState.bindings = { pointLightCullData.lightCullBindingSet };
 		computeState.pipeline = m_lightCullPipeline;
-		m_cmd->setComputeState(computeState);
+		cmd->setComputeState(computeState);
 
 		// 重置Buffers
-		m_cmd->clearBufferUInt(pointLightCullData.globalCounterBuffer, 0);
-		m_cmd->clearBufferUInt(pointLightCullData.globalLightIndicesBuffer, 0);
+		cmd->clearBufferUInt(pointLightCullData.globalCounterBuffer, 0);
+		cmd->clearBufferUInt(pointLightCullData.globalLightIndicesBuffer, 0);
 
-		m_cmd->dispatch(m_numberOfXSlices, m_numberOfYSlices, m_numberOfZSlices);
+		cmd->dispatch(m_numberOfXSlices, m_numberOfYSlices, m_numberOfZSlices);
+
+		//cmd->setBufferState(
+		//	pointLightCullData.globalDataBuffer,
+		//	nvrhi::ResourceStates::ShaderResource);
+		//cmd->setBufferState(
+		//	pointLightCullData.globalCounterBuffer,
+		//	nvrhi::ResourceStates::ShaderResource);
+		//cmd->setBufferState(
+		//	pointLightCullData.globalLightIndicesBuffer,
+		//	nvrhi::ResourceStates::ShaderResource);
+		//cmd->setBufferState(
+		//	pointLightCullData.clusterRangesBuffer,
+		//	nvrhi::ResourceStates::ShaderResource);
+		//cmd->commitBarriers();
+
 #pragma endregion
 
-		m_cmd->close();
-		Application::GetNVRHIDevice()->resetEventQuery(m_computeQuery);
-		Application::GetNVRHIDevice()->executeCommandList(m_cmd, nvrhi::CommandQueue::Compute);
-
-#pragma region 同步機制，確保這個compute執行完畢
-		Application::GetNVRHIDevice()->setEventQuery(m_computeQuery, nvrhi::CommandQueue::Compute);
-		Application::GetNVRHIDevice()->waitEventQuery(m_computeQuery);
-#pragma endregion
 	}
 
 	LightCullingPass::PointLightCullData& LightCullingPass::getPointLightCullData()

@@ -99,7 +99,7 @@ namespace PaperEngine {
 		instanceData.emplace_back(transform);
 	}
 
-	void ForwardPlusDepthRenderer::renderScene(const GlobalSceneData& globalData)
+	void ForwardPlusDepthRenderer::renderScene(nvrhi::ICommandList* cmd, const GlobalSceneData& globalData)
 	{
 		if (!m_framebuffer.handle) {
 			onViewportResized(globalData.camera->getWidth(), globalData.camera->getHeight());
@@ -124,6 +124,8 @@ namespace PaperEngine {
 		graphicsState.bindings[1] = m_instanceBufferSet;
 
 		m_cmd->open();
+
+		m_cmd->beginTrackingTextureState(m_framebuffer.depthTexture, nvrhi::TextureSubresourceSet(), nvrhi::ResourceStates::DepthWrite);
 
 		nvrhi::utils::ClearDepthStencilAttachment(m_cmd, m_framebuffer.handle, 1.f, 0);
 		m_graphicsPipeline->bind(graphicsState, m_framebuffer.handle);

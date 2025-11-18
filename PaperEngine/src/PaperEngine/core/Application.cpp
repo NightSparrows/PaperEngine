@@ -108,14 +108,14 @@ namespace PaperEngine {
 						}
 
 #pragma region Present this frame
-						cmd->open();
+						//cmd->open();
 
-						cmd->setTextureState(m_graphicsContext->getCurrentSwapchainTexture(),
-							nvrhi::TextureSubresourceSet(),
-							nvrhi::ResourceStates::Present);
+						//cmd->setTextureState(m_graphicsContext->getCurrentSwapchainTexture(),
+						//	nvrhi::AllSubresources,
+						//	nvrhi::ResourceStates::Present);
 
-						cmd->close();
-						m_graphicsContext->getNVRhiDevice()->executeCommandList(cmd);
+						//cmd->close();
+						//m_graphicsContext->getNVRhiDevice()->executeCommandList(cmd);
 
 						if (m_graphicsContext->present()) {
 							m_framePerSecond++;

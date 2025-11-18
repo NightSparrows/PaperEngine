@@ -14,8 +14,6 @@ namespace PaperEngine {
 	
 	MeshRenderer::MeshRenderer()
 	{
-		m_cmd = Application::GetNVRHIDevice()->createCommandList();
-
 		nvrhi::BufferDesc instanceBufferDesc;
 		instanceBufferDesc
 			.setByteSize(sizeof(InstanceData) * 100000)
@@ -122,14 +120,20 @@ namespace PaperEngine {
 		}
 	}
 
-	void MeshRenderer::renderScene(const GlobalSceneData& globalData)
+	void MeshRenderer::renderScene(nvrhi::ICommandList* cmd, const GlobalSceneData& globalData)
 	{
 		PE_PROFILE_FUNCTION();
 
 
 		// rendering
-		m_cmd->open();
 
+		// 確保texture state正確
+		auto color_texture = globalData.fb->getDesc().colorAttachments[0].texture;
+		auto depth_texture = globalData.fb->getDesc().depthAttachment.texture;
+		cmd->beginTrackingTextureState(color_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::RenderTarget);
+		cmd->beginTrackingTextureState(depth_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::DepthWrite);
+
+		cmd->commitBarriers();
 
 		nvrhi::GraphicsState graphicsState;
 		graphicsState.setFramebuffer(globalData.fb);
@@ -174,18 +178,19 @@ namespace PaperEngine {
 						mesh->bindSubMesh(drawArgs, subMesh);
 						drawArgs.setStartInstanceLocation(instanceOffset);
 						drawArgs.setInstanceCount(static_cast<uint32_t>(instanceCount));
-						m_cmd->setGraphicsState(graphicsState);
-						m_cmd->drawIndexed(drawArgs);
+						cmd->setGraphicsState(graphicsState);
+						cmd->drawIndexed(drawArgs);
 						m_tempDrawCallCount++;
 						instanceOffset += instanceCount;
 					}
 				}
 			}
 		}
-		m_cmd->close();
-		Application::GetNVRHIDevice()->executeCommandList(m_cmd);
-		Application::GetNVRHIDevice()->waitForIdle();
 
+	}
+
+	void MeshRenderer::endFrame()
+	{
 		m_renderData.clear();
 		m_totalInstanceCount = m_tempInstanceCount;
 		m_tempInstanceCount = 0;

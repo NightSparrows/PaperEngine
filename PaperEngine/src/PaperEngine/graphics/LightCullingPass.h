@@ -83,7 +83,7 @@ namespace PaperEngine {
 		/// <param name="lightCom"></param>
 		void processLight(const Transform& transform, const LightComponent& lightCom);
 
-		void calculatePass();
+		void calculatePass(nvrhi::ICommandList* cmd);
 
 		nvrhi::IBuffer* getDirectionalLightBuffer() { return m_directionalLightBuffer; }
 		uint32_t getDirectionalLightCount() const { return m_currentDirectionalLightCount; }
