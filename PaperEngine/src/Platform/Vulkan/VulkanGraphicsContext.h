@@ -38,7 +38,7 @@ public:
 			break;
 		case nvrhi::MessageSeverity::Error:
 			PE_CORE_ERROR("[NVRHI] {}", messageText);
-			PE_DEBUGBREAK();
+			//PE_DEBUGBREAK();
 			break;
 		case nvrhi::MessageSeverity::Fatal:
 			PE_CORE_CRITICAL("[NVRHI] {}", messageText);
@@ -141,4 +141,9 @@ namespace PaperEngine {
 
 		bool m_resizeRequested = false;
 	};
+}
+
+namespace nvrhi
+{
+	nvrhi::Format VulkanFormatFromVkFormat(VkFormat format);
 }

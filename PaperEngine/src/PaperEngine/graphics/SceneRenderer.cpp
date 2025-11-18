@@ -113,14 +113,20 @@ namespace PaperEngine {
 		globalData.pointLightCount = m_lightCullPass.getPointLightCount();
 
 		m_cmd->open();
-		auto swapchin_texture = fb->getDesc().colorAttachments[0].texture;
+		auto swapchain_texture = fb->getDesc().colorAttachments[0].texture;
 		auto depth_texture = fb->getDesc().depthAttachment.texture;
-		m_cmd->beginTrackingTextureState(swapchin_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::RenderTarget);
-		m_cmd->beginTrackingTextureState(depth_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::DepthWrite);
+
+
+		// NVRHI有問題，他無法使用track一個一開始undefined layout導致Vulkan validation一直報錯
+		m_cmd->beginTrackingTextureState(swapchain_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::Unknown);
+		m_cmd->beginTrackingTextureState(depth_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::Unknown);
+
+		m_cmd->setTextureState(swapchain_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::CopyDest);
+		m_cmd->setTextureState(depth_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::CopyDest);
 
 		m_cmd->commitBarriers();
 
-		m_cmd->clearTextureFloat(swapchin_texture, nvrhi::AllSubresources, nvrhi::Color(0.f, 0.f, 0.f, 0.f));
+		m_cmd->clearTextureFloat(swapchain_texture, nvrhi::AllSubresources, nvrhi::Color(0.f, 0.f, 0.f, 0.f));
 		m_cmd->clearDepthStencilTexture(depth_texture, nvrhi::AllSubresources, true, 1.f, false, 0);
 
 		m_cmd->writeBuffer(m_globalDataBuffer, &globalData, sizeof(globalData));

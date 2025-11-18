@@ -130,8 +130,8 @@ namespace PaperEngine {
 		// 確保texture state正確
 		auto color_texture = globalData.fb->getDesc().colorAttachments[0].texture;
 		auto depth_texture = globalData.fb->getDesc().depthAttachment.texture;
-		cmd->beginTrackingTextureState(color_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::RenderTarget);
-		cmd->beginTrackingTextureState(depth_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::DepthWrite);
+		cmd->setTextureState(color_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::RenderTarget);
+		cmd->setTextureState(depth_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::DepthWrite);
 
 		cmd->commitBarriers();
 

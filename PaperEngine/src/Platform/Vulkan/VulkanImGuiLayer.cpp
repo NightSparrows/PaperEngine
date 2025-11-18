@@ -268,8 +268,12 @@ namespace PaperEngine {
 			return;
 		}
 
-		m_commandList->beginTrackingTextureState(fb->getDesc().colorAttachments[0].texture, nvrhi::TextureSubresourceSet(), nvrhi::ResourceStates::RenderTarget);
-		m_commandList->beginTrackingTextureState(fb->getDesc().depthAttachment.texture, nvrhi::TextureSubresourceSet(), nvrhi::ResourceStates::DepthWrite);
+		/// 他預設為Present跟DepthWrite
+		// 這樣沒有效率但甲設有正式版也不會有這個layer所以應該沒差
+		m_commandList->beginTrackingTextureState(fb->getDesc().colorAttachments[0].texture, nvrhi::AllSubresources, nvrhi::ResourceStates::Present);
+		m_commandList->beginTrackingTextureState(fb->getDesc().depthAttachment.texture, nvrhi::AllSubresources, nvrhi::ResourceStates::DepthWrite);
+
+		m_commandList->setTextureState(fb->getDesc().colorAttachments[0].texture, nvrhi::AllSubresources, nvrhi::ResourceStates::RenderTarget);
 
 		m_commandList->commitBarriers();
 
