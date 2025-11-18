@@ -93,9 +93,10 @@ namespace PaperEngine {
 							layer->onPreRender();
 						}
 
-						m_graphicsContext->waitForSwapchainImageAvailable();
-
 						// TODO commit繪製swpachain image的命令
+						auto main_cmd = m_graphicsContext->getCurrentFrameCommandList();
+						main_cmd->clearState();
+						main_cmd->open();
 						for (auto layer : m_layerManager) {
 #ifdef PE_ENABLE_IMGUI
 							// Imgui 在preRender begin，然後他又是最後render的
@@ -106,16 +107,13 @@ namespace PaperEngine {
 							layer->onFinalRender(m_graphicsContext->getCurrentFramebuffer());
 
 						}
+						main_cmd->setTextureState(
+							m_graphicsContext->getCurrentSwapchainTexture(),
+							nvrhi::AllSubresources,
+							nvrhi::ResourceStates::Present);
+						main_cmd->close();
 
 #pragma region Present this frame
-						//cmd->open();
-
-						//cmd->setTextureState(m_graphicsContext->getCurrentSwapchainTexture(),
-						//	nvrhi::AllSubresources,
-						//	nvrhi::ResourceStates::Present);
-
-						//cmd->close();
-						//m_graphicsContext->getNVRhiDevice()->executeCommandList(cmd);
 
 						if (m_graphicsContext->present()) {
 							m_framePerSecond++;

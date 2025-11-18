@@ -38,7 +38,7 @@ public:
 			break;
 		case nvrhi::MessageSeverity::Error:
 			PE_CORE_ERROR("[NVRHI] {}", messageText);
-			//PE_DEBUGBREAK();
+			PE_DEBUGBREAK();
 			break;
 		case nvrhi::MessageSeverity::Fatal:
 			PE_CORE_CRITICAL("[NVRHI] {}", messageText);
@@ -76,11 +76,6 @@ namespace PaperEngine {
 		std::vector<nvrhi::TextureHandle> swapchainTextures;
 		uint32_t swapchainIndex = 0;
 
-		uint32_t imageAvailableFenceIndex = 0;
-		VkFence currentImageAvailableFence = { VK_NULL_HANDLE };
-		std::vector<VkFence> imageAvailableFences;
-
-
 		/// <summary>
 		/// swapchain被使用的framebuffer
 		/// </summary>
@@ -96,6 +91,15 @@ namespace PaperEngine {
 
 	class VulkanGraphicsContext : public GraphicsContext {
 	public:
+		struct FrameInFlight {
+			VkFence in_flight_fence = VK_NULL_HANDLE;
+			VkSemaphore image_available_semaphore = VK_NULL_HANDLE;
+			VkSemaphore render_finished_semaphore = VK_NULL_HANDLE;
+
+			// 這個frame的main command list
+			nvrhi::CommandListHandle command_list;
+		};
+	public:
 		VulkanGraphicsContext(Window* window);
 
 		void init() override;
@@ -105,8 +109,6 @@ namespace PaperEngine {
 		bool beginFrame() override;
 
 		bool present() override;
-
-		void waitForSwapchainImageAvailable() override;
 
 		uint32_t getSwapchainCount() override;
 
@@ -124,10 +126,20 @@ namespace PaperEngine {
 
 		nvrhi::Format getSupportedDepthFormat() override;
 
+		inline uint32_t getMaxFrameInFlight() const override { return static_cast<uint32_t>(m_framesInFlight.size()); }
+
+		inline uint32_t getCurrentFrameInFlightIndex() const { return m_currentFrameInFlightIndex; }
+
+		nvrhi::CommandListHandle getCurrentFrameCommandList() override;
+
 	private:
 		bool createSwapchain();
 
 		void createFramebuffers();
+
+		void createFrameSyncObjects();
+
+		void destroyFrameSyncObjects();
 
 	private:
 		VulkanInstance m_instance;
@@ -140,6 +152,9 @@ namespace PaperEngine {
 		std::function<void()> m_onBackBufferResizedCallback;
 
 		bool m_resizeRequested = false;
+
+		std::vector<FrameInFlight> m_framesInFlight;
+		uint32_t m_currentFrameInFlightIndex = 0;
 	};
 }
 

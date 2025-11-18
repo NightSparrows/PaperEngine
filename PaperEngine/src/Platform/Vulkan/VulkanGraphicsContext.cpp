@@ -267,27 +267,9 @@ namespace PaperEngine {
 		}
 #pragma endregion
 
-#pragma region Initialize Frame in flight synchronization objects
-		{
-			VkFenceCreateInfo fence_info = {
-				.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-				//.flags = VK_FENCE_CREATE_SIGNALED_BIT
-			};
-
-			m_instance.imageAvailableFences.resize(m_instance.vkbSwapchain.image_count);
-			for (uint32_t i = 0; i < m_instance.imageAvailableFences.size(); i++) {
-
-				CHECK_VK_RESULT(vkCreateFence(
-					m_instance.vkbDevice.device,
-					&fence_info, // fence create info
-					nullptr, // allocator
-					&m_instance.imageAvailableFences[i]
-				));
-			}
-		}
-#pragma endregion
-
 		this->createFramebuffers();
+
+		this->createFrameSyncObjects();
 
 		PE_CORE_TRACE("[Vulkan] Vulkan graphics context initialized successfully!");
 	}
@@ -296,12 +278,9 @@ namespace PaperEngine {
 	{
 		vkDeviceWaitIdle(m_instance.vkbDevice);
 		
-		m_instance.framebuffers.clear();
+		this->destroyFrameSyncObjects();
 
-		for (const auto& fence : m_instance.imageAvailableFences) {
-			vkDestroyFence(m_instance.vkbDevice.device, fence, nullptr);
-		}
-		m_instance.imageAvailableFences.clear();
+		m_instance.framebuffers.clear();
 
 		m_instance.swapchainTextures.clear();
 
@@ -337,12 +316,26 @@ namespace PaperEngine {
 
 		VkResult result = VK_SUCCESS;
 
+		auto& frame_in_flight = m_framesInFlight[m_currentFrameInFlightIndex];
+
+		vkWaitForFences(
+			m_instance.vkbDevice.device,
+			1,
+			&frame_in_flight.in_flight_fence,
+			VK_TRUE,
+			UINT64_MAX);
+
+		vkResetFences(
+			m_instance.vkbDevice.device,
+			1,
+			&frame_in_flight.in_flight_fence);
+
 		result = vkAcquireNextImageKHR(
 			m_instance.vkbDevice.device,
 			m_instance.vkbSwapchain.swapchain,
 			UINT64_MAX, // use the default timeout
-			VK_NULL_HANDLE,
-			m_instance.imageAvailableFences[m_instance.imageAvailableFenceIndex], // Fence for knowing the image can be write
+			frame_in_flight.image_available_semaphore,
+			VK_NULL_HANDLE, // Fence for knowing the image can be write
 			&m_instance.swapchainIndex);
 
 		if ((result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)) {
@@ -350,8 +343,8 @@ namespace PaperEngine {
 			return false;
 		}
 
-		m_instance.currentImageAvailableFence = m_instance.imageAvailableFences[m_instance.imageAvailableFenceIndex];
-		m_instance.imageAvailableFenceIndex = (m_instance.imageAvailableFenceIndex + 1) % m_instance.imageAvailableFences.size();
+		//m_instance.currentImageAvailableFence = m_instance.imageAvailableFences[m_instance.imageAvailableFenceIndex];
+		//m_instance.imageAvailableFenceIndex = (m_instance.imageAvailableFenceIndex + 1) % m_instance.imageAvailableFences.size();
 
 		if (result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR) {
 			// Successfully acquired the next image
@@ -364,11 +357,35 @@ namespace PaperEngine {
 	}
 
 	bool VulkanGraphicsContext::present()
-	{	
+	{
+		auto& frame_in_flight = m_framesInFlight[m_currentFrameInFlightIndex];
+
+		VkPipelineStageFlags wait_stages[] = {
+			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+		};
+
+		VkCommandBuffer cmd_buffer = frame_in_flight.command_list->getNativeObject(nvrhi::ObjectTypes::VK_CommandBuffer);
+		VkSubmitInfo submit_info = {
+			.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+			.waitSemaphoreCount = 1,
+			.pWaitSemaphores = &frame_in_flight.image_available_semaphore,
+			.pWaitDstStageMask = wait_stages,
+			.commandBufferCount = 1,
+			.pCommandBuffers = &cmd_buffer,
+			.signalSemaphoreCount = 1,
+			.pSignalSemaphores = &frame_in_flight.render_finished_semaphore,
+		};
+
+		vkQueueSubmit(
+			m_instance.graphicsQueue,
+			1, // one submit info
+			&submit_info,
+			frame_in_flight.in_flight_fence);
+
 		VkPresentInfoKHR presentInfo = {
 			.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-			.waitSemaphoreCount = 0,
-			.pWaitSemaphores = nullptr,
+			.waitSemaphoreCount = 1,
+			.pWaitSemaphores = &frame_in_flight.render_finished_semaphore,
 			.swapchainCount = 1,
 			.pSwapchains = &m_instance.vkbSwapchain.swapchain,
 			.pImageIndices = &m_instance.swapchainIndex,
@@ -381,24 +398,9 @@ namespace PaperEngine {
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 			m_resizeRequested = true;
 		}
+		m_currentFrameInFlightIndex = (m_currentFrameInFlightIndex + 1) % static_cast<uint32_t>(m_framesInFlight.size());
 
 		return result == VK_SUCCESS;
-	}
-
-	void VulkanGraphicsContext::waitForSwapchainImageAvailable()
-	{
-		CHECK_VK_RESULT(vkWaitForFences(
-			m_instance.vkbDevice.device,
-			1, // one fence
-			&m_instance.currentImageAvailableFence,
-			VK_TRUE, // wait for the fence to be signaled
-			UINT64_MAX // no timeout
-		));
-		CHECK_VK_RESULT(vkResetFences(
-			m_instance.vkbDevice.device,
-			1, // one fence
-			&m_instance.currentImageAvailableFence
-		));
 	}
 
 	uint32_t VulkanGraphicsContext::getSwapchainCount()
@@ -446,12 +448,26 @@ namespace PaperEngine {
 		return m_instance.depthFormat;
 	}
 
+	nvrhi::CommandListHandle VulkanGraphicsContext::getCurrentFrameCommandList()
+	{
+		return m_framesInFlight[m_currentFrameInFlightIndex].command_list;
+	}
+
 	bool VulkanGraphicsContext::createSwapchain()
 	{
 		vkDeviceWaitIdle(m_instance.vkbDevice.device);
 
-		if (!m_instance.imageAvailableFences.empty()) {
-			vkResetFences(m_instance.vkbDevice, static_cast<uint32_t>(m_instance.imageAvailableFences.size()), m_instance.imageAvailableFences.data());
+		m_instance.device->runGarbageCollection();
+
+		// 清除 NVRHI command buffer的dependency
+		for (auto& frame : m_framesInFlight) {
+			// Create command list, 沒辦法只能重新create command list
+			nvrhi::CommandListParameters cmd_params;
+			cmd_params.setQueueType(nvrhi::CommandQueue::Graphics);
+			frame.command_list->clearState();
+			frame.command_list->Release();
+			frame.command_list.Reset();
+			frame.command_list = m_instance.device->createCommandList(cmd_params);
 		}
 
 		m_instance.swapchainTextures.clear();
@@ -518,6 +534,66 @@ namespace PaperEngine {
 				m_instance.device->createFramebuffer(framebufferDesc)
 				});
 		}
+	}
+	
+	void VulkanGraphicsContext::createFrameSyncObjects()
+	{	
+		m_framesInFlight.resize(m_instance.vkbSwapchain.image_count);
+		VkFenceCreateInfo fence_info = {
+			.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+			.flags = VK_FENCE_CREATE_SIGNALED_BIT
+		};
+		VkSemaphoreCreateInfo semaphore_info = {
+			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+		};
+		for (size_t i = 0; i < m_framesInFlight.size(); i++) {
+			vkCreateSemaphore(
+				m_instance.vkbDevice.device,
+				&semaphore_info, // semaphore create info
+				nullptr, // allocator
+				&m_framesInFlight[i].image_available_semaphore
+			);
+			vkCreateSemaphore(
+				m_instance.vkbDevice.device,
+				&semaphore_info, // semaphore create info
+				nullptr, // allocator
+				&m_framesInFlight[i].render_finished_semaphore
+			);
+			vkCreateFence(
+				m_instance.vkbDevice.device,
+				&fence_info, // fence create info
+				nullptr, // allocator
+				&m_framesInFlight[i].in_flight_fence
+			);
+
+			// Create command list
+			nvrhi::CommandListParameters cmd_params;
+			cmd_params.setQueueType(nvrhi::CommandQueue::Graphics);
+			m_framesInFlight[i].command_list = m_instance.device->createCommandList(cmd_params);
+		}
+	}
+
+	void VulkanGraphicsContext::destroyFrameSyncObjects()
+	{
+		for (auto& frame : m_framesInFlight) {
+			if (frame.image_available_semaphore) {
+				vkDestroySemaphore(m_instance.vkbDevice.device, frame.image_available_semaphore, nullptr);
+				frame.image_available_semaphore = VK_NULL_HANDLE;
+			}
+			if (frame.render_finished_semaphore) {
+				vkDestroySemaphore(m_instance.vkbDevice.device, frame.render_finished_semaphore, nullptr);
+				frame.render_finished_semaphore = VK_NULL_HANDLE;
+			}
+			if (frame.in_flight_fence) {
+				vkDestroyFence(m_instance.vkbDevice.device, frame.in_flight_fence, nullptr);
+				frame.in_flight_fence = VK_NULL_HANDLE;
+			}
+			frame.command_list->clearState();
+			frame.command_list->Release();
+			frame.command_list.Reset();
+		}
+		m_framesInFlight.clear();
+
 	}
 }
 

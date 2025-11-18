@@ -259,23 +259,21 @@ namespace PaperEngine {
 		ImDrawData* drawData = ImGui::GetDrawData();
 		const auto& io = ImGui::GetIO();
 
-		m_commandList->open();
-		m_commandList->beginMarker("ImGui");
+		auto main_cmd = Application::Get()->getGraphicsContext()->getCurrentFrameCommandList();
+		//m_commandList->open();
+		main_cmd->beginMarker("ImGui");
 
 		if (!updateGeometry())
 		{
-			m_commandList->close();
+			//m_commandList->close();
 			return;
 		}
 
 		/// 他預設為Present跟DepthWrite
 		// 這樣沒有效率但甲設有正式版也不會有這個layer所以應該沒差
-		m_commandList->beginTrackingTextureState(fb->getDesc().colorAttachments[0].texture, nvrhi::AllSubresources, nvrhi::ResourceStates::Present);
-		m_commandList->beginTrackingTextureState(fb->getDesc().depthAttachment.texture, nvrhi::AllSubresources, nvrhi::ResourceStates::DepthWrite);
+		main_cmd->setTextureState(fb->getDesc().colorAttachments[0].texture, nvrhi::AllSubresources, nvrhi::ResourceStates::RenderTarget);
 
-		m_commandList->setTextureState(fb->getDesc().colorAttachments[0].texture, nvrhi::AllSubresources, nvrhi::ResourceStates::RenderTarget);
-
-		m_commandList->commitBarriers();
+		main_cmd->commitBarriers();
 
 		drawData->ScaleClipRects(io.DisplayFramebufferScale);
 
@@ -334,9 +332,9 @@ namespace PaperEngine {
 					drawArgs.startIndexLocation = idxOffset;
 					drawArgs.startVertexLocation = vtxOffset;
 
-					m_commandList->setGraphicsState(drawState);
-					m_commandList->setPushConstants(invDisplaySize, sizeof(invDisplaySize));
-					m_commandList->drawIndexed(drawArgs);
+					main_cmd->setGraphicsState(drawState);
+					main_cmd->setPushConstants(invDisplaySize, sizeof(invDisplaySize));
+					main_cmd->drawIndexed(drawArgs);
 				}
 
 				idxOffset += pCmd->ElemCount;
@@ -346,9 +344,9 @@ namespace PaperEngine {
 		}
 
 
-		m_commandList->endMarker();
-		m_commandList->close();
-		Application::Application::Get()->getGraphicsContext()->getNVRhiDevice()->executeCommandList(m_commandList);
+		main_cmd->endMarker();
+		//m_commandList->close();
+		//Application::Application::Get()->getGraphicsContext()->getNVRhiDevice()->executeCommandList(m_commandList);
 
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
 			ImGui::UpdatePlatformWindows();
@@ -573,9 +571,9 @@ namespace PaperEngine {
 			vtxDst += cmdList->VtxBuffer.Size;
 			idxDst += cmdList->IdxBuffer.Size;
 		}
-
-		m_commandList->writeBuffer(vertexBuffer, vtxBuffer.data(), vertexBuffer->getDesc().byteSize);
-		m_commandList->writeBuffer(indexBuffer, idxBuffer.data(), indexBuffer->getDesc().byteSize);
+		auto main_cmd = Application::Get()->getGraphicsContext()->getCurrentFrameCommandList();
+		main_cmd->writeBuffer(vertexBuffer, vtxBuffer.data(), vertexBuffer->getDesc().byteSize);
+		main_cmd->writeBuffer(indexBuffer, idxBuffer.data(), indexBuffer->getDesc().byteSize);
 
 		return true;
 	}
