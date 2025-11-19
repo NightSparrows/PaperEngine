@@ -13,7 +13,6 @@ namespace PaperEngine
 		{
 			/// <summary>
 			/// 上傳GPU後就不太會更改
-			/// 基本上只有一個instance
 			/// </summary>
 			Static,
 			/// <summary>
@@ -22,7 +21,7 @@ namespace PaperEngine
 			/// </summary>
 			FrameStreaming,
 			/// <summary>
-			/// 在GPU裡面每frame都會計算或儲存的資料
+			/// 在GPU裡面計算的
 			/// </summary>
 			FrameStatic
 		};
