@@ -38,7 +38,7 @@ public:
 			break;
 		case nvrhi::MessageSeverity::Error:
 			PE_CORE_ERROR("[NVRHI] {}", messageText);
-			//PE_DEBUGBREAK();
+			PE_DEBUGBREAK();
 			break;
 		case nvrhi::MessageSeverity::Fatal:
 			PE_CORE_CRITICAL("[NVRHI] {}", messageText);
@@ -124,6 +124,12 @@ namespace PaperEngine {
 
 		nvrhi::Format getSupportedDepthFormat() override;
 
+		/// <summary>
+		/// 這個是用來render to swapchain的
+		/// </summary>
+		/// <returns></returns>
+		nvrhi::CommandListHandle getMainCommandList() override { return m_mainCmd; }
+
 	private:
 		bool createSwapchain();
 
@@ -140,6 +146,9 @@ namespace PaperEngine {
 		std::function<void()> m_onBackBufferResizedCallback;
 
 		bool m_resizeRequested = false;
+
+		nvrhi::CommandListHandle m_mainCmd;
+		nvrhi::EventQueryHandle m_renderFinishedQuery;
 	};
 }
 

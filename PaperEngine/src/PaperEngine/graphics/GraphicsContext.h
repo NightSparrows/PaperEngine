@@ -56,6 +56,7 @@ namespace PaperEngine {
 
 		virtual nvrhi::Format getSupportedDepthFormat() = 0;
 
+		virtual nvrhi::CommandListHandle getMainCommandList() = 0;
 	public:
 		static Ref<GraphicsContext> Create(Window* window);
 	};

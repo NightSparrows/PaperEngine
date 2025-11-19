@@ -5,6 +5,7 @@
 #include <PaperEngine/core/Base.h>
 #include <PaperEngine/core/Assert.h>
 #include <PaperEngine/core/Logger.h>
+#include <PaperEngine/debug/Instrumentor.h>
 
 #include "VulkanGraphicsContext.h"
 
@@ -296,6 +297,9 @@ namespace PaperEngine {
 
 		this->createFramebuffers();
 
+		m_mainCmd = m_instance.device->createCommandList();
+		m_renderFinishedQuery = m_instance.device->createEventQuery();
+
 		PE_CORE_TRACE("[Vulkan] Vulkan graphics context initialized successfully!");
 	}
 
@@ -303,6 +307,9 @@ namespace PaperEngine {
 	{
 		vkDeviceWaitIdle(m_instance.vkbDevice);
 		
+		m_mainCmd.Reset();
+		m_renderFinishedQuery.Reset();
+
 		m_instance.framebuffers.clear();
 
 		for (const auto& fence : m_instance.imageAvailableFences) {
@@ -360,18 +367,26 @@ namespace PaperEngine {
 		m_instance.currentImageAvailableFence = m_instance.imageAvailableFences[m_instance.imageAvailableFenceIndex];
 		m_instance.imageAvailableFenceIndex = (m_instance.imageAvailableFenceIndex + 1) % m_instance.imageAvailableFences.size();
 
-		if (result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR) {
-			// Successfully acquired the next image
-			// 會畫到swapchain image的command需要wait
-
-			return true;
+		if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+			return false;
 		}
 
-		return false;
+		// Successfully acquired the next image
+		// 會畫到swapchain image的command需要wait
+		return true;
 	}
 
 	bool VulkanGraphicsContext::present()
-	{	
+	{
+		PE_PROFILE_FUNCTION();
+		{
+			PE_PROFILE_SCOPE("Commit and wait main command buffer");
+			m_instance.device->resetEventQuery(m_renderFinishedQuery);
+			m_instance.device->executeCommandList(m_mainCmd);
+			m_instance.device->setEventQuery(m_renderFinishedQuery, nvrhi::CommandQueue::Graphics);
+			m_instance.device->waitEventQuery(m_renderFinishedQuery);
+		}
+
 		VkPresentInfoKHR presentInfo = {
 			.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
 			.waitSemaphoreCount = 0,

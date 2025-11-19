@@ -74,7 +74,6 @@ namespace PaperEngine {
 		PE_API LightCullingPass* getLightCullPass() { return &m_lightCullPass; }
 
 	private:
-		nvrhi::CommandListHandle m_cmd;
 
 		BindingLayoutHandle m_globalLayout;
 		nvrhi::BindingSetHandle m_globalSet;
@@ -84,9 +83,6 @@ namespace PaperEngine {
 		MeshRenderer m_meshRenderer;
 		ForwardPlusDepthRenderer m_forwardPlusDepthRenderer;
 		LightCullingPass m_lightCullPass;
-
-		// 等待整個場景render完的sync
-		nvrhi::EventQueryHandle m_sceneRenderQuery;
 	};
 
 }
