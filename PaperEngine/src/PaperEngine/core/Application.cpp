@@ -97,15 +97,6 @@ namespace PaperEngine {
 						auto main_cmd = m_graphicsContext->getCurrentFrameCommandList();
 						main_cmd->clearState();
 						main_cmd->open();
-
-						//m_cmd->open();
-						auto swapchain_texture = m_graphicsContext->getCurrentFramebuffer()->getDesc().colorAttachments[0].texture;
-						auto depth_texture = m_graphicsContext->getCurrentFramebuffer()->getDesc().depthAttachment.texture;
-
-						// NVRHI有問題，他無法使用track一個一開始undefined layout導致Vulkan validation一直報錯
-						main_cmd->beginTrackingTextureState(swapchain_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::Unknown);
-						main_cmd->beginTrackingTextureState(depth_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::Unknown);
-
 						for (auto layer : m_layerManager) {
 #ifdef PE_ENABLE_IMGUI
 							// Imgui 在preRender begin，然後他又是最後render的

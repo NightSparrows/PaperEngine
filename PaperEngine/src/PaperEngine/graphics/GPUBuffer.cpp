@@ -28,16 +28,6 @@ namespace PaperEngine
 			}
 		}
 			break;
-		case FrameStatic:
-		{
-			bufferDesc.cpuAccess = nvrhi::CpuAccessMode::None;
-			m_storages.resize(Application::Get()->getGraphicsContext()->getMaxFrameInFlight());
-			for (auto& storage : m_storages)
-			{
-				storage.buffer = Application::GetNVRHIDevice()->createBuffer(bufferDesc);
-			}
-		}
-		break;
 		default:
 			break;
 		}

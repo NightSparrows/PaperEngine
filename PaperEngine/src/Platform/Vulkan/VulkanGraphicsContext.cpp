@@ -4,8 +4,6 @@
 #include <PaperEngine/core/Base.h>
 #include <PaperEngine/core/Assert.h>
 #include <PaperEngine/core/Logger.h>
-#include <PaperEngine/debug/Instrumentor.h>
-
 
 #include "VulkanGraphicsContext.h"
 
@@ -302,8 +300,6 @@ namespace PaperEngine {
 
 	bool VulkanGraphicsContext::beginFrame()
 	{
-		PE_PROFILE_FUNCTION();
-
 		if (m_resizeRequested) {
 			if (m_window->getWidth() == 0 || m_window->getHeight() == 0) {
 				// 就卡住resizeRequest
