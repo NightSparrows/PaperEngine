@@ -128,10 +128,7 @@ namespace PaperEngine {
 		nvrhi::BufferHandle m_pointLightBuffer;
 		void* m_pointLightBufferptr = nullptr;
 
-		// command buffer
-		nvrhi::CommandListHandle m_cmd;
-
-		nvrhi::EventQueryHandle m_computeQuery;
+		std::mutex m_mutex;
 	};
 
 }

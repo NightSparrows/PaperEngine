@@ -51,6 +51,14 @@ public:
 };
 
 namespace PaperEngine {
+
+	struct FrameInFlight {
+		VkSemaphore image_available_semaphore;
+		VkSemaphore render_finished_semaphore;
+		nvrhi::EventQueryHandle fence;
+		nvrhi::CommandListHandle cmd;		// main command buffer that render specify frame
+	};
+
 	struct VulkanInstance {
 
 		vkb::Instance vkbInstance;
@@ -75,11 +83,6 @@ namespace PaperEngine {
 
 		std::vector<nvrhi::TextureHandle> swapchainTextures;
 		uint32_t swapchainIndex = 0;
-
-		uint32_t imageAvailableFenceIndex = 0;
-		VkFence currentImageAvailableFence = { VK_NULL_HANDLE };
-		std::vector<VkFence> imageAvailableFences;
-
 
 		/// <summary>
 		/// swapchain被使用的framebuffer
@@ -106,8 +109,6 @@ namespace PaperEngine {
 
 		bool present() override;
 
-		void waitForSwapchainImageAvailable() override;
-
 		uint32_t getSwapchainCount() override;
 
 		uint32_t getSwapchainIndex() const override;
@@ -128,12 +129,16 @@ namespace PaperEngine {
 		/// 這個是用來render to swapchain的
 		/// </summary>
 		/// <returns></returns>
-		nvrhi::CommandListHandle getMainCommandList() override { return m_mainCmd; }
+		nvrhi::CommandListHandle getMainCommandList() override;
 
 	private:
 		bool createSwapchain();
 
 		void createFramebuffers();
+
+		void createFrameContentObjects();
+
+		void destroyFrameContentObjects();
 
 	private:
 		VulkanInstance m_instance;
@@ -147,8 +152,8 @@ namespace PaperEngine {
 
 		bool m_resizeRequested = false;
 
-		nvrhi::CommandListHandle m_mainCmd;
-		nvrhi::EventQueryHandle m_renderFinishedQuery;
+		uint32_t m_current_frame_index = 0;
+		std::vector<FrameInFlight> m_frame_contents;
 	};
 }
 

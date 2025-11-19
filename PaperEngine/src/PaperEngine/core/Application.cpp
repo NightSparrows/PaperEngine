@@ -93,8 +93,6 @@ namespace PaperEngine {
 							layer->onPreRender();
 						}
 
-						m_graphicsContext->waitForSwapchainImageAvailable();
-
 						// TODO commit繪製swpachain image的命令
 						auto main_cmd = m_graphicsContext->getMainCommandList();
 						main_cmd->open();

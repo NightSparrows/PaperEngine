@@ -94,8 +94,39 @@ namespace PaperEngine {
 				// Light processing
 				// 就是frustum culling point light不在場景裡的不會process
 				// process好後lightCount更新
-				auto lightView = scene->getRegistry().group<LightComponent>(entt::get<TransformComponent>);
-				for (auto [entity, lightCom, transCom] : lightView.each()) {
+				const auto light_group = scene->getRegistry().group<LightComponent>(entt::get<TransformComponent>);
+				//auto light_it_start = light_group.begin();
+				//const auto light_it_end = light_group.end();
+				//size_t thread_count = Application::GetThreadPool()->get_thread_count();
+				//size_t chunk_size = (light_group.size() + thread_count) / thread_count;
+
+				//std::vector<std::future<void>> process_futures(thread_count);
+
+				//for (size_t i = 0; i < thread_count; i++)
+				//{
+				//	auto light_thread_start = light_it_start;
+				//	std::advance(light_it_start, chunk_size);
+				//	process_futures[i] = Application::GetThreadPool()->submit_task(
+				//		[this, light_group, light_it_start, light_it_end, thread_count, chunk_size, light_thread_start, i]()
+				//		{
+				//			auto light_thread_end = (i == thread_count - 1) ? light_it_end : light_it_start;
+				//			for (auto it = light_thread_start; it != light_thread_end; it++)
+				//			{
+				//				auto entity = *it;
+				//				const auto& transformCom = light_group.get<TransformComponent>(entity);
+				//				const auto& lightCom = light_group.get<LightComponent>(entity);
+
+				//				m_lightCullPass.processLight(transformCom.transform, lightCom);
+				//			}
+				//		});
+				//}
+
+				//for (auto& future : process_futures)
+				//{
+				//	future.get();
+				//}
+
+				for (auto [entity, lightCom, transCom] : light_group.each()) {
 					m_lightCullPass.processLight(transCom.transform, lightCom);
 				}
 

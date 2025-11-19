@@ -14,7 +14,6 @@
 #endif // PE_DEBUG
 #include <nvrhi/vulkan.h>
 
-
 // 啟用 Vulkan-Hpp 動態載入
 #include <vulkan/vulkan.hpp>
 namespace vk {
@@ -275,30 +274,9 @@ namespace PaperEngine {
 		}
 #pragma endregion
 
-#pragma region Initialize Frame in flight synchronization objects
-		{
-			VkFenceCreateInfo fence_info = {
-				.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-				//.flags = VK_FENCE_CREATE_SIGNALED_BIT
-			};
-
-			m_instance.imageAvailableFences.resize(m_instance.vkbSwapchain.image_count);
-			for (uint32_t i = 0; i < m_instance.imageAvailableFences.size(); i++) {
-
-				CHECK_VK_RESULT(vkCreateFence(
-					m_instance.vkbDevice.device,
-					&fence_info, // fence create info
-					nullptr, // allocator
-					&m_instance.imageAvailableFences[i]
-				));
-			}
-		}
-#pragma endregion
-
 		this->createFramebuffers();
 
-		m_mainCmd = m_instance.device->createCommandList();
-		m_renderFinishedQuery = m_instance.device->createEventQuery();
+		this->createFrameContentObjects();
 
 		PE_CORE_TRACE("[Vulkan] Vulkan graphics context initialized successfully!");
 	}
@@ -307,15 +285,9 @@ namespace PaperEngine {
 	{
 		vkDeviceWaitIdle(m_instance.vkbDevice);
 		
-		m_mainCmd.Reset();
-		m_renderFinishedQuery.Reset();
+		this->destroyFrameContentObjects();
 
 		m_instance.framebuffers.clear();
-
-		for (const auto& fence : m_instance.imageAvailableFences) {
-			vkDestroyFence(m_instance.vkbDevice.device, fence, nullptr);
-		}
-		m_instance.imageAvailableFences.clear();
 
 		m_instance.swapchainTextures.clear();
 
@@ -351,21 +323,23 @@ namespace PaperEngine {
 
 		VkResult result = VK_SUCCESS;
 
+		const auto& current_frame_content = m_frame_contents[m_current_frame_index];
+
+		m_instance.device->waitEventQuery(current_frame_content.fence);
+		m_instance.device->resetEventQuery(current_frame_content.fence);
+
 		result = vkAcquireNextImageKHR(
 			m_instance.vkbDevice.device,
 			m_instance.vkbSwapchain.swapchain,
 			UINT64_MAX, // use the default timeout
-			VK_NULL_HANDLE,
-			m_instance.imageAvailableFences[m_instance.imageAvailableFenceIndex], // Fence for knowing the image can be write
+			current_frame_content.image_available_semaphore,
+			VK_NULL_HANDLE, // Fence for knowing the image can be write
 			&m_instance.swapchainIndex);
 
 		if ((result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)) {
 			m_resizeRequested = true;
 			return false;
 		}
-
-		m_instance.currentImageAvailableFence = m_instance.imageAvailableFences[m_instance.imageAvailableFenceIndex];
-		m_instance.imageAvailableFenceIndex = (m_instance.imageAvailableFenceIndex + 1) % m_instance.imageAvailableFences.size();
 
 		if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
 			return false;
@@ -378,24 +352,33 @@ namespace PaperEngine {
 
 	bool VulkanGraphicsContext::present()
 	{
+		auto vk_device = static_cast<nvrhi::vulkan::IDevice*>(m_instance.device.Get());
+
+		// signal render finished semaphore
+		//vk_device->queueSignalSemaphore(nvrhi::CommandQueue::Graphics, [insert render finished semaphore], 0);
+
+		const auto& current_frame_content = m_frame_contents[m_current_frame_index];
+
 		PE_PROFILE_FUNCTION();
 		{
+			// 需要確定device沒有
 			PE_PROFILE_SCOPE("Commit and wait main command buffer");
-			m_instance.device->resetEventQuery(m_renderFinishedQuery);
-			m_instance.device->executeCommandList(m_mainCmd);
-			m_instance.device->setEventQuery(m_renderFinishedQuery, nvrhi::CommandQueue::Graphics);
-			m_instance.device->waitEventQuery(m_renderFinishedQuery);
+			// don't care the value because it is binary semaphore
+			vk_device->queueWaitForSemaphore(nvrhi::CommandQueue::Graphics, current_frame_content.image_available_semaphore, 0);
+			vk_device->queueSignalSemaphore(nvrhi::CommandQueue::Graphics, current_frame_content.render_finished_semaphore, 0);
+			m_instance.device->executeCommandList(current_frame_content.cmd);
+			m_instance.device->setEventQuery(current_frame_content.fence, nvrhi::CommandQueue::Graphics);
 		}
 
 		VkPresentInfoKHR presentInfo = {
 			.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-			.waitSemaphoreCount = 0,
-			.pWaitSemaphores = nullptr,
+			.waitSemaphoreCount = 1,
+			.pWaitSemaphores = &current_frame_content.render_finished_semaphore,
 			.swapchainCount = 1,
 			.pSwapchains = &m_instance.vkbSwapchain.swapchain,
 			.pImageIndices = &m_instance.swapchainIndex,
 		};
-		
+
 		const VkResult result = vkQueuePresentKHR(
 			m_instance.graphicsQueue,
 			&presentInfo);
@@ -404,23 +387,9 @@ namespace PaperEngine {
 			m_resizeRequested = true;
 		}
 
-		return result == VK_SUCCESS;
-	}
+		m_current_frame_index = (m_current_frame_index + 1) % static_cast<uint32_t>(m_frame_contents.size());
 
-	void VulkanGraphicsContext::waitForSwapchainImageAvailable()
-	{
-		CHECK_VK_RESULT(vkWaitForFences(
-			m_instance.vkbDevice.device,
-			1, // one fence
-			&m_instance.currentImageAvailableFence,
-			VK_TRUE, // wait for the fence to be signaled
-			UINT64_MAX // no timeout
-		));
-		CHECK_VK_RESULT(vkResetFences(
-			m_instance.vkbDevice.device,
-			1, // one fence
-			&m_instance.currentImageAvailableFence
-		));
+		return result == VK_SUCCESS;
 	}
 
 	uint32_t VulkanGraphicsContext::getSwapchainCount()
@@ -468,13 +437,14 @@ namespace PaperEngine {
 		return m_instance.depthFormat;
 	}
 
+	nvrhi::CommandListHandle VulkanGraphicsContext::getMainCommandList()
+	{
+		return m_frame_contents[m_current_frame_index].cmd;
+	}
+
 	bool VulkanGraphicsContext::createSwapchain()
 	{
 		vkDeviceWaitIdle(m_instance.vkbDevice.device);
-
-		if (!m_instance.imageAvailableFences.empty()) {
-			vkResetFences(m_instance.vkbDevice, static_cast<uint32_t>(m_instance.imageAvailableFences.size()), m_instance.imageAvailableFences.data());
-		}
 
 		m_instance.swapchainTextures.clear();
 		VkSurfaceFormatKHR surfaceFormat = {
@@ -541,6 +511,32 @@ namespace PaperEngine {
 				m_instance.device->createFramebuffer(framebufferDesc)
 				});
 		}
+	}
+
+	void VulkanGraphicsContext::createFrameContentObjects()
+	{
+
+		m_frame_contents.resize(m_instance.vkbSwapchain.image_count);
+		for (auto& frame_content : m_frame_contents)
+		{
+			VkFenceCreateInfo fence_info{ VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
+			fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+			frame_content.fence = m_instance.device->createEventQuery();
+			VkSemaphoreCreateInfo sema_info{ VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO };
+			vkCreateSemaphore(m_instance.vkbDevice.device, &sema_info, nullptr, &frame_content.image_available_semaphore);
+			vkCreateSemaphore(m_instance.vkbDevice.device, &sema_info, nullptr, &frame_content.render_finished_semaphore);
+			frame_content.cmd = m_instance.device->createCommandList();
+		}
+	}
+	
+	void VulkanGraphicsContext::destroyFrameContentObjects()
+	{
+		for (auto& frame_content : m_frame_contents)
+		{
+			vkDestroySemaphore(m_instance.vkbDevice.device, frame_content.image_available_semaphore, nullptr);
+			vkDestroySemaphore(m_instance.vkbDevice.device, frame_content.render_finished_semaphore, nullptr);
+		}
+		m_frame_contents.clear();
 	}
 }
 

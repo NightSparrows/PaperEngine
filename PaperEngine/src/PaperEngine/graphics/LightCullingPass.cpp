@@ -9,9 +9,6 @@ namespace PaperEngine {
 	void LightCullingPass::init() {
 		nvrhi::CommandListParameters cmdParams;
 		cmdParams.setQueueType(nvrhi::CommandQueue::Compute);
-		m_cmd = Application::GetNVRHIDevice()->createCommandList(cmdParams);
-
-		m_computeQuery = Application::GetNVRHIDevice()->createEventQuery();
 
 		{
 			nvrhi::BufferDesc bufferDesc;
@@ -202,6 +199,7 @@ namespace PaperEngine {
 
 	void LightCullingPass::processLight(const Transform& transform, const LightComponent& lightCom)
 	{
+		std::lock_guard<std::mutex> lock(m_mutex);
 		switch (lightCom.type)
 		{
 		case LightType::Directional:
