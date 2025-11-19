@@ -17,8 +17,6 @@
 #include <PaperEngine/graphics/IRenderer.h>
 
 #include "BindingLayout.h"
-#include "GPUBuffer.h"
-#include "BindingSet.h"
 
 namespace PaperEngine {
 
@@ -89,12 +87,10 @@ namespace PaperEngine {
 		uint32_t m_totalDrawCallCount{ 0 };
 
 		BindingLayoutHandle m_instanceBufBindingLayout;
-		BindingSetHandle m_instanceBufferSet;
-
-		uint32_t m_maxInstanceCount{ 100000 };
-
+		nvrhi::BindingSetHandle m_instanceBufferSet;
 		// 紀錄instance buffer的transformation
-		GPUBufferHandle m_instanceBuffer;
+		nvrhi::BufferHandle m_instanceBuffer;
+		void* m_instanceBufferCpuPtr{ nullptr };
 	};
 
 }

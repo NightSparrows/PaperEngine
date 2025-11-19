@@ -42,6 +42,12 @@ namespace PaperEngine {
 
 		virtual uint32_t getSwapchainIndex() const = 0;
 
+		/// <summary>
+		/// 由於NVRHI的設計缺陷，使用CPU - GPU fence來確保當前
+		/// swapchain image可以被使用
+		/// </summary>
+		virtual void waitForSwapchainImageAvailable() = 0;
+
 		virtual nvrhi::TextureHandle getCurrentSwapchainTexture() = 0;
 
 		virtual nvrhi::IDevice* getNVRhiDevice() const = 0;
@@ -49,16 +55,6 @@ namespace PaperEngine {
 		virtual nvrhi::FramebufferHandle getCurrentFramebuffer() = 0;
 
 		virtual nvrhi::Format getSupportedDepthFormat() = 0;
-
-		/// <summary>
-		/// Frame in flight
-		/// </summary>
-		virtual uint32_t getMaxFrameInFlight() const = 0;
-
-		virtual uint32_t getCurrentFrameInFlightIndex() const = 0;
-
-		virtual nvrhi::CommandListHandle getCurrentFrameCommandList() = 0;
-
 
 	public:
 		static Ref<GraphicsContext> Create(Window* window);

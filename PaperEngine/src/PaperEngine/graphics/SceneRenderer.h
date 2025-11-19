@@ -10,8 +10,6 @@
 #include <PaperEngine/graphics/MeshRenderer.h>
 #include "ForwardPlusDepthRenderer.h"
 #include "LightCullingPass.h"
-#include "GPUBuffer.h"
-#include "BindingSet.h"
 
 namespace PaperEngine {
 
@@ -76,14 +74,19 @@ namespace PaperEngine {
 		PE_API LightCullingPass* getLightCullPass() { return &m_lightCullPass; }
 
 	private:
+		nvrhi::CommandListHandle m_cmd;
+
 		BindingLayoutHandle m_globalLayout;
-		BindingSetHandle m_globalSet;
-		GPUBufferHandle m_globalDataBuffer;
+		nvrhi::BindingSetHandle m_globalSet;
+		nvrhi::BufferHandle m_globalDataBuffer;
 
 		// 先這樣
 		MeshRenderer m_meshRenderer;
 		ForwardPlusDepthRenderer m_forwardPlusDepthRenderer;
 		LightCullingPass m_lightCullPass;
+
+		// 等待整個場景render完的sync
+		nvrhi::EventQueryHandle m_sceneRenderQuery;
 	};
 
 }

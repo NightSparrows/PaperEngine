@@ -20,6 +20,9 @@ namespace PaperEngine {
 	{
 		m_lightCullPass.init();
 
+		m_sceneRenderQuery = Application::GetNVRHIDevice()->createEventQuery();
+		m_cmd = Application::GetNVRHIDevice()->createCommandList();
+
 		// 全域data (constantBuffer Slot 0 : set = 0)
 		nvrhi::BufferDesc globalDataBufferDesc;
 		globalDataBufferDesc
@@ -27,7 +30,7 @@ namespace PaperEngine {
 			.setKeepInitialState(true)
 			.setByteSize(sizeof(GlobalDataI))
 			.setIsConstantBuffer(true);
-		m_globalDataBuffer = CreateRef<GPUBuffer>(IResource::Usage::FrameStreaming, globalDataBufferDesc);
+		m_globalDataBuffer = Application::GetNVRHIDevice()->createBuffer(globalDataBufferDesc);
 
 		nvrhi::BindingLayoutDesc globalLayoutDesc;
 		globalLayoutDesc
@@ -43,18 +46,13 @@ namespace PaperEngine {
 			Application::GetResourceManager()->create<BindingLayout>("SceneRenderer_globalLayout",
 				Application::GetNVRHIDevice()->createBindingLayout(globalLayoutDesc));
 
-		std::vector<nvrhi::BindingSetDesc> globalSetDescs;
-		for (uint32_t i = 0; i < Application::Get()->getGraphicsContext()->getMaxFrameInFlight(); i++)
-		{
-			nvrhi::BindingSetDesc globalSetDesc;
-			globalSetDesc.addItem(nvrhi::BindingSetItem::ConstantBuffer(0, m_globalDataBuffer->getStorages()[i].buffer));
-			globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(0, m_lightCullPass.getDirectionalLightBuffer()));
-			globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(1, m_lightCullPass.getPointLightBuffer()));
-			globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(2, m_lightCullPass.getPointLightCullData().globalLightIndicesBuffer));
-			globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(3, m_lightCullPass.getPointLightCullData().clusterRangesBuffer));
-			globalSetDescs.push_back(globalSetDesc);
-		}
-		m_globalSet = CreateRef<BindingSet>(IResource::Usage::FrameStreaming, m_globalLayout->handle, globalSetDescs);
+		nvrhi::BindingSetDesc globalSetDesc;
+		globalSetDesc.addItem(nvrhi::BindingSetItem::ConstantBuffer(0, m_globalDataBuffer));
+		globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(0, m_lightCullPass.getDirectionalLightBuffer()));
+		globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(1, m_lightCullPass.getPointLightBuffer()));
+		globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(2, m_lightCullPass.getPointLightCullData().globalLightIndicesBuffer));
+		globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(3, m_lightCullPass.getPointLightCullData().clusterRangesBuffer));
+		m_globalSet = Application::GetNVRHIDevice()->createBindingSet(globalSetDesc, m_globalLayout->handle);
 
 		m_forwardPlusDepthRenderer.init();
 	}
@@ -82,7 +80,7 @@ namespace PaperEngine {
 		sceneData.camera = camera;
 		sceneData.cameraTransform = transform;
 		sceneData.fb = fb;
-		sceneData.globalSet = m_globalSet->getCurrentHandle();
+		sceneData.globalSet = m_globalSet;
 		sceneData.projViewMatrix = globalData.projViewMatrix;
 
 #pragma region Filter Renderable Meshes
@@ -114,35 +112,33 @@ namespace PaperEngine {
 		// 不代表會全部Process
 		globalData.pointLightCount = m_lightCullPass.getPointLightCount();
 
-		auto main_cmd = Application::Get()->getGraphicsContext()->getCurrentFrameCommandList();
-
-		//m_cmd->open();
+		m_cmd->open();
 		auto swapchain_texture = fb->getDesc().colorAttachments[0].texture;
 		auto depth_texture = fb->getDesc().depthAttachment.texture;
 
 
 		// NVRHI有問題，他無法使用track一個一開始undefined layout導致Vulkan validation一直報錯
-		main_cmd->beginTrackingTextureState(swapchain_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::Unknown);
-		main_cmd->beginTrackingTextureState(depth_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::Unknown);
+		m_cmd->beginTrackingTextureState(swapchain_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::Unknown);
+		m_cmd->beginTrackingTextureState(depth_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::Unknown);
 
-		main_cmd->setTextureState(swapchain_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::CopyDest);
-		main_cmd->setTextureState(depth_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::CopyDest);
+		m_cmd->setTextureState(swapchain_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::CopyDest);
+		m_cmd->setTextureState(depth_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::CopyDest);
 
-		main_cmd->commitBarriers();
+		m_cmd->commitBarriers();
 
-		main_cmd->clearTextureFloat(swapchain_texture, nvrhi::AllSubresources, nvrhi::Color(0.f, 0.f, 0.f, 0.f));
-		main_cmd->clearDepthStencilTexture(depth_texture, nvrhi::AllSubresources, true, 1.f, false, 0);
+		m_cmd->clearTextureFloat(swapchain_texture, nvrhi::AllSubresources, nvrhi::Color(0.f, 0.f, 0.f, 0.f));
+		m_cmd->clearDepthStencilTexture(depth_texture, nvrhi::AllSubresources, true, 1.f, false, 0);
 
-		main_cmd->writeBuffer(m_globalDataBuffer->getCurrentHandle(), &globalData, sizeof(globalData));
+		m_cmd->writeBuffer(m_globalDataBuffer, &globalData, sizeof(globalData));
 
 		// Render PreDepth Pass
 		//m_forwardPlusDepthRenderer.renderScene(sceneData);
 		// compute light tiles using the filtered lights and (TODO predepth texture)
-		m_lightCullPass.calculatePass(main_cmd);
+		m_lightCullPass.calculatePass(m_cmd);
 
 		// TODO render shadow maps that are visible in camera viewport
 
-		m_meshRenderer.renderScene(main_cmd, sceneData);
+		m_meshRenderer.renderScene(m_cmd, sceneData);
 
 		// TODO post processing
 
@@ -150,8 +146,16 @@ namespace PaperEngine {
 		// in GPU sides only having the cpu-gpu block api
 		// TODO 2d stuff rendering
 
-		//m_cmd->close();
-		//Application::GetNVRHIDevice()->executeCommandList(m_cmd);
+		m_cmd->close();
+		Application::GetNVRHIDevice()->executeCommandList(m_cmd);
+
+		// 等待GPU處理完
+		{
+			PE_PROFILE_SCOPE("Wait GPU Scene Render Finish");
+			Application::Application::GetNVRHIDevice()->resetEventQuery(m_sceneRenderQuery);
+			Application::GetNVRHIDevice()->setEventQuery(m_sceneRenderQuery, nvrhi::CommandQueue::Graphics);
+			Application::GetNVRHIDevice()->waitEventQuery(m_sceneRenderQuery);
+		}
 
 		// 清除process data
 		m_meshRenderer.endFrame();

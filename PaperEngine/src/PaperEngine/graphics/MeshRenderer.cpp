@@ -16,12 +16,13 @@ namespace PaperEngine {
 	{
 		nvrhi::BufferDesc instanceBufferDesc;
 		instanceBufferDesc
-			.setByteSize(sizeof(InstanceData) * m_maxInstanceCount)
+			.setByteSize(sizeof(InstanceData) * 100000)
 			.setIsConstantBuffer(true)
 			.setKeepInitialState(true)
 			.setStructStride(sizeof(InstanceData))
 			.setCpuAccess(nvrhi::CpuAccessMode::Write);
-		m_instanceBuffer = CreateRef<GPUBuffer>(PaperEngine::IResource::Usage::FrameStreaming, instanceBufferDesc);
+		m_instanceBuffer = Application::GetNVRHIDevice()->createBuffer(instanceBufferDesc);
+		m_instanceBufferCpuPtr = Application::GetNVRHIDevice()->mapBuffer(m_instanceBuffer, nvrhi::CpuAccessMode::Write);
 
 		nvrhi::BindingLayoutDesc instanceBufLayoutDesc;
 		instanceBufLayoutDesc
@@ -33,21 +34,16 @@ namespace PaperEngine {
 			Application::GetResourceManager()->create<BindingLayout>("MeshRenderer_instanceBufLayout",
 				Application::GetNVRHIDevice()->createBindingLayout(instanceBufLayoutDesc));
 
-		std::vector<nvrhi::BindingSetDesc> instanceBufSetDescs;
-		for (size_t i = 0; i < Application::Get()->getGraphicsContext()->getMaxFrameInFlight(); i++) {
-			nvrhi::BindingSetDesc instanceBufSetDesc;
-			instanceBufSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(0, m_instanceBuffer->getStorages()[i].buffer));
-			instanceBufSetDescs.push_back(instanceBufSetDesc);
-		}
-		m_instanceBufferSet = CreateRef<BindingSet>(
-			PaperEngine::IResource::Usage::FrameStreaming,
-			m_instanceBufBindingLayout->handle,
-			instanceBufSetDescs);
+		nvrhi::BindingSetDesc instanceBufSetDesc;
+		instanceBufSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(0, m_instanceBuffer));
+		m_instanceBufferSet = Application::GetNVRHIDevice()->createBindingSet(instanceBufSetDesc, m_instanceBufBindingLayout->handle);
 
 	}
 
 	MeshRenderer::~MeshRenderer()
 	{
+		Application::GetNVRHIDevice()->unmapBuffer(m_instanceBuffer);
+		m_instanceBufferCpuPtr = nullptr;
 	}
 
 	void MeshRenderer::addEntity(Ref<Material> material, Ref<Mesh> mesh, uint32_t subMeshIndex, const Transform& transform)
@@ -156,7 +152,7 @@ namespace PaperEngine {
 		/// 2: material
 		graphicsState.bindings.resize(3);
 		graphicsState.bindings[0] = globalData.globalSet;
-		graphicsState.bindings[1] = m_instanceBufferSet->getCurrentHandle();
+		graphicsState.bindings[1] = m_instanceBufferSet;
 
 		// Render
 		size_t instanceOffset = 0;
@@ -174,7 +170,7 @@ namespace PaperEngine {
 						size_t transMatSize = instanceCount * sizeof(InstanceData);
 
 						memcpy(
-							static_cast<uint8_t*>(m_instanceBuffer->mapBufferPtr()) + instanceOffset * sizeof(InstanceData),
+							static_cast<uint8_t*>(m_instanceBufferCpuPtr) + instanceOffset * sizeof(InstanceData),
 							subMeshData.instanceData.data(),
 							transMatSize);
 
