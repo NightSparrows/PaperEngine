@@ -12,12 +12,14 @@ namespace PaperEngine {
 			using enum PaperEngine::IResource::Usage;
 		case Static:
 		{
+			PE_CORE_ASSERT(descs.size() == 1, "Static Binding Set but not single descriptor");
 			m_storages.resize(1);
 			m_storages[0].handle = Application::GetNVRHIDevice()->createBindingSet(descs[0], layout);
 		}
 			break;
 		case FrameStreaming:
 		{
+			PE_CORE_ASSERT(descs.size() == Application::Get()->getGraphicsContext()->getMaxFrameInFlight(), "size not same as in flight frame count.");
 			m_storages.resize(Application::Get()->getGraphicsContext()->getMaxFrameInFlight());
 			for (size_t i = 0; i < m_storages.size(); i++)
 			{
