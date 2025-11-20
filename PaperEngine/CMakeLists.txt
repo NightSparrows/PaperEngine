@@ -74,8 +74,8 @@ target_link_libraries(${PROJECT_NAME} PUBLIC EnTT)
 
 # include nvrhi
 target_link_libraries(${PROJECT_NAME} PUBLIC nvrhi)
-if (_WIN32)
-target_link_libraries(${PROJECT_NAME} PUBLIC nvrhi_vk)
+if (WIN32)
+	target_link_libraries(${PROJECT_NAME} PUBLIC nvrhi_vk)
 endif()
 target_include_directories(${PROJECT_NAME} PUBLIC ${nvrhi_SOURCE_DIR}/include)
 

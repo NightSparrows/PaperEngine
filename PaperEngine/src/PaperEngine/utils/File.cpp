@@ -17,7 +17,7 @@ namespace PaperEngine {
     {
         std::ifstream file(m_path, std::ios::ate | std::ios::binary);
         if (!file.is_open()) {
-            PE_CORE_ERROR("failed to open file {}", m_path.c_str());
+            PE_CORE_ERROR("failed to open file {}", m_path.string());
             return nullptr;
         }
 
