@@ -195,8 +195,10 @@ namespace PaperEngine {
 				.setAllFilters(true);
 			m_fontSampler = device->createSampler(desc);
 
-			if (m_fontSampler == nullptr)
+			if (m_fontSampler == nullptr) {
+				PE_CORE_ERROR("failed to create imgui font sampler");
 				return;
+			}
 		}
 
 		ImGui_ImplGlfw_InitForVulkan(static_cast<GLFWwindow*>(Application::Get()->getWindow()->getNativeWindow()), false);
@@ -478,7 +480,7 @@ namespace PaperEngine {
 		textureDesc
 			.setWidth(width)
 			.setHeight(height)
-			.setFormat(nvrhi::Format::RGBA8_UNORM)
+			.setFormat(nvrhi::Format::SRGBA8_UNORM)
 			.setDebugName("ImGuiFontTexture");
 		m_fontTexture = Application::Get()->getGraphicsContext()->getNVRhiDevice()->createTexture(textureDesc);
 
