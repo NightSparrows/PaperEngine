@@ -1,6 +1,7 @@
 ﻿
 #include <vector>
 #include <iostream>
+#include <exception>
 
 #include <PaperEngine/core/Base.h>
 #include <PaperEngine/core/Assert.h>
@@ -153,19 +154,37 @@ namespace PaperEngine {
 		{
 
 			vkb::PhysicalDeviceSelector selector{ m_instance.vkbInstance };
+			
+			// auto gpu_list_result = selector
+			// 	.set_surface(m_instance.surface)
+			// 	.set_required_features_12(vulkan12Features)
+			// 	.set_required_features_13(vulkan13Features)
+			// 	.select_devices();
+			// if (!gpu_list_result)
+			// {
+			// 	PE_CORE_ERROR("Failed to list gpu: {}", gpu_list_result.error().message());
+			// 	throw std::runtime_error("failed to list gpu");
+			// }
+			// auto gpu_list = gpu_list_result.value();
+			// for (auto& gpu : gpu_list)
+			// {
+			// 	PE_CORE_TRACE("GPU: {}", gpu.name);
+			// }
+			
 			auto phys_result = selector
-				.set_minimum_version(1, 0)
 				.set_surface(m_instance.surface)
 				.set_required_features_12(vulkan12Features)
 				.set_required_features_13(vulkan13Features)
 				.select();
+			
 			if (!phys_result) {
 				// TODO FATAL
 				PE_CORE_ERROR("[Vulkan] Failed to select physical device: {0}", phys_result.error().message());
-				return;
+				throw std::runtime_error("failed to select gpu");
 			}
 			m_instance.physicalDevice = phys_result.value();
 		}
+		PE_CORE_TRACE("GPU: {}", m_instance.physicalDevice.name);
 #pragma endregion
 
 #pragma region Virtual Device Creation
