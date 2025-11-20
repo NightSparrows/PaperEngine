@@ -196,10 +196,9 @@ namespace PaperEngine {
 	void Application::initThreadPool()
 	{
 		uint32_t core_count = std::thread::hardware_concurrency();
-#ifdef _WIN32
-
-
 		std::vector<bool> affinity(std::thread::hardware_concurrency(), false);
+#ifdef PE_PLATFORM_WINDOWS
+
 
 		struct CoreInfo {
 			DWORD id;
@@ -257,13 +256,15 @@ namespace PaperEngine {
 		core_count = static_cast<uint32_t>(pcs.size());
 		PE_CORE_TRACE("Using {} P-cores for Thread Pool", core_count);
 
-#endif // _WIN32
-
 		m_thread_pool = std::make_shared<BS::thread_pool<>>(core_count, [core_count, affinity](std::size_t idx) {
 			PE_CORE_TRACE("ThreadPoolWorker header {}", idx);
 
 			BS::this_thread::set_os_thread_affinity(affinity);
 			});
+#elifdef PE_PLATFORM_LINUX
+		
+		m_thread_pool = std::make_shared<BS::thread_pool<>>(core_count);
+#endif // PE_PLATFORM_WINDOWS
 
 	}
 

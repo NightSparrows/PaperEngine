@@ -13,6 +13,6 @@
 #error "Apple/MacOS is not supported!"
 #elif defined(__linux__)
 #define PE_PLATFORM_LINUX
-#error "Linux is not supported!"
+//#error "Linux is not supported!"
 #endif // _WIN32
 

@@ -2,12 +2,16 @@
 
 #include "Base.h"
 
+#ifdef _MSVC_VER
 #pragma warning(push)
 #pragma warning(disable : 6294)
 #pragma warning(disable : 26495)
 #pragma warning(disable : 26498)
+#endif
 #include <spdlog/spdlog.h>
+#ifdef _MSVC_VER
 #pragma warning(pop)
+#endif
 namespace PaperEngine {
 
 	class Logger {

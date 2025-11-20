@@ -98,7 +98,7 @@ namespace PaperEngine {
 
 			data->dpiScaleFactorX = static_cast<float>(dpiX) / 96.0f; // 96 DPI is the default DPI
 			data->dpiScaleFactorY = static_cast<float>(dpiY) / 96.0f; // 96 DPI is the default DPI
-#elif PE_PLATFORM_LINUX
+#elif defined(PE_PLATFORM_LINUX)
 		// Linux support for display scaling using GLFW.
 		// This has limited utility due to the issue described above (NULL monitor),
 		// and because GLFW doesn't support fractional scaling properly.
@@ -111,7 +111,9 @@ namespace PaperEngine {
 			if (!monitor)
 				monitor = glfwGetPrimaryMonitor();
 
-			glfwGetMonitorContentScale(monitor, &data->dpiScaleFactorX, &data->dpiScaleFactorY);
+			float dpi_scale_x = (float)data->dpiScaleFactorX;
+			float dpi_scale_y = (float)data->dpiScaleFactorY;
+			glfwGetMonitorContentScale(monitor, &dpi_scale_x, &dpi_scale_y);
 #endif // PE_PLATFORM_WINDOWS
 			if (data->prevDpiScaleFactorX != data->dpiScaleFactorX ||
 				data->prevDpiScaleFactorY != data->dpiScaleFactorY)
@@ -120,7 +122,7 @@ namespace PaperEngine {
 				data->prevDpiScaleFactorY = data->dpiScaleFactorY;
 				DisplayScaleChangedEvent e(data->dpiScaleFactorX, data->dpiScaleFactorY);
 				data->eventCallback(e);
-				//PE_CORE_TRACE("Display scale changed: X = {0}, Y = {1}", data->dpiScaleFactorX, data->dpiScaleFactorY);
+				PE_CORE_TRACE("Display scale changed: X = {0}, Y = {1}", data->dpiScaleFactorX, data->dpiScaleFactorY);
 			}
 		});
 

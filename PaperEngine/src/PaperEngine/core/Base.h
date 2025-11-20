@@ -19,6 +19,14 @@
 	#else
 		#define PE_API __declspec(dllimport)
 	#endif
+#elifdef PE_PLATFORM_LINUX
+	#ifdef PE_BUILD_SHARED
+		#define PE_API __attribute__((visibility("default")))
+	#elif PE_BUILD_STATIC
+		#define PE_API 
+	#else
+		#define PE_API
+	#endif
 #endif
 
 #ifdef PE_DEBUG

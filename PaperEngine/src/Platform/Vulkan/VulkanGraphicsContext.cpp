@@ -1,5 +1,6 @@
 ﻿
 #include <vector>
+#include <iostream>
 
 #include <PaperEngine/core/Base.h>
 #include <PaperEngine/core/Assert.h>
@@ -194,20 +195,25 @@ namespace PaperEngine {
 			
 			auto computeQueueResult = m_instance.vkbDevice.get_queue(vkb::QueueType::compute);
 			if (!computeQueueResult) {
-				// TODO FATAL
-				return;
+				// use graphics queue as compute queue
+					
+				m_instance.computeQueue = m_instance.graphicsQueue;
+				m_instance.computeQueueIndex = m_instance.graphicsQueueIndex;
+				PE_CORE_WARN("faild to get independent compute queue, use graphics queue instead.");
+			} else {
+				m_instance.computeQueue = computeQueueResult.value();
+				m_instance.computeQueueIndex = m_instance.vkbDevice.get_queue_index(vkb::QueueType::compute).value();
 			}
-			m_instance.computeQueue = computeQueueResult.value();
-			m_instance.computeQueueIndex = m_instance.vkbDevice.get_queue_index(vkb::QueueType::compute).value();
 
 			auto transferQueueResult = m_instance.vkbDevice.get_queue(vkb::QueueType::transfer);
 			if (!transferQueueResult) {
-				// TODO FATAL
-				return;
+				m_instance.transferQueue = m_instance.graphicsQueue;
+				m_instance.transferQueueIndex = m_instance.graphicsQueueIndex;
+				PE_CORE_WARN("faild to get independent transfer queue, use graphics queue instead.");
+			} else {
+				m_instance.transferQueue = transferQueueResult.value();
+				m_instance.transferQueueIndex = m_instance.vkbDevice.get_queue_index(vkb::QueueType::transfer).value();
 			}
-			m_instance.transferQueue = transferQueueResult.value();
-			m_instance.transferQueueIndex = m_instance.vkbDevice.get_queue_index(vkb::QueueType::transfer).value();
-
 		}
 #pragma endregion
 
@@ -220,6 +226,7 @@ namespace PaperEngine {
 
 		nvrhi::vulkan::DeviceDesc deviceDesc{
 			.errorCB = &m_NVMsgCallback,
+			.instance = m_instance.vkbInstance.instance,
 			.physicalDevice = m_instance.physicalDevice.physical_device,
 			.device = m_instance.vkbDevice,
 			.graphicsQueue = m_instance.graphicsQueue,
@@ -230,6 +237,7 @@ namespace PaperEngine {
 			.computeQueueIndex = static_cast<int>(m_instance.computeQueueIndex),
 			.instanceExtensions = instanceExtensions.data(),
 			.numInstanceExtensions = instanceExtensions.size(),
+			.vulkanLibraryName = ""
 		};
 		m_instance.device = nvrhi::vulkan::createDevice(deviceDesc);
 #ifdef PE_DEBUG
@@ -262,8 +270,7 @@ namespace PaperEngine {
 
 #pragma region Swapchain creation
 		if (!createSwapchain()) {
-			// TODO FATAL
-			return;
+			throw std::runtime_error("failed to create swapchain.");
 		}
 #pragma endregion
 
@@ -456,11 +463,12 @@ namespace PaperEngine {
 
 		m_instance.swapchainTextures.clear();
 		VkSurfaceFormatKHR surfaceFormat = {
-			VK_FORMAT_R8G8B8A8_UNORM,
+			VK_FORMAT_R8G8B8A8_SRGB,
 			VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
 		};
 		auto swapResult = vkb::SwapchainBuilder(m_instance.vkbDevice)
 			.set_desired_format(surfaceFormat)
+			.set_desired_extent(m_window->getWidth(), m_window->getHeight())
 			.set_desired_present_mode(VK_PRESENT_MODE_MAILBOX_KHR)
 			.add_image_usage_flags(VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT)
 			.set_old_swapchain(m_instance.vkbSwapchain)
@@ -483,8 +491,8 @@ namespace PaperEngine {
 				.setUseClearValue(true)
 				.setDimension(nvrhi::TextureDimension::Texture2D)
 				.setFormat(nvrhi::VulkanFormatFromVkFormat(m_instance.vkbSwapchain.image_format))
-				.setWidth(m_window->getWidth())
-				.setHeight(m_window->getHeight())
+				.setWidth(m_instance.vkbSwapchain.extent.width)
+				.setHeight(m_instance.vkbSwapchain.extent.height)
 				.setIsRenderTarget(true);
 			for (const auto& image : swapchainImages) {
 				auto texture = m_instance.device->createHandleForNativeTexture(nvrhi::ObjectTypes::VK_Image, image, textureDesc);

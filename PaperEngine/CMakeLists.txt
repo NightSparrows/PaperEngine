@@ -11,7 +11,8 @@ if (MSVC)
 	# parallel compiling
     add_compile_options(/MP)
 else()
-    add_compile_options(-Wall -Wextra -Wpedantic -Werror)
+    # add_compile_options(-Wall -Wextra -Wpedantic -Werror)
+	add_compile_options(-Wall -Wpedantic)
 endif()
 # target
 if (PAPER_ENGINE_BUILD_SHARED)
@@ -73,7 +74,9 @@ target_link_libraries(${PROJECT_NAME} PUBLIC EnTT)
 
 # include nvrhi
 target_link_libraries(${PROJECT_NAME} PUBLIC nvrhi)
+if (_WIN32)
 target_link_libraries(${PROJECT_NAME} PUBLIC nvrhi_vk)
+endif()
 target_include_directories(${PROJECT_NAME} PUBLIC ${nvrhi_SOURCE_DIR}/include)
 
 # include vk-bootstrap

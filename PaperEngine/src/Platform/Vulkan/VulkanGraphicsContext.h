@@ -5,7 +5,7 @@
 #include <nvrhi/nvrhi.h>
 #include <nvrhi/vulkan.h>
 
-#include <VKBootstrap.h>
+#include <VkBootstrap.h>
 
 #include <PaperEngine/core/GLFWWindow.h>
 

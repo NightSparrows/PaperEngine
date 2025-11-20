@@ -8,7 +8,7 @@
 #include <string>
 
 #define GLFW_INCLUDE_VULKAN
-#include <glfw/glfw3.h>
+#include <GLFW/glfw3.h>
 
 
 #include <PaperEngine/core/Window.h>
