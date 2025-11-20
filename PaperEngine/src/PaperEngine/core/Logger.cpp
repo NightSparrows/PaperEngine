@@ -2,7 +2,7 @@
 #include "Logger.h"
 #include <iostream>
 
-#ifdef MSVC
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 6294)
 #pragma warning(disable : 26495)
@@ -10,7 +10,7 @@
 #endif
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/basic_file_sink.h>
-#ifdef MSVC
+#ifdef _MSC_VER
 #pragma warning(pop)
 #endif
 
