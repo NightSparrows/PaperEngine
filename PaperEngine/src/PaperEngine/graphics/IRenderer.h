@@ -1,5 +1,5 @@
 ﻿#pragma once
-#ifdef _MSVC_VER
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4100)
 #endif
@@ -39,6 +39,6 @@ namespace PaperEngine {
 
 }
 
-#ifdef _MSVC_VER
+#ifdef _MSC_VER
 #pragma warning(pop)
 #endif
