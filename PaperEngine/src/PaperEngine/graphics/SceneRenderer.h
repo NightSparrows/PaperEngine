@@ -11,6 +11,9 @@
 #include "ForwardPlusDepthRenderer.h"
 #include "LightCullingPass.h"
 
+#include "BindingSet.h"
+#include "GPUBuffer.h"
+
 namespace PaperEngine {
 
 	struct GlobalDataI {
@@ -76,8 +79,8 @@ namespace PaperEngine {
 	private:
 
 		BindingLayoutHandle m_globalLayout;
-		nvrhi::BindingSetHandle m_globalSet;
-		nvrhi::BufferHandle m_globalDataBuffer;
+		BindingSetHandle m_globalSet;
+		GPUBufferHandle m_globalDataBuffer;
 
 		// 先這樣
 		MeshRenderer m_meshRenderer;

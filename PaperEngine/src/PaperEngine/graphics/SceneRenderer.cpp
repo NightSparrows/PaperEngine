@@ -18,6 +18,8 @@ namespace PaperEngine {
 
 	SceneRenderer::SceneRenderer()
 	{
+		const uint32_t max_frame_count = Application::Get()->getGraphicsContext()->getMaxFrameInFlight();
+
 		m_lightCullPass.init();
 
 		// 全域data (constantBuffer Slot 0 : set = 0)
@@ -27,7 +29,7 @@ namespace PaperEngine {
 			.setKeepInitialState(true)
 			.setByteSize(sizeof(GlobalDataI))
 			.setIsConstantBuffer(true);
-		m_globalDataBuffer = Application::GetNVRHIDevice()->createBuffer(globalDataBufferDesc);
+		m_globalDataBuffer = std::make_shared<GPUBuffer>(ResourceUsage::FrameStreaming, globalDataBufferDesc);
 
 		nvrhi::BindingLayoutDesc globalLayoutDesc;
 		globalLayoutDesc
@@ -43,13 +45,17 @@ namespace PaperEngine {
 			Application::GetResourceManager()->create<BindingLayout>("SceneRenderer_globalLayout",
 				Application::GetNVRHIDevice()->createBindingLayout(globalLayoutDesc));
 
-		nvrhi::BindingSetDesc globalSetDesc;
-		globalSetDesc.addItem(nvrhi::BindingSetItem::ConstantBuffer(0, m_globalDataBuffer));
-		globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(0, m_lightCullPass.getDirectionalLightBuffer()));
-		globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(1, m_lightCullPass.getPointLightBuffer()));
-		globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(2, m_lightCullPass.getPointLightCullData().globalLightIndicesBuffer));
-		globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(3, m_lightCullPass.getPointLightCullData().clusterRangesBuffer));
-		m_globalSet = Application::GetNVRHIDevice()->createBindingSet(globalSetDesc, m_globalLayout->handle);
+		std::vector<nvrhi::BindingSetDesc> globalSetDescs(max_frame_count);
+		for (uint32_t i = 0; i < max_frame_count; i++)
+		{
+			nvrhi::BindingSetDesc& globalSetDesc = globalSetDescs[i];
+			globalSetDesc.addItem(nvrhi::BindingSetItem::ConstantBuffer(0, m_globalDataBuffer->getStorages()[i].handle));
+			globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(0, m_lightCullPass.getDirectionalLightBuffer()->getStorages()[i].handle));
+			globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(1, m_lightCullPass.getPointLightBuffer()->getStorages()[i].handle));
+			globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(2, m_lightCullPass.getPointLightCullData().globalLightIndicesBuffer->getStorages()[i].handle));
+			globalSetDesc.addItem(nvrhi::BindingSetItem::StructuredBuffer_SRV(3, m_lightCullPass.getPointLightCullData().clusterRangesBuffer->getStorages()[i].handle));
+		}
+		m_globalSet = CreateRef<BindingSet>(ResourceUsage::FrameStatic, m_globalLayout, globalSetDescs);
 
 		m_forwardPlusDepthRenderer.init();
 	}
@@ -62,28 +68,28 @@ namespace PaperEngine {
 		m_lightCullPass.beginPass();
 
 		// Global Data in GPU Buffer
-		GlobalDataI globalData{};
-		globalData.projectionMatrix = camera->getProjectionMatrix();
-		globalData.viewMatrix = glm::inverse(transform->matrix());
-		globalData.projViewMatrix = globalData.projectionMatrix * globalData.viewMatrix;
-		globalData.cameraPosition = transform->getPosition();
-		globalData.numXSlices = m_lightCullPass.getNumberOfXSlices();
-		globalData.numYSlices = m_lightCullPass.getNumberOfYSlices();
-		globalData.numZSlices = m_lightCullPass.getNumberOfZSlices();
-		globalData.nearPlane = camera->getNearPlane();
-		globalData.farPlane = camera->getFarPlane();
+		GlobalDataI* globalData = static_cast<GlobalDataI*>(m_globalDataBuffer->getMapPtr());
+		globalData->projectionMatrix = camera->getProjectionMatrix();
+		globalData->viewMatrix = glm::inverse(transform->matrix());
+		globalData->projViewMatrix = globalData->projectionMatrix * globalData->viewMatrix;
+		globalData->cameraPosition = transform->getPosition();
+		globalData->numXSlices = m_lightCullPass.getNumberOfXSlices();
+		globalData->numYSlices = m_lightCullPass.getNumberOfYSlices();
+		globalData->numZSlices = m_lightCullPass.getNumberOfZSlices();
+		globalData->nearPlane = camera->getNearPlane();
+		globalData->farPlane = camera->getFarPlane();
 
 		GlobalSceneData sceneData;
 		sceneData.camera = camera;
 		sceneData.cameraTransform = transform;
 		sceneData.fb = fb;
-		sceneData.globalSet = m_globalSet;
-		sceneData.projViewMatrix = globalData.projViewMatrix;
+		sceneData.globalSet = m_globalSet->getHandle();
+		sceneData.projViewMatrix = globalData->projViewMatrix;
 
 #pragma region Filter Renderable Meshes
 
-		Frustum cameraFrustum = Frustum::Extract(globalData.projViewMatrix);
-		m_lightCullPass.setCamera(*camera, globalData.viewMatrix, cameraFrustum);
+		Frustum cameraFrustum = Frustum::Extract(globalData->projViewMatrix);
+		m_lightCullPass.setCamera(*camera, globalData->viewMatrix, cameraFrustum);
 
 		{
 			PE_PROFILE_SCOPE("Process scene to renderer");
@@ -136,9 +142,9 @@ namespace PaperEngine {
 		}
 
 #pragma endregion
-		globalData.directionalLightCount = m_lightCullPass.getDirectionalLightCount();
+		globalData->directionalLightCount = m_lightCullPass.getDirectionalLightCount();
 		// 不代表會全部Process
-		globalData.pointLightCount = m_lightCullPass.getPointLightCount();
+		globalData->pointLightCount = m_lightCullPass.getPointLightCount();
 
 		auto swapchain_texture = fb->getDesc().colorAttachments[0].texture;
 		auto depth_texture = fb->getDesc().depthAttachment.texture;
@@ -153,7 +159,7 @@ namespace PaperEngine {
 		main_cmd->clearTextureFloat(swapchain_texture, nvrhi::AllSubresources, nvrhi::Color(0.f, 0.f, 0.f, 0.f));
 		main_cmd->clearDepthStencilTexture(depth_texture, nvrhi::AllSubresources, true, 1.f, false, 0);
 
-		main_cmd->writeBuffer(m_globalDataBuffer, &globalData, sizeof(globalData));
+		//main_cmd->writeBuffer(m_globalDataBuffer->getHandle(), &globalData, sizeof(globalData));
 
 		// Render PreDepth Pass
 		//m_forwardPlusDepthRenderer.renderScene(sceneData);

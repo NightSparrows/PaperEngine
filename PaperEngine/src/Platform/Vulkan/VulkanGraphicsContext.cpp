@@ -461,6 +461,16 @@ namespace PaperEngine {
 		return m_frame_contents[m_current_frame_index].cmd;
 	}
 
+	uint32_t VulkanGraphicsContext::getMaxFrameInFlight()
+	{
+		return static_cast<uint32_t>(m_frame_contents.size());
+	}
+
+	uint32_t VulkanGraphicsContext::getCurrentFrameIndex()
+	{
+		return m_current_frame_index;
+	}
+
 	bool VulkanGraphicsContext::createSwapchain()
 	{
 		vkDeviceWaitIdle(m_instance.vkbDevice.device);

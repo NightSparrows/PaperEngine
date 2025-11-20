@@ -51,6 +51,14 @@ namespace PaperEngine {
 		virtual nvrhi::Format getSupportedDepthFormat() = 0;
 
 		virtual nvrhi::CommandListHandle getMainCommandList() = 0;
+
+		virtual uint32_t getMaxFrameInFlight() = 0;
+
+		/// <summary>
+		/// Get the current frame in flight index
+		/// </summary>
+		/// <returns></returns>
+		virtual uint32_t getCurrentFrameIndex() = 0;
 	public:
 		static Ref<GraphicsContext> Create(Window* window);
 	};

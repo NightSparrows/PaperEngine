@@ -131,6 +131,13 @@ namespace PaperEngine {
 		/// <returns></returns>
 		nvrhi::CommandListHandle getMainCommandList() override;
 
+		uint32_t getMaxFrameInFlight() override;
+
+		/// <summary>
+		/// Get the current frame in flight index
+		/// </summary>
+		/// <returns></returns>
+		uint32_t getCurrentFrameIndex() override;
 	private:
 		bool createSwapchain();
 
