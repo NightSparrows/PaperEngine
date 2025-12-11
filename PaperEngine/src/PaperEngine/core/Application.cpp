@@ -101,8 +101,8 @@ namespace PaperEngine {
 						auto depth_texture = fb->getDesc().depthAttachment.texture;
 
 						// NVRHI有問題，他無法使用track一個一開始undefined layout導致Vulkan validation一直報錯
-						main_cmd->beginTrackingTextureState(swapchain_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::Unknown);
-						main_cmd->beginTrackingTextureState(depth_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::Unknown);
+						//main_cmd->beginTrackingTextureState(swapchain_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::Unknown);
+						//main_cmd->beginTrackingTextureState(depth_texture, nvrhi::AllSubresources, nvrhi::ResourceStates::Unknown);
 
 						for (auto layer : m_layerManager) {
 #ifdef PE_ENABLE_IMGUI
