@@ -17,3 +17,5 @@ imgui.ini
 PaperEngine.log
 PaperProfile-Runtime.json
 assets/private/*
+
+.cache

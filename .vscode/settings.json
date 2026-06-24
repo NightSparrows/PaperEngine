@@ -1,4 +1,8 @@
 {
+    "cmake.configureArgs": [
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+    ],
+    "cmake.copyCompileCommands": "${workspaceFolder}/.vscode/compile_commands.json",
     "files.associations": {
         "chrono": "cpp",
         "any": "cpp",
